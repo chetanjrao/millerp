@@ -41,7 +41,6 @@ class IncomingStockEntry(models.Model):
     created_at = models.DateTimeField(auto_now=True)
 
 class OutgoingStockEntry(models.Model):
-    date = models.DateField(auto_now=True)
     stock = models.ForeignKey(to=IncomingStockEntry, on_delete=models.PROTECT)
     category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='outgoingstockentrys')
     source = models.ForeignKey(to=OutgoingSource, on_delete=models.CASCADE, related_name='outgoingstockentrys')
@@ -51,7 +50,7 @@ class OutgoingStockEntry(models.Model):
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
 
-class ProcessingStockEntry(models.Model):
+class ProcessingSideEntry(models.Model):
     stock = models.ForeignKey(to=IncomingStockEntry, on_delete=models.PROTECT)
     category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='processingstockentrys')
     source = models.ForeignKey(to=OutgoingSource, on_delete=models.CASCADE, related_name='processingstockentrys')
