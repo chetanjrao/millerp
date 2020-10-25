@@ -1,0 +1,40 @@
+{% load tz %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8" />
+    <title>{% block title %} Dashboard | Fuel Station Administration | Fuel Charge | Tecidexa Services Pvt. Ltd. {% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Fuel Station Administration Console" name="description" />
+    <meta content="Fuel Charge" name="author" />
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="/static/images/edukriya.ico">
+    {% block corestyles %}
+    {% endblock %}
+    <!-- Bootstrap Css -->
+    <link href="/static/css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css" />
+    <!-- Icons C -->
+    <link href="/static/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <!-- App Css -->
+    <link href="/static/css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
+    {% block extralinks %}
+    {% endblock %}
+</head>
+<body data-sidebar="dark">
+    <div id="layout-wrapper">
+    {% include 'header.html' %}
+    {% include 'tabbar.html' %}
+        <div class="main-content">
+            <div class="page-content">
+                {% block body %}
+                {% endblock %}
+            </div>
+            {% include 'footer.html' %}
+        </div>
+    </div>
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

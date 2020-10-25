@@ -53,8 +53,8 @@ class OutgoingStockEntry(models.Model):
 
 class ProcessingStockEntry(models.Model):
     stock = models.ForeignKey(to=IncomingStockEntry, on_delete=models.PROTECT)
-    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='outgoingstockentrys')
-    source = models.ForeignKey(to=OutgoingSource, on_delete=models.CASCADE, related_name='outgoingstockentrys')
+    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='processingstockentrys')
+    source = models.ForeignKey(to=OutgoingSource, on_delete=models.CASCADE, related_name='processingstockentrys')
     bags = models.FloatField()
     average_weight = models.FloatField()
     is_deleted = models.BooleanField(default=False)
