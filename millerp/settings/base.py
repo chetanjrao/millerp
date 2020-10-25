@@ -26,7 +26,8 @@ SECRET_KEY = env.str('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', True)
 
-ALLOWED_HOSTS = [ env.str('ALLOWED_HOSTS', '*') ]
+# ALLOWED_HOSTS = [env.str('ALLOWED_HOSTS', '*')]
+ALLOWED_HOSTS = ['127.0.0.1']
 
 # Application definition
 
