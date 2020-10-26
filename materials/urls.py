@@ -13,4 +13,6 @@ urlpatterns = [
          name="materials-outgoing-action"),
     path('processing/',  views.processing, name="materials-processing"),
     path('godowns/',  views.godowns, name="materials-godowns"),
+    path('godowns/action/<int:id>',  views.godownsAction,
+         name="materials-godowns-action"),
 ]

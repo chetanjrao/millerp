@@ -122,5 +122,35 @@ def processing(request):
     return render(request, "materials/processing.html")
 
 
+# outgoing sources
+@login_required
+@set_mill_session
 def godowns(request):
-    return render(request, "materials/godowns.html")
+    mill = Mill.objects.get(code=request.millcode)
+    godowns = OutgoingSource.objects.filter(mill=mill, is_deleted=False)
+    if request.method == "POST":
+        name = request.POST.get('name')
+        OutgoingSource.objects.create(
+            name=name, mill=mill, created_by=request.user, created_at=datetime.now)
+        return redirect("materials-godowns", millcode=request.millcode)
+    return render(request, "materials/godowns.html", {"godowns": godowns})
+
+
+@login_required
+@set_mill_session
+def godownsAction(request, id):
+    mill = Mill.objects.get(code=request.millcode)
+    godowns = OutgoingSource.objects.filter(mill=mill, is_deleted=False)
+    if request.method == "POST":
+        id = int(id)
+        obj = OutgoingSource.objects.get(id=id)
+        action = int(request.POST.get('action', '0'))
+        if action == 1:
+            obj.name = request.POST.get('name')
+            obj.save()
+            return render(request, "materials/godowns.html", {"godowns": godowns, "success_message": "Godown updated successfully"})
+        elif action == 2:
+            obj.is_deleted = True
+            obj.save()
+            return render(request, "materials/godowns.html", {"godowns": godowns, "error_message": "Godown deleted successfully"})
+    return redirect("materials-godowns", millcode=request.millcode)

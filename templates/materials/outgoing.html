@@ -80,9 +80,7 @@
                                                 <div class="card-body">
                                                     <h4 class="card-title mb-4">Update outgoing stock entry</h4>
 
-                                                    <form
-                                                        action="{%url 'materials-incoming-action' id=stock.id millcode=request.millcode%}"
-                                                        method="POST">
+                                                    <form action="#" method="POST">
                                                         {% csrf_token %}
                                                         <input type="hidden" value="1" name="action">
                                                         <div class="form-group row mb-2">
