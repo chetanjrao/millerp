@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block corestyles %}
+<link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
+    type="text/css" />
+<link href="/static/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-timepicker/css/bootstrap-timepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/static/libs/@chenfengyuan/datepicker/datepicker.min.css">
+{% endblock %}
+{% block body %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-4">
+                    <h4 class="card-title mt-2">Add Incoming stock Entry</h4>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-10">
+                {% if success_message %}
+                <div class="alert alert-success alert-dismissible fade show ml-3" role="alert">
+                    <i class="mdi mdi-check-all mr-2"></i>
+                    {{ success_message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                {% endif %}
+                {% if error_message %}
+                <div class="alert alert-danger alert-dismissible fade show ml-3" role="alert">
+                    <i class="bx bx-x
+                     mr-2"></i>
+                    {{ error_message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <form class="p-3" method="POST" action="{% url 'materials-incoming-add' millcode=request.millcode%}">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group row mb-2">
+                        <label for="horizontal-number-input" class="col-sm-6 col-form-label">Number of
+                            bags</label>
+                        <div class="col-md-12">
+                            <input data-parsley-type="number" type="text" class="form-control" required
+                                placeholder="Ex. 10,20,30" name="bags" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group row mb-4">
+                        <label for="horizontal-number-input" class="col-sm-6 col-form-label">Average
+                            weight</label>
+                        <div class="col-md-12">
+                            <input data-parsley-type="number" type="text" class="form-control"
+                                id="horizontal-number-input" name="avg_wt" placeholder="Ex. 40.5, 50.0" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group mb-2">
+                        <label for="staff" class="control-label">Select category</label>
+                        <select id="category" class="select2" name="category" required>
+                            <option></option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-2">
+                        <label for="cashier" class="control-label">Select Source</label>
+                        <select id="source" class="select2" name="source" required>
+                            <option></option>
+                            {% for src in sources %}
+                            <option value="{{ src.pk }}">{{ src.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="form-group mb-4">
+                        <label>Select Date</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="yyyy-mm-dd"
+                                data-date-format="yyyy-mm-dd" data-provide="datepicker" name="date" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class=" form-group row justify-content-end">
+                <div class="col-md-12">
+                    <div>
+                        <button type="submit" class="btn btn-success w-md">Add entry</button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/libs/jquery/jquery.min.js"></script>
+<script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/libs/simplebar/simplebar.min.js"></script>
+<script src="/static/libs/node-waves/waves.min.js"></script>
+<script src="/static/libs/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/static/libs/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/static/libs/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.html5.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.print.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.colVis.min.js"></script>
+<script src="/static/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/libs/select2/js/select2.min.js"></script>
+<script src="/static/libs/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
+<script src="/static/libs/bootstrap-timepicker/js/bootstrap-timepicker.min.js"></script>
+<script src="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
+<script src="/static/libs/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
+<script src="/static/libs/@chenfengyuan/datepicker/datepicker.min.js"></script>
+<script src="/static/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+<script src="/static/js/pages/datatables.init.js"></script>
+<script src="/static/js/pages/form-advanced.init.js"></script>
+<script src="/static/libs/parsleyjs/parsley.min.js"></script>
+<script src="/static/js/pages/form-validation.init.js"></script>
+<script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/js/app.js"></script>
+<script>
+    $('#category').select2({
+        width: "100%",
+        placeholder: "Select Category"
+    })
+    $('#source').select2({
+        width: "100%",
+        placeholder: "Select Source"
+    })
+
+</script>
+{% endblock %}

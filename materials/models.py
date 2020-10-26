@@ -36,7 +36,7 @@ class ProcessingSide(models.Model):
 
 
 class IncomingStockEntry(models.Model):
-    date = models.DateField(auto_now=True)
+    date = models.DateField()
     category = models.ForeignKey(
         to=Category, on_delete=models.CASCADE, related_name='incomingstockentrys')
     source = models.ForeignKey(
@@ -46,6 +46,10 @@ class IncomingStockEntry(models.Model):
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def to_quintal(self):
+        return self.bags * 40/100
 
 
 class OutgoingStockEntry(models.Model):
@@ -58,6 +62,10 @@ class OutgoingStockEntry(models.Model):
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def to_quintal(self):
+        return self.bags * 40/100
 
 
 class ProcessingSideEntry(models.Model):
