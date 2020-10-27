@@ -15,4 +15,7 @@ urlpatterns = [
     path('godowns/',  views.godowns, name="materials-godowns"),
     path('godowns/action/<int:id>',  views.godownsAction,
          name="materials-godowns-action"),
+    path('configuration/', views.configuration, name="materials-configuration"),
+    path('configuration/action/<int:id>', views.configurationAction,
+         name="materials-configuration-action"),
 ]

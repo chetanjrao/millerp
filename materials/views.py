@@ -162,3 +162,62 @@ def godownsAction(request, id):
             obj.save()
             return render(request, "materials/godowns.html", {"godowns": godowns, "error_message": "Godown deleted successfully"})
     return redirect("materials-godowns", millcode=request.millcode)
+
+
+@login_required
+@set_mill_session
+def configuration(request):
+    mill = Mill.objects.get(code=request.millcode)
+    categories = Category.objects.filter(is_deleted=False, mill=mill)
+    incoming_sources = IncomingSource.objects.filter(
+        is_deleted=False, mill=mill)
+    if request.method == 'POST':
+        action = int(request.POST.get('action', '0'))
+        if action == 1:
+            name = request.POST.get('name')
+            Category.objects.create(
+                name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            return redirect("materials-configuration", millcode=request.millcode)
+        elif action == 2:
+            name = request.POST.get('name')
+            IncomingSource.objects.create(
+                name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            return redirect("materials-configuration", millcode=request.millcode)
+    return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources})
+
+
+@login_required
+@set_mill_session
+def configurationAction(request, id):
+    mill = Mill.objects.get(code=request.millcode)
+    categories = Category.objects.filter(is_deleted=False, mill=mill)
+    incoming_sources = IncomingSource.objects.filter(
+        is_deleted=False, mill=mill)
+    if request.method == "POST":
+        id = int(id)
+        action = int(request.POST.get('action', '0'))
+        if action == 1:
+            name = request.POST.get('name')
+            if len(name) > 0:
+                obj = Category.objects.get(id=id)
+                obj.name = name
+                obj.save()
+                return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, "success_message": "Category updated successfully"})
+        elif action == 2:
+            obj = Category.objects.get(id=id)
+            obj.is_deleted = True
+            obj.save()
+            return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, "error_message": "Category deleted successfully"})
+        elif action == 3:
+            name = request.POST.get('name')
+            if len(name) > 0:
+                obj = IncomingSource.objects.get(id=id)
+                obj.name = name
+                obj.save()
+                return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, "success_message": "Incoming source updated successfully"})
+        elif action == 4:
+            obj = IncomingSource.objects.get(id=id)
+            obj.is_deleted = True
+            obj.save()
+            return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, "error_message": "Incoming source deleted successfully"})
+    return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources})
