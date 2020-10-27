@@ -120,6 +120,12 @@ def outgoingAction(request, id):
 
 @login_required
 @set_mill_session
+def outgoingAdd(request):
+    return render(request, "materials/outgoing-add.html", )
+
+
+@login_required
+@set_mill_session
 def processing(request):
     return render(request, "materials/processing.html")
 
