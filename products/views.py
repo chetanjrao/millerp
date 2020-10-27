@@ -103,3 +103,74 @@ def outgoingAction(request, id):
             obj.save()
             return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'error_message': "Entry deleted successfully"})
     return redirect("products-incoming", millcode=request.millcode)
+
+
+@login_required
+@set_mill_session
+def configuration(request):
+    mill = Mill.objects.get(code=request.millcode)
+    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(
+        is_deleted=False, mill=mill)
+    if request.method == 'POST':
+        action = int(request.POST.get('action', '0'))
+        if action == 1:
+            name = request.POST.get('name')
+            ProductCategory.objects.create(
+                name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            return redirect("products-configuration", millcode=request.millcode)
+        elif action == 2:
+            try:
+                name = request.POST.get('name')
+                category = ProductCategory.objects.get(
+                    id=int(request.POST.get('category')))
+                quantity = float(request.POST.get('quantity'))
+                ProductionType.objects.create(
+                    name=name, category=category, quantity=quantity, mill=mill, created_by=request.user, created_at=datetime.now())
+                return redirect("products-configuration", millcode=request.millcode)
+            except ValueError:
+                return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "error_message": "Please enter valid entries"})
+    return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types})
+
+
+@login_required
+@set_mill_session
+def configurationAction(request, id):
+    mill = Mill.objects.get(code=request.millcode)
+    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(
+        is_deleted=False, mill=mill)
+    if request.method == "POST":
+        id = int(id)
+        action = int(request.POST.get('action', '0'))
+        if action == 1:
+            name = request.POST.get('name')
+            if len(name) > 0:
+                obj = ProductCategory.objects.get(id=id)
+                obj.name = name
+                obj.save()
+                return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "success_message": "Category updated successfully"})
+        elif action == 2:
+            obj = ProductCategory.objects.get(id=id)
+            obj.is_deleted = True
+            obj.save()
+            return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "error_message": "Category deleted successfully"})
+        elif action == 3:
+            name = request.POST.get('name')
+            if len(name) > 0:
+                try:
+                    obj = ProductionType.objects.get(id=id)
+                    obj.name = name
+                    obj.quantity = float(request.POST.get('quantity'))
+                    obj.category = ProductCategory.objects.get(
+                        id=int(request.POST.get('category')))
+                    obj.save()
+                    return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "success_message": "Production type updated successfully"})
+                except ValueError:
+                    return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "error_message": "Please enter valid entries"})
+        elif action == 4:
+            obj = ProductionType.objects.get(id=id)
+            obj.is_deleted = True
+            obj.save()
+            return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "error_message": "Production type deleted successfully"})
+    return redirect("products-configuration", millcode=request.millcode)

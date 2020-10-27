@@ -220,4 +220,4 @@ def configurationAction(request, id):
             obj.is_deleted = True
             obj.save()
             return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, "error_message": "Incoming source deleted successfully"})
-    return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources})
+    return redirect("materials-configuration", millcode=request.millcode)
