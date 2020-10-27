@@ -52,3 +52,7 @@ class OutgoingProductEntry(models.Model):
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def to_quintal(self):
+        return (self.bags*self.product_type.quantity)/100

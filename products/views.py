@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from core.decorators import set_mill_session
-from .models import IncomingProductEntry, ProductCategory, ProductionType
+from .models import IncomingProductEntry, ProductCategory, ProductionType, OutgoingProductEntry
 from core.models import Mill
 
 
@@ -70,4 +70,36 @@ def incomingAction(request, id):
             obj.is_deleted = True
             obj.save()
             return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'error_message': "Entry deleted successfully"})
+    return redirect("products-incoming", millcode=request.millcode)
+
+
+@login_required
+@set_mill_session
+def outgoing(request):
+    mill = Mill.objects.get(code=request.millcode)
+    stocks = OutgoingProductEntry.objects.filter(is_deleted=False)
+    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(
+        is_deleted=False, mill=mill)
+    return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
+
+
+@login_required
+@set_mill_session
+def outgoingAction(request, id):
+    mill = Mill.objects.get(code=request.millcode)
+    stocks = IncomingProductEntry.objects.filter(is_deleted=False)
+    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(
+        is_deleted=False, mill=mill)
+    if request.method == "POST":
+        action = int(request.POST.get('action', '0'))
+        id = int(id)
+        obj = OutgoingProductEntry.objects.get(id=id)
+        if action == 1:
+            pass
+        elif action == 2:
+            obj.is_deleted = True
+            obj.save()
+            return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'error_message': "Entry deleted successfully"})
     return redirect("products-incoming", millcode=request.millcode)

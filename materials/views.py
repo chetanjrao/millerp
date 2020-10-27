@@ -118,6 +118,8 @@ def outgoingAction(request, id):
     return redirect('materials-incoming', millcode=request.millcode)
 
 
+@login_required
+@set_mill_session
 def processing(request):
     return render(request, "materials/processing.html")
 

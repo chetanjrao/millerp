@@ -7,4 +7,7 @@ urlpatterns = [
     path('incoming/add', views.incomingAdd, name="products-incoming-add"),
     path('incoming/action/<int:id>', views.incomingAction,
          name="products-incoming-action"),
+    path('outgoing/', views.outgoing, name="products-outgoing"),
+    path('outgoing/action/<int:id>', views.outgoingAction,
+         name="products-outgoing-action"),
 ]
