@@ -1,7 +1,73 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from datetime import datetime
+from core.decorators import set_mill_session
+from .models import IncomingProductEntry, ProductCategory, ProductionType
+from core.models import Mill
 
-# Create your views here.
 
-
+@login_required
+@set_mill_session
 def incoming(request):
-    return render(request, "products/incoming.html")
+    mill = Mill.objects.get(code=request.millcode)
+    stocks = IncomingProductEntry.objects.filter(is_deleted=False)
+    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(
+        is_deleted=False, mill=mill)
+    return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
+
+
+@login_required
+@set_mill_session
+def incomingAdd(request):
+    mill = Mill.objects.get(code=request.millcode)
+    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(
+        is_deleted=False, mill=mill)
+    if request.method == "POST":
+        try:
+            date = request.POST.get('date')
+            bags = int(request.POST.get('bags'))
+            category = ProductCategory.objects.get(
+                id=int(request.POST.get('category')))
+            product_type = ProductionType.objects.get(
+                id=int(request.POST.get('product_type')))
+            obj = IncomingProductEntry.objects.create(
+                date=date, bags=bags, category=category, product_type=product_type, created_by=request.user, created_at=datetime.now())
+            return render(request, "products/incoming-add.html", {'categories': categories, 'production_types': production_types, 'success_message': "Incoming product entry added successfully"})
+        except ValueError:
+            return render(request, "products/incoming-add.html", {'categories': categories, 'production_types': production_types, 'error_message': "Please enter valid entries"})
+    return render(request, "products/incoming-add.html", {'categories': categories, 'production_types': production_types})
+
+
+@login_required
+@set_mill_session
+def incomingAction(request, id):
+    mill = Mill.objects.get(code=request.millcode)
+    stocks = IncomingProductEntry.objects.filter(is_deleted=False)
+    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(
+        is_deleted=False, mill=mill)
+    if request.method == "POST":
+        action = int(request.POST.get('action', '0'))
+        id = int(id)
+        obj = IncomingProductEntry.objects.get(id=id)
+        if action == 1:
+            try:
+                obj.date = request.POST.get('date')
+                obj.bags = float(request.POST.get('bags'))
+                obj.category = ProductCategory.objects.get(
+                    id=int(request.POST.get('category')))
+                obj.product_type = ProductionType.objects.get(
+                    id=int(request.POST.get('product')))
+                obj.save()
+                print(request.POST.get('date'), request.POST.get('bags'),
+                      request.POST.get('category'), request.POST.get('product'))
+                return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'success_message': "Product entry updated successfully"})
+            except ValueError:
+                return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'error_message': "Number of bags must be a valid number"})
+        elif action == 2:
+            obj.is_deleted = True
+            obj.save()
+            return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'error_message': "Entry deleted successfully"})
+    return redirect("products-incoming", millcode=request.millcode)
