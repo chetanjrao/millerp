@@ -3,7 +3,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.contrib.auth.decorators import login_required
 from core.decorators import set_mill_session
 from core.models import Mill
-from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource
+from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide
 from datetime import datetime
 # Create your views here.
 
@@ -171,6 +171,8 @@ def configuration(request):
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     incoming_sources = IncomingSource.objects.filter(
         is_deleted=False, mill=mill)
+    processing_sides = ProcessingSide.objects.filter(
+        is_deleted=False, mill=mill)
     if request.method == 'POST':
         action = int(request.POST.get('action', '0'))
         if action == 1:
@@ -183,7 +185,12 @@ def configuration(request):
             IncomingSource.objects.create(
                 name=name, mill=mill, created_by=request.user, created_at=datetime.now())
             return redirect("materials-configuration", millcode=request.millcode)
-    return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources})
+        elif action == 3:
+            name = request.POST.get('name')
+            ProcessingSide.objects.create(
+                name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            return redirect("materials-configuration", millcode=request.millcode)
+    return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides})
 
 
 @login_required
@@ -192,6 +199,8 @@ def configurationAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     incoming_sources = IncomingSource.objects.filter(
+        is_deleted=False, mill=mill)
+    processing_sides = ProcessingSide.objects.filter(
         is_deleted=False, mill=mill)
     if request.method == "POST":
         id = int(id)
@@ -202,22 +211,34 @@ def configurationAction(request, id):
                 obj = Category.objects.get(id=id)
                 obj.name = name
                 obj.save()
-                return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, "success_message": "Category updated successfully"})
+                return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Category updated successfully"})
         elif action == 2:
             obj = Category.objects.get(id=id)
             obj.is_deleted = True
             obj.save()
-            return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, "error_message": "Category deleted successfully"})
+            return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Category deleted successfully"})
         elif action == 3:
             name = request.POST.get('name')
             if len(name) > 0:
                 obj = IncomingSource.objects.get(id=id)
                 obj.name = name
                 obj.save()
-                return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, "success_message": "Incoming source updated successfully"})
+                return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Incoming source updated successfully"})
         elif action == 4:
             obj = IncomingSource.objects.get(id=id)
             obj.is_deleted = True
             obj.save()
-            return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, "error_message": "Incoming source deleted successfully"})
+            return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Incoming source deleted successfully"})
+        elif action == 5:
+            name = request.POST.get('name')
+            if len(name) > 0:
+                obj = ProcessingSide.objects.get(id=id)
+                obj.name = name
+                obj.save()
+                return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Processing side updated successfully"})
+        elif action == 6:
+            obj = ProcessingSide.objects.get(id=id)
+            obj.is_deleted = True
+            obj.save()
+            return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Processing side deleted successfully"})
     return redirect("materials-configuration", millcode=request.millcode)
