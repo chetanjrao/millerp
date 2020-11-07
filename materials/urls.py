@@ -10,6 +10,7 @@ urlpatterns = [
     path('outgoing/add/',  views.outgoingAdd, name="materials-outgoing-add"),
     path('outgoing/action/<int:id>/',  views.outgoingAction, name="materials-outgoing-action"),
     path('processing/',  views.processing, name="materials-processing"),
+    path('processing/add/',  views.processingAdd, name="materials-processing-add"),
     path('godowns/',  views.godowns, name="materials-godowns"),
     path('godowns/action/<int:id>/',  views.godownsAction, name="materials-godowns-action"),
     path('configuration/', views.configuration, name="materials-configuration"),

@@ -5,7 +5,7 @@ from rest_framework.views import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from core.decorators import set_mill_session
 from core.models import Mill
-from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide
+from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry
 from datetime import datetime
 # Create your views here.
 
@@ -124,7 +124,7 @@ def outgoingAction(request, id):
 @set_mill_session
 def get_stock_available(request: WSGIRequest, category: int):
     Category.objects.get(pk=category, mill__code=request.millcode)
-    stock_purchased = IncomingStockEntry.objects.raw("SELECT materials_incomingstockentry.id as id, materials_incomingstockentry.bags - SUM(ifnull(materials_outgoingstockentry.bags, 0)) as stock_remaining FROM materials_incomingstockentry LEFT JOIN materials_outgoingstockentry ON materials_incomingstockentry.id = materials_outgoingstockentry.stock_id WHERE category_id={} GROUP BY materials_outgoingstockentry.stock_id".format(category))
+    stock_purchased = IncomingStockEntry.objects.raw("SELECT materials_incomingstockentry.id as id, materials_incomingstockentry.bags - SUM(ifnull(materials_outgoingstockentry.bags, 0)) - SUM(ifnull(materials_processingsideentry.bags, 0)) as stock_remaining FROM materials_incomingstockentry LEFT JOIN materials_outgoingstockentry ON materials_incomingstockentry.id = materials_outgoingstockentry.stock_id LEFT JOIN materials_processingsideentry ON materials_outgoingstockentry.id = materials_processingsideentry.stock_id WHERE category_id={} GROUP BY materials_outgoingstockentry.stock_id".format(category))
     stocks = [{
         "id": stock.pk,
         "stock": stock.stock_remaining,
@@ -144,6 +144,19 @@ def outgoingAdd(request):
         OutgoingStockEntry.objects.create(stock=stock, source=godown, bags=bags, created_by=request.user)
         return render(request, "materials/outgoing-add.html", { "categories": categories, "godowns": godowns, "success_message": "Outgoing Stock entered successfully" } )
     return render(request, "materials/outgoing-add.html", { "categories": categories, "godowns": godowns } )
+
+@login_required
+@set_mill_session
+def processingAdd(request):
+    categories = Category.objects.filter(mill__code=request.millcode)
+    sides = ProcessingSide.objects.filter(mill__code=request.millcode)
+    if request.method == "POST":
+        stock = IncomingStockEntry.objects.get(pk=request.POST["stock"], category__mill__code=request.millcode)
+        side = ProcessingSide.objects.get(pk=request.POST["side"], mill__code=request.millcode)
+        bags = int(request.POST["quantity"])
+        ProcessingSideEntry.objects.create(stock=stock, source=side, bags=bags, created_by=request.user)
+        return render(request, "materials/processing-add.html", { "categories": categories, "sides": sides, "success_message": "Processing side stock entered successfully" } )
+    return render(request, "materials/processing-add.html", { "categories": categories, "sides": sides } )
 
 
 @login_required

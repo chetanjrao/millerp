@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block corestyles %}
+<link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
+    type="text/css" />
+<link href="/static/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-timepicker/css/bootstrap-timepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/static/libs/@chenfengyuan/datepicker/datepicker.min.css">
+{% endblock %}
+{% block body %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-4">
+                    <h4 class="card-title mt-2">Add Processing side Entry</h4>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-10">
+                {% if success_message %}
+                <div class="alert alert-success alert-dismissible fade show ml-3" role="alert">
+                    <i class="mdi mdi-check-all mr-2"></i>
+                    {{ success_message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                {% endif %}
+                {% if error_message %}
+                <div class="alert alert-danger alert-dismissible fade show ml-3" role="alert">
+                    <i class="bx bx-x
+                     mr-2"></i>
+                    {{ error_message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <form class="pl-4 pb-4 pr-4 custom-validation" action="" method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="" class="control-label">Choose category</label>
+                        <select name="category" id="category" required>
+                            <option value=""></option>
+                            {% for category in categories %}
+                                <option value="{{ category.pk }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="" class="control-label">Choose Incoming Stock</label>
+                        <select name="stock" id="stock" required>
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="" class="control-label">Choose Processing Side</label>
+                        <select name="side" id="side" required>
+                            <option value=""></option>
+                            {% for side in sides %}
+                                <option value="{{ side.pk }}">{{ side.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3 pt-2">
+                    <div class="form-group">
+                        <label for="" class="control-label">Enter quantity</label>
+                        <input min="0" max="0" value="0" autocomplete="off" name="quantity" id="quantity" type="number" step="1" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+            <button id="create" class="btn btn-primary" type="submit">Add Processing Entry</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/libs/jquery/jquery.min.js"></script>
+<script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/libs/simplebar/simplebar.min.js"></script>
+<script src="/static/libs/node-waves/waves.min.js"></script>
+<script src="/static/libs/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/static/libs/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/static/libs/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.html5.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.print.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.colVis.min.js"></script>
+<script src="/static/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/libs/select2/js/select2.min.js"></script>
+<script src="/static/libs/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
+<script src="/static/libs/bootstrap-timepicker/js/bootstrap-timepicker.min.js"></script>
+<script src="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
+<script src="/static/libs/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
+<script src="/static/libs/@chenfengyuan/datepicker/datepicker.min.js"></script>
+<script src="/static/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+<script src="/static/js/pages/datatables.init.js"></script>
+<script src="/static/js/pages/form-advanced.init.js"></script>
+<script src="/static/libs/parsleyjs/parsley.min.js"></script>
+<script src="/static/js/pages/form-validation.init.js"></script>
+<script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/js/app.js"></script>
+<script>
+    $('#category').select2({
+        width: "100%",
+        placeholder: "Select Category"
+    })
+    $('#create').on("click", (e) => {
+        e.preventDefault()
+        $('.custom-validation').parsley().validate()
+        $('.custom-validation').submit()
+    })
+    $('#side').select2({
+        width: "100%",
+        placeholder: "Select Processing Side"
+    })
+    $('#source').select2({
+        width: "100%",
+        placeholder: "Select Source"
+    })
+    $('#source').select2({
+        width: "100%",
+        placeholder: "Select Source"
+    })
+    $('#stock').select2({
+        width: "100%",
+        placeholder: "Select incoming stock"
+    })
+    $('#category').select2({
+        width: '100%',
+        placeholder: 'Select paddy category'
+    })
+    $('#category').change((e) => {
+        $('#stock').val('').trigger('change')
+        let selection = $(e.target).select2('data')[0]
+        $('#stock').select2({
+            width: '100%',
+            placeholder: "Select incoming stock",
+            ajax: {
+                url: `/{{request.millcode}}/materials/stock/${selection["id"]}/check/`,
+                dataType: 'json',
+                processResults: (data) => {
+                    return {
+                        results: data
+                    }
+                },
+                cache: true
+            }
+        })
+    })
+    $('#stock').change((e) => {
+        let selection = $(e.target).select2('data')[0]
+        $('#quantity').attr("max", selection["stock"])
+    })
+</script>
+{% endblock %}

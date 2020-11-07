@@ -52,8 +52,7 @@ class IncomingStockEntry(models.Model):
 
 class OutgoingStockEntry(models.Model):
     stock = models.ForeignKey(to=IncomingStockEntry, on_delete=models.PROTECT)
-    source = models.ForeignKey(
-        to=OutgoingSource, on_delete=models.CASCADE, related_name='outgoingstockentrys')
+    source = models.ForeignKey(to=OutgoingSource, on_delete=models.CASCADE, related_name='outgoingstockentrys')
     bags = models.IntegerField()
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
@@ -66,10 +65,7 @@ class OutgoingStockEntry(models.Model):
 
 class ProcessingSideEntry(models.Model):
     stock = models.ForeignKey(to=IncomingStockEntry, on_delete=models.PROTECT)
-    category = models.ForeignKey(
-        to=Category, on_delete=models.CASCADE, related_name='processingstockentrys')
-    source = models.ForeignKey(
-        to=ProcessingSide, on_delete=models.CASCADE, related_name='processingstockentrys')
+    source = models.ForeignKey(to=ProcessingSide, on_delete=models.CASCADE, related_name='processingsideentrys')
     bags = models.IntegerField()
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
