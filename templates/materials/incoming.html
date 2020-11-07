@@ -5,11 +5,11 @@
 <link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
     type="text/css" />
 <link href="/static/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
-<link href="/static/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css">
 <link href="/static/libs/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" type="text/css">
 <link href="/static/libs/bootstrap-timepicker/css/bootstrap-timepicker.min.css" rel="stylesheet" type="text/css">
 <link href="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" href="/static/libs/@chenfengyuan/datepicker/datepicker.min.css">
+<link href="/static/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css">
 {% endblock %}
 {% block body %}
 <div class="container-fluid">
@@ -66,7 +66,6 @@
                                 <th>In Quintal</th>
                                 <th>Average Weight</th>
                                 <th>Action</th>
-
                             </tr>
                         </thead>
                         <tbody>
@@ -91,9 +90,12 @@
                                                                 class="col-sm-3 col-form-label">Date
                                                             </label>
                                                             <div class="col-md-12">
-                                                                <input class="form-control" type="date"
-                                                                    value="{{stock.date|date:'Y-m-d'}}"
-                                                                    id="example-date-input" name="date_in" required>
+                                                                <div class="input-group">
+                                                                    <input type="text" placeholder="yyyy-mm-dd" value="{{stock.date|date:'Y-m-d'}}" class="form-control date-input" name="date_in"  data-date-format="yyyy-mm-dd" data-provide="datepicker">
+                                                                    <div class="input-group-append">
+                                                                        <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div class="row">
@@ -141,7 +143,6 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-md-6">
@@ -230,7 +231,7 @@
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                         data-target="#editModal{{stock.pk}}">
-                                        <i style="vertical-align: middle;" class="mdi mdi-delete font-size-12"></i><span
+                                        <i style="vertical-align: middle;" class="mdi mdi-pencil font-size-12"></i><span
                                             class="ml-1">Edit</span>
                                     </button>
                                     <button type="button" class="btn btn-danger btn-sm ml-2" data-toggle="modal"
@@ -265,19 +266,18 @@
 <script src="/static/libs/datatables.net-buttons/js/buttons.colVis.min.js"></script>
 <script src="/static/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
 <script src="/static/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/libs/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
+<script src="/static/libs/bootstrap-timepicker/js/bootstrap-timepicker.min.js"></script>
+<script src="/static/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+<script src="/static/libs/tui-time-picker/tui-time-picker.min.js"></script>
+<script src="/static/libs/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
+<script src="/static/libs/tui-date-picker/tui-date-picker.min.js"></script>
 <script src="/static/js/pages/datatables.init.js"></script>
 <script src="/static/libs/node-waves/waves.min.js"></script>
 <script src="/static/libs/select2/js/select2.min.js"></script>
 <script src="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
-<script src="/static/js/pages/form-advanced.init.js"></script>
-
-<!-- apexcharts -->
-<script src="/static/libs/apexcharts/apexcharts.min.js"></script>
-
-<script src="/static/js/pages/dashboard.init.js"></script>
-
-<!-- App js -->
 <script src="/static/js/app.js"></script>
+<script src="/static/js/pages/form-advanced.init.js"></script>
 
 <script>
     $('#category').select2({
@@ -286,7 +286,12 @@
     $('#source').select2({
         width: "100%",
     })
-
+    $('.date-input').datepicker({
+        autoclose: true
+    })
 </script>
+<style>
+    .datepicker{z-index:1151 !important;}
+</style>
 
 {% endblock %}

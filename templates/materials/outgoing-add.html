@@ -45,7 +45,48 @@
                 {% endif %}
             </div>
         </div>
-
+        <form class="pl-4 pb-4 pr-4 custom-validation" action="" method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="" class="control-label">Choose category</label>
+                        <select name="category" id="category" required>
+                            <option value=""></option>
+                            {% for category in categories %}
+                                <option value="{{ category.pk }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="" class="control-label">Choose Incoming Stock</label>
+                        <select name="stock" id="stock" required>
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="" class="control-label">Choose Godown</label>
+                        <select name="godown" id="godown" required>
+                            <option value=""></option>
+                            {% for godown in godowns %}
+                                <option value="{{ godown.pk }}">{{ godown.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3 pt-2">
+                    <div class="form-group">
+                        <label for="" class="control-label">Enter quantity</label>
+                        <input min="0" max="0" value="0" autocomplete="off" name="quantity" id="quantity" type="number" step="1" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+            <button id="create" class="btn btn-primary" type="submit">Add Outgoing Entry</button>
+        </form>
     </div>
 </div>
 {% endblock %}
@@ -82,10 +123,52 @@
         width: "100%",
         placeholder: "Select Category"
     })
+    $('#create').on("click", (e) => {
+        e.preventDefault()
+        $('.custom-validation').parsley().validate()
+        $('.custom-validation').submit()
+    })
+    $('#godown').select2({
+        width: "100%",
+        placeholder: "Select Godown"
+    })
     $('#source').select2({
         width: "100%",
         placeholder: "Select Source"
     })
-
+    $('#source').select2({
+        width: "100%",
+        placeholder: "Select Source"
+    })
+    $('#stock').select2({
+        width: "100%",
+        placeholder: "Select incoming stock"
+    })
+    $('#category').select2({
+        width: '100%',
+        placeholder: 'Select paddy category'
+    })
+    $('#category').change((e) => {
+        $('#stock').val('').trigger('change')
+        let selection = $(e.target).select2('data')[0]
+        $('#stock').select2({
+            width: '100%',
+            placeholder: "Select incoming stock",
+            ajax: {
+                url: `/{{request.millcode}}/materials/stock/${selection["id"]}/check/`,
+                dataType: 'json',
+                processResults: (data) => {
+                    return {
+                        results: data
+                    }
+                },
+                cache: true
+            }
+        })
+    })
+    $('#stock').change((e) => {
+        let selection = $(e.target).select2('data')[0]
+        $('#quantity').attr("max", selection["stock"])
+    })
 </script>
 {% endblock %}

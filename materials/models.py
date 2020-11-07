@@ -37,11 +37,9 @@ class ProcessingSide(models.Model):
 
 class IncomingStockEntry(models.Model):
     date = models.DateField()
-    category = models.ForeignKey(
-        to=Category, on_delete=models.CASCADE, related_name='incomingstockentrys')
-    source = models.ForeignKey(
-        to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')
-    bags = models.FloatField()
+    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='incomingstockentrys')
+    source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')
+    bags = models.IntegerField()
     average_weight = models.FloatField()
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
@@ -49,23 +47,21 @@ class IncomingStockEntry(models.Model):
 
     @property
     def to_quintal(self):
-        return self.bags * 40/100
+        return self.bags * self.average_weight/100
 
 
 class OutgoingStockEntry(models.Model):
     stock = models.ForeignKey(to=IncomingStockEntry, on_delete=models.PROTECT)
-    category = models.ForeignKey(
-        to=Category, on_delete=models.CASCADE, related_name='outgoingstockentrys')
     source = models.ForeignKey(
         to=OutgoingSource, on_delete=models.CASCADE, related_name='outgoingstockentrys')
-    bags = models.FloatField()
+    bags = models.IntegerField()
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
 
     @property
     def to_quintal(self):
-        return self.bags * 40/100
+        return self.bags * self.stock.average_weight/100
 
 
 class ProcessingSideEntry(models.Model):
@@ -74,7 +70,7 @@ class ProcessingSideEntry(models.Model):
         to=Category, on_delete=models.CASCADE, related_name='processingstockentrys')
     source = models.ForeignKey(
         to=ProcessingSide, on_delete=models.CASCADE, related_name='processingstockentrys')
-    bags = models.FloatField()
+    bags = models.IntegerField()
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)

@@ -70,7 +70,6 @@
                         </thead>
                         <tbody>
                             {% for stock in stocks %}
-                            <!-- Modal content for update -->
                             <div id="editModal{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myLargeModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
@@ -225,7 +224,7 @@
 
                             <tr>
                                 <td>{{stock.stock.date}}</td>
-                                <td>{{stock.category.name}}</td>
+                                <td>{{stock.stock.category.name}}</td>
                                 <td>{{stock.source.name}}</td>
                                 <td>{{stock.bags}}</td>
                                 <td>{{stock.to_quintal}}</td>
@@ -233,7 +232,7 @@
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                         data-target="#editModal{{stock.pk}}">
-                                        <i style="vertical-align: middle;" class="mdi mdi-delete font-size-12"></i><span
+                                        <i style="vertical-align: middle;" class="mdi mdi-pencil font-size-12"></i><span
                                             class="ml-1">Edit</span>
                                     </button>
                                     <button type="button" class="btn btn-danger btn-sm ml-2" data-toggle="modal"

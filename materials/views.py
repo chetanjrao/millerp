@@ -1,5 +1,7 @@
+from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.core.handlers.wsgi import WSGIRequest
+from rest_framework.views import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from core.decorators import set_mill_session
 from core.models import Mill
@@ -117,11 +119,31 @@ def outgoingAction(request, id):
                                                                "error_message": "Entry deleted successfully"})
     return redirect('materials-incoming', millcode=request.millcode)
 
+@csrf_exempt
+@login_required
+@set_mill_session
+def get_stock_available(request: WSGIRequest, category: int):
+    Category.objects.get(pk=category, mill__code=request.millcode)
+    stock_purchased = IncomingStockEntry.objects.raw("SELECT materials_incomingstockentry.id as id, materials_incomingstockentry.bags - SUM(ifnull(materials_outgoingstockentry.bags, 0)) as stock_remaining FROM materials_incomingstockentry LEFT JOIN materials_outgoingstockentry ON materials_incomingstockentry.id = materials_outgoingstockentry.stock_id WHERE category_id={} GROUP BY materials_outgoingstockentry.stock_id".format(category))
+    stocks = [{
+        "id": stock.pk,
+        "stock": stock.stock_remaining,
+        "text": "Incoming Stock - {}".format(stock.date.strftime("%d/%m/%Y"))
+    } for stock in stock_purchased]
+    return JsonResponse(stocks, safe=False)
 
 @login_required
 @set_mill_session
 def outgoingAdd(request):
-    return render(request, "materials/outgoing-add.html", )
+    categories = Category.objects.filter(mill__code=request.millcode)
+    godowns = OutgoingSource.objects.filter(mill__code=request.millcode)
+    if request.method == "POST":
+        stock = IncomingStockEntry.objects.get(pk=request.POST["stock"], category__mill__code=request.millcode)
+        godown = OutgoingSource.objects.get(pk=request.POST["godown"], mill__code=request.millcode)
+        bags = int(request.POST["quantity"])
+        OutgoingStockEntry.objects.create(stock=stock, source=godown, bags=bags, created_by=request.user)
+        return render(request, "materials/outgoing-add.html", { "categories": categories, "godowns": godowns, "success_message": "Outgoing Stock entered successfully" } )
+    return render(request, "materials/outgoing-add.html", { "categories": categories, "godowns": godowns } )
 
 
 @login_required
