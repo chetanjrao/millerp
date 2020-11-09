@@ -90,12 +90,21 @@ def get_captcha(driver: WebDriver):
 @set_mill_session
 def incoming(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingStockEntry.objects.filter(is_deleted=False)
-    sources = IncomingSource.objects.filter(
-        is_deleted=False, mill=mill)
-    categories = Category.objects.filter(
-        is_deleted=False, mill=mill)
+    stocks = IncomingStockEntry.objects.filter(entry__is_deleted=False)
+    sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
+    categories = Category.objects.filter(is_deleted=False, mill=mill)
     return render(request, "materials/incoming.html", {"stocks": stocks, "sources": sources, "categories": categories})
+
+@login_required
+@set_mill_session
+def get_sources(request: WSGIRequest):
+    mill = Mill.objects.get(code=request.millcode)
+    categories = [ {
+        "id": source.pk,
+        "text": source.name,
+        "is_trading": source.include_trading
+    } for source in IncomingSource.objects.filter(mill=mill, is_deleted=False)]
+    return JsonResponse(categories, safe=False)
 
 
 @login_required
@@ -104,6 +113,7 @@ def incomingAdd(request):
     mill = Mill.objects.get(code=request.millcode)
     sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
+    godowns = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         date = request.POST.get('date', datetime.now())
         category = Category.objects.get(id=int(request.POST.get('category')))
@@ -113,11 +123,9 @@ def incomingAdd(request):
             average_weight = float(request.POST.get('avg_wt'))
         except ValueError:
             return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "error_message": "Number of bags and average weight must be a valid number"})
-
-        IncomingStockEntry.objects.create(
-            date=date, category=category, source=source, bags=bags, average_weight=average_weight, created_by=request.user)
-        return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "success_message": "Incoming entry added successfully"})
-    return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories})
+        IncomingStockEntry.objects.create(date=date, category=category, source=source, bags=bags, average_weight=average_weight, created_by=request.user)
+        return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns, "success_message": "Incoming entry added successfully"})
+    return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns})
 
 
 @login_required

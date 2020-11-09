@@ -11,6 +11,24 @@
 <link href="/static/libs/bootstrap-timepicker/css/bootstrap-timepicker.min.css" rel="stylesheet" type="text/css">
 <link href="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" href="/static/libs/@chenfengyuan/datepicker/datepicker.min.css">
+<style>
+    .step-app > .step-steps > li.active {
+        background-color: #556ee6;
+    }
+
+    .wizard > .content {
+        min-height: 25em;
+    }
+
+</style>
+{% endblock %}
+{% block extralinks %}
+<link rel="stylesheet" href="/static/libs/jquery-steps/jquery.steps.css">
+<style>
+    .wizard > .content {
+        min-height: 28em;
+    }
+</style>
 {% endblock %}
 {% block body %}
 <div class="container-fluid">
@@ -18,7 +36,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-sm-4">
-                    <h4 class="card-title mt-2">Add Incoming stock Entry</h4>
+                    <h4 class="card-title mt-2">Add Stock Entry</h4>
                 </div>
             </div>
         </div>
@@ -45,77 +63,123 @@
                 {% endif %}
             </div>
         </div>
-        <form class="p-3" method="POST" action="{% url 'materials-incoming-add' millcode=request.millcode%}">
+        <form class="p-3 form" method="POST" action="{% url 'materials-incoming-add' millcode=request.millcode%}">
             {% csrf_token %}
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group row mb-2">
-                        <label for="horizontal-number-input" class="col-sm-6 col-form-label">Number of
-                            bags</label>
-                        <div class="col-md-12">
-                            <input data-parsley-type="number" type="text" class="form-control" required
-                                placeholder="Ex. 10,20,30" name="bags" />
+            <h3>Add Incoming Stock Entry</h3>
+            <section>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group row mb-2">
+                            <label for="horizontal-number-input" class="col-sm-6 col-form-label">Number of
+                                bags</label>
+                            <div class="col-md-12">
+                                <input id="incoming_bags" data-parsley-type="digits" type="text" name="incoming_bags" class="form-control" required
+                                    placeholder="Ex. 10,20,30" />
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group row mb-4">
-                        <label for="horizontal-number-input" class="col-sm-6 col-form-label">Average
-                            weight</label>
-                        <div class="col-md-12">
-                            <input data-parsley-type="number" type="text" class="form-control"
-                                id="horizontal-number-input" name="avg_wt" placeholder="Ex. 40.5, 50.0" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group mb-2">
-                        <label for="staff" class="control-label">Select category</label>
-                        <select id="category" class="select2" name="category" required>
-                            <option></option>
-                            {% for cat in categories %}
-                            <option value="{{ cat.pk }}">{{ cat.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group mb-2">
-                        <label for="cashier" class="control-label">Select Source</label>
-                        <select id="source" class="select2" name="source" required>
-                            <option></option>
-                            {% for src in sources %}
-                            <option value="{{ src.pk }}">{{ src.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-            </div>
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <div class="form-group mb-4">
-                        <label>Select Date</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="yyyy-mm-dd"
-                                data-date-format="yyyy-mm-dd" data-provide="datepicker" name="date" required>
-                            <div class="input-group-append">
-                                <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                    <div class="col-md-6">
+                        <div class="form-group row mb-4">
+                            <label for="horizontal-number-input" class="col-sm-6 col-form-label">Total weight <small>(in quintals)</small></label>
+                            <div class="col-md-12">
+                                <input data-parsley-type="number" name="incoming_weight" type="text" class="form-control" id="incoming_weight" placeholder="Ex. 40.5, 50.0" required>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class=" form-group row justify-content-end">
-                <div class="col-md-12">
-                    <div>
-                        <button type="submit" class="btn btn-success w-md">Add entry</button>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label for="staff" class="control-label">Select category</label>
+                            <select id="category" name="incoming_category" required>
+                                {% for cat in categories %}
+                                <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label for="cashier" class="control-label">Select Source</label>
+                            <select id="source" name="incoming_source" required>
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+    
+                </div>
+                <div class="row mt-4">
+                    <div id="trade" class="col-md-6">
+                        <div class="form-group row mb-2 ml-0">
+                            <label for="horizontal-number-input" class="control-label">Paddy price per quintal <small>(in &#x20b9;)</small></label>
+                            <input id="price" data-parsley-type="number" type="text" name="price" class="form-control" required placeholder="Ex. 10,20,30" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <label>Select Date</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="yyyy-mm-dd" autocomplete="off" data-date-orientation="bottom left" data-date-autoclose="true" value="{% now 'Y-m-d' %}" data-date-format="yyyy-mm-dd" data-provide="datepicker" name="incoming_date" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-
+            </section>
+            <h3>Send stock to Processing</h3>
+            <section>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group row mb-2">
+                            <label for="horizontal-number-input" class="col-sm-6 col-form-label">Number of bags</label>
+                            <div class="col-md-12">
+                                <input data-parsley-type="number" type="text" class="form-control" required placeholder="Ex. 10,20,30" id="processing_bags" name="processing_bags" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group row mb-4">
+                            <label for="horizontal-number-input" class="col-sm-6 col-form-label">Total weight <small>(in quintals)</small></label>
+                            <div class="col-md-12">
+                                <input data-parsley-type="number" type="text" class="form-control" id="processing_weight" name="processing_weight" placeholder="Ex. 40.5, 50.0" readonly disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <h3>Send remaining stock to godowns</h3>
+            <section>
+                <input type="number" readonly value="0" id="counter" hidden />
+                <div class="repeater">
+                    <div class="mb-2" data-repeater-list="outgoing">
+                        <div class="row justify-between" data-repeater-item>
+                                <div class="row col-12">
+                                    <div class="form-group col-md-4">
+                                        <label class="control-label" for="name">Choose Godown</label>
+                                        <select name="godown" class="godowns">
+                                            {% for godown in godowns %}
+                                                <option value="{{ godown.pk }}">{{ godown.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div id="ferror"></div>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label for="" class="control-label">Number of bags</label>
+                                        <input name="bags" class="form-control bags" data-parsley-type="digits" data-parsley-trigger="change focus focusin focusout" type="text" value="0" required>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label for="" class="control-label">Total Weight <small>(in quintals)</small></label>
+                                        <input name="weight" class="price form-control" type="text" disabled readonly value="0">
+                                    </div>
+                                    <button style="width: auto; margin-top: 0.7em;" data-repeater-delete type="button" class="btn btn-danger align-self-center">Delete</button>
+                                </div>
+                        </div>
+                    </div>
+                    <button id="repeater-button" data-repeater-create type="button" class="btn btn-success mt-3">Add Godown</button>
+                </div>
+            </section>
         </form>
     </div>
 </div>
@@ -141,22 +205,130 @@
 <script src="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
 <script src="/static/libs/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
 <script src="/static/libs/@chenfengyuan/datepicker/datepicker.min.js"></script>
+<script src="/static/libs/jquery.repeater/jquery.repeater.min.js"></script>
 <script src="/static/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
 <script src="/static/js/pages/datatables.init.js"></script>
 <script src="/static/js/pages/form-advanced.init.js"></script>
 <script src="/static/libs/parsleyjs/parsley.min.js"></script>
 <script src="/static/js/pages/form-validation.init.js"></script>
 <script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/libs/jquery-steps/jquery.steps.js"></script>
 <script src="/static/js/app.js"></script>
 <script>
+    let form = $('.form')
+    let counter = 0;
+    $('#trade').hide()
+    function calculateRemaining(){
+        let bags = $('.bags')
+        let quantity = 0
+        let totalQuantity = Number.parseInt($('#incoming_bags').val() || 0) - Number.parseInt($('#processing_bags').val())
+        bags.each((i, e) => {
+            quantity += $(e).val()
+        })
+        return totalQuantity 
+    }
+    form.steps({
+        headerTag: "h3",
+        bodyTag: "section",
+        transitionEffect: "slideLeft",
+        titleTemplate: '#title#',
+        onStepChanging: function (event, currentIndex, newIndex){
+            if(newIndex > currentIndex){
+                let validator = form.parsley({
+                    excluded: ":disabled, :hidden"
+                })
+                validator.validate();
+                return validator.isValid()
+            }
+            return true
+        },
+        onFinishing: function (event, currentIndex){
+            return form.parsley().validate();
+        },
+        onFinished: function (event, currentIndex){
+            alert("Submitted!");
+        }
+    });
+    let average_weight = 0;
+    
+    let hasDestroyed = false;
     $('#category').select2({
         width: "100%",
         placeholder: "Select Category"
     })
     $('#source').select2({
         width: "100%",
-        placeholder: "Select Source"
+        placeholder: "Select Source",
+        ajax: {
+            url: "{% url 'materials_sources' millcode=request.millcode %}",
+            dataType: 'json',
+            processResults: function(data) {
+                return {
+                    results: data
+                }
+            },
+            cache: true
+        }
     })
-
+    // $('#category').change((e) => {
+    //     let selection = $(e.target).select2('data')[0]
+    //     $('#source').select2({
+    //         width: "100%",
+    //         placeholder: "Select Source",
+    //         ajax: {
+    //             url: "{% url 'materials_sources' millcode=request.millcode %}",
+    //             dataType: 'json',
+    //             processResults: function(data) {
+    //                 return {
+    //                     results: data
+    //                 }
+    //             },
+    //             cache: true
+    //         }
+    //     })
+    // })
+    $('#source').change((e) => {
+        let selection = $(e.target).select2('data')[0]
+        if(selection.is_trading){
+            $('#trade').show()
+        } else {
+            $('#trade').hide()
+        }
+    })
+    $('#incoming_bags, #incoming_weight').on("change keydown" ,() => {
+        average_weight = Number.parseFloat($('#incoming_weight').val() || 0) * 100 /  Number.parseFloat($('#incoming_bags').val() || 1).toFixed(2)
+        $('#processing_bags').attr("max", Number.parseFloat($('#incoming_bags').val() || 0))
+    })
+    $('#processing_bags').change((e) => {
+        let bags = Number.parseInt(e.target.value || 0)
+        $('#processing_weight').val((bags * Number.parseFloat(average_weight)).toFixed(2) / 100)
+    })
+    $('.repeater').repeater({
+        initEmpty: true,
+        show: function () {
+            counter++;
+            $(this).slideDown();
+        },
+        hide: function (e) {
+            counter--;
+            let element = $(this)[0].children[0].getAttribute("data-select2-id")
+            element != null ? delete fuelsObj[`${element}`] : {}
+            $(this).slideUp(e);
+        },
+        ready: function (e) {
+        },
+    })
+    $('#repeater-button').click(()=>{
+        setTimeout(function(){
+            if(!hasDestroyed){
+                $('.godowns').unbind('change')
+                hasDestroyed = true
+            }
+            $('.godowns').select2({
+                width: '100%',
+                placeholder: "Type godown name"
+            })
+        }, 50)
+    })
 </script>
 {% endblock %}
