@@ -300,13 +300,12 @@ def configuration(request):
         action = int(request.POST.get('action', '0'))
         if action == 1:
             name = request.POST.get('name')
-            Category.objects.create(
-                name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            Category.objects.create(name=name, mill=mill, created_by=request.user, created_at=datetime.now())
             return redirect("materials-configuration", millcode=request.millcode)
         elif action == 2:
             name = request.POST.get('name')
-            IncomingSource.objects.create(
-                name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            trade = bool(request.POST["trade"])
+            IncomingSource.objects.create(name=name, mill=mill, include_trading=trade, created_by=request.user, created_at=datetime.now())
             return redirect("materials-configuration", millcode=request.millcode)
         elif action == 3:
             name = request.POST.get('name')

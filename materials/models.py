@@ -14,6 +14,7 @@ class Category(models.Model):
 class IncomingSource(models.Model):
     name = models.CharField(max_length=64)
     is_deleted = models.BooleanField(default=False)
+    include_trading = models.BooleanField(default=False)
     mill = models.ForeignKey(to=Mill, on_delete=models.PROTECT)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
@@ -39,7 +40,7 @@ class Stock(models.Model):
     bags = models.IntegerField()
     quantity = models.FloatField()
     remarks = models.TextField(null=True, blank=True)
-    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='incomingstockentrys')
+    category = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='stocks')
     date = models.DateField()
     is_deleted = models.BooleanField(default=False)
 
@@ -50,7 +51,6 @@ class Stock(models.Model):
 class IncomingStockEntry(models.Model):
     source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')
     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
-    include_trading = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
 

@@ -257,6 +257,10 @@
                                                 Incoming source name is invalid
                                             </div>
                                         </div>
+                                        <div class="custom-control custom-checkbox">
+                                            <input name="trade" type="checkbox" class="custom-control-input" id="trade">
+                                            <label class="custom-control-label" for="trade">Include source in trading</label>
+                                        </div>
                                     </div>
 
                                 </div>
@@ -279,9 +283,9 @@
                         </div>
                         <div class="col-sm-8">
                             <div class="text-sm-right">
-                                <a href="#"><button type="button" data-toggle="modal" data-target="#createModal"
-                                        class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i
-                                            class="mdi mdi-plus mr-1"></i> Add incoming source</button></a>
+                                <a href="#">
+                                    <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2">
+                                        <i class="mdi mdi-plus mr-1"></i> Add incoming source</button></a>
                             </div>
                         </div>
                     </div>
@@ -290,6 +294,7 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
+                                <th>Included in trading</th>
                                 <th>Created by</th>
                                 <th>Actions</th>
                             </tr>
@@ -324,6 +329,12 @@
                                                             <div class="invalid-feedback">
                                                                 Incoming source name is invalid
                                                             </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-10">
+                                                        <div class="custom-control custom-checkbox">
+                                                            <input name="trade" value="{{ src.include_trading }}" type="checkbox" class="custom-control-input" id="trade{{ src.pk }}">
+                                                            <label class="custom-control-label" for="trade{{ src.pk }}">Include source in trading</label>
                                                         </div>
                                                     </div>
 
@@ -375,6 +386,7 @@
                             </div>
                             <tr>
                                 <td>{{ src.name }}</td>
+                                <td>{% if src.include_trading %}Yes{% else %}No{% endif %}</td>
                                 <td>{{ src.created_by.first_name }}</td>
                                 <td>
                                     <a href="#" class="btn btn-primary btn-sm" data-toggle="modal"
@@ -619,7 +631,7 @@
     $('#adatatable').DataTable({
 
     })
-    $('#data').DataTable({
+    $('#bdatatable').DataTable({
 
     })
 </script>

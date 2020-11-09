@@ -12,8 +12,7 @@ def incoming(request):
     mill = Mill.objects.get(code=request.millcode)
     stocks = IncomingProductEntry.objects.filter(is_deleted=False)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
-    production_types = ProductionType.objects.filter(
-        is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
 
 
