@@ -35,38 +35,32 @@ class ProcessingSide(models.Model):
     created_at = models.DateTimeField(auto_now=True)
 
 
-class IncomingStockEntry(models.Model):
-    date = models.DateField()
-    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='incomingstockentrys')
-    source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')
+class Stock(models.Model):
     bags = models.IntegerField()
-    average_weight = models.FloatField()
+    quantity = models.FloatField()
+    remarks = models.TextField(null=True, blank=True)
+    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='incomingstockentrys')
+    date = models.DateField()
     is_deleted = models.BooleanField(default=False)
-    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
-    created_at = models.DateTimeField(auto_now=True)
 
     @property
-    def to_quintal(self):
-        return self.bags * self.average_weight/100
+    def average_weight(self):
+        return round(self.quantity / self.bags, 2)
 
+class IncomingStockEntry(models.Model):
+    source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')
+    entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now=True)
 
 class OutgoingStockEntry(models.Model):
-    stock = models.ForeignKey(to=IncomingStockEntry, on_delete=models.PROTECT)
+    entry = models.ForeignKey(to=Stock, on_delete=models.PROTECT)
     source = models.ForeignKey(to=OutgoingSource, on_delete=models.CASCADE, related_name='outgoingstockentrys')
-    bags = models.IntegerField()
-    is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
 
-    @property
-    def to_quintal(self):
-        return self.bags * self.stock.average_weight/100
-
-
 class ProcessingSideEntry(models.Model):
-    stock = models.ForeignKey(to=IncomingStockEntry, on_delete=models.PROTECT)
+    entry = models.ForeignKey(to=Stock, on_delete=models.PROTECT)
     source = models.ForeignKey(to=ProcessingSide, on_delete=models.CASCADE, related_name='processingsideentrys')
-    bags = models.IntegerField()
-    is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)

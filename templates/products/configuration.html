@@ -375,7 +375,7 @@
                                                         <div class="form-group mb-2">
                                                             <label for="staff" class="control-label">Select
                                                                 category</label>
-                                                            <select id="categoryEdit" style="width: 100%;"
+                                                            <select class="categoryEdit" style="width: 100%;"
                                                                 class="select2" name="category" required>
                                                                 {% for cat in categories %}
                                                                 {% if cat.id == type.category.id %}
@@ -500,7 +500,7 @@
         width: "100%",
         placeholder: "Select category"
     })
-    $('#categoryEdit').select2({
+    $('.categoryEdit').select2({
         width: "100%",
         placeholder: "Select category"
     })

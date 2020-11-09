@@ -3,12 +3,88 @@ from django.shortcuts import render, redirect
 from django.core.handlers.wsgi import WSGIRequest
 from rest_framework.views import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from selenium.webdriver.chrome.webdriver import WebDriver
 from core.decorators import set_mill_session
 from core.models import Mill
 from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry
 from datetime import datetime
-# Create your views here.
+import os
+from PIL import Image
+from selenium import webdriver
+from selenium.common.exceptions import NoAlertPresentException, InvalidElementStateException, NoSuchElementException, UnexpectedAlertPresentException
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.select import Select
+import pytesseract
+import cv2
+import numpy as np
+import re
+from bs4 import BeautifulSoup
 
+def get_captcha(driver: WebDriver):
+    data = []
+    while True:
+        try:
+            captcha_fn = "abc.png"
+            element = driver.find_element_by_id('ImageCaptcha')
+            location = element.location
+            size = element.size
+            driver.save_screenshot("bcd.png")
+            x = location['x'] * 2
+            y = location['y'] * 2
+            w = size['width']
+            h = size['height']
+            width = x + w * 2
+            height = y + h * 2
+            im = Image.open('bcd.png')
+            im = im.crop((x, y, width, height))
+            im = im.convert('L')
+            ret, img = cv2.threshold(np.array(im), 127, 255, cv2.THRESH_BINARY)
+            im = Image.fromarray(img.astype(np.uint8))
+            im.save(captcha_fn)
+            text = pytesseract.image_to_string(im, config='--psm 10', lang="eng")
+            text = re.sub('[^A-Za-z0-9]+', '', text)
+            try:
+                driver.find_element_by_id('txtpwd').clear()
+                driver.find_element_by_id('txtVerificationCode').clear()
+                driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
+                driver.find_element_by_id('txtpwd').send_keys('100141')
+                try:
+                    driver.find_element_by_id('txtUser').clear()
+                    driver.find_element_by_id('txtUser').send_keys('MA41141')
+                    driver.find_element_by_name('btncon').click()
+                    try:
+                        driver.switch_to.alert.accept()
+                        driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify19/SocietyPaddyDetails.aspx')
+                        select = Select(driver.find_element_by_tag_name('select'))
+                        select.select_by_value('41')
+                        driver.find_element_by_id('Btnreport').click()
+                        elem = driver.find_element_by_tag_name('tbody')
+                        soup = BeautifulSoup(elem.get_attribute('outerHTML'), 'html.parser')
+                        for row in soup.find_all('tr'):
+                            data.append([cell.get_text() for cell in row.find_all('td')])
+                    except (NoAlertPresentException, UnexpectedAlertPresentException):
+                        continue
+                    break
+                except InvalidElementStateException:
+                    try:
+                        driver.find_element_by_name('btnOk').click()
+                    except NoSuchElementException:
+                        driver.find_element_by_name('btncon').click()
+            except NoSuchElementException:
+                continue
+        except:
+            driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify19/SocietyPaddyDetails.aspx')
+            select = Select(driver.find_element_by_tag_name('select'))
+            select.select_by_value('41')
+            driver.find_element_by_id('Btnreport').click()
+            elem = driver.find_element_by_tag_name('tbody')
+            soup = BeautifulSoup(elem.get_attribute('outerHTML'), 'html.parser')
+            for row in soup.find_all('tr'):
+                data.append([cell.get_text() for cell in row.find_all('td')])
+            break
+        print(data)
+        os.remove(captcha_fn)
+    pass
 
 @login_required
 @set_mill_session
@@ -80,6 +156,13 @@ def incomingAction(request, id):
 @login_required
 @set_mill_session
 def outgoing(request):
+    # options = Options()
+    # options.add_argument('--headless')
+    # options.binary_location = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    # start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify19/MillLogin.aspx"
+    # driver = webdriver.Chrome('/Users/chethanjkulkarni/Downloads/chromedriver')
+    # driver.get(start_url)
+    # get_captcha(driver)
     mill = Mill.objects.get(code=request.millcode)
     stocks = OutgoingStockEntry.objects.filter(is_deleted=False)
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
@@ -124,10 +207,10 @@ def outgoingAction(request, id):
 @set_mill_session
 def get_stock_available(request: WSGIRequest, category: int):
     Category.objects.get(pk=category, mill__code=request.millcode)
-    stock_purchased = IncomingStockEntry.objects.raw("SELECT materials_incomingstockentry.id as id, materials_incomingstockentry.bags - SUM(ifnull(materials_outgoingstockentry.bags, 0)) - SUM(ifnull(materials_processingsideentry.bags, 0)) as stock_remaining FROM materials_incomingstockentry LEFT JOIN materials_outgoingstockentry ON materials_incomingstockentry.id = materials_outgoingstockentry.stock_id LEFT JOIN materials_processingsideentry ON materials_outgoingstockentry.id = materials_processingsideentry.stock_id WHERE category_id={} GROUP BY materials_outgoingstockentry.stock_id".format(category))
+    stock_purchased = IncomingStockEntry.objects.raw("SELECT id, SUM(bags) as stock FROM ( SELECT id, bags FROM materials_incomingstockentry i WHERE category_id={} GROUP BY id UNION SELECT stock_id, 0 - SUM(o.bags) bags FROM materials_incomingstockentry i INNER JOIN materials_outgoingstockentry o ON i.id = o.stock_id GROUP BY o.stock_id UNION SELECT stock_id, 0 - SUM(p.bags) bags FROM materials_incomingstockentry i INNER JOIN materials_processingsideentry p ON i.id = p.stock_id GROUP BY p.stock_id) as bags GROUP by id".format(category))
     stocks = [{
         "id": stock.pk,
-        "stock": stock.stock_remaining,
+        "stock": stock.stock,
         "text": "Incoming Stock - {}".format(stock.date.strftime("%d/%m/%Y"))
     } for stock in stock_purchased]
     return JsonResponse(stocks, safe=False)
@@ -162,7 +245,12 @@ def processingAdd(request):
 @login_required
 @set_mill_session
 def processing(request):
-    return render(request, "materials/processing.html")
+    mill = Mill.objects.get(code=request.millcode)
+    stocks = OutgoingStockEntry.objects.filter(is_deleted=False)
+    sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
+    categories = Category.objects.filter(is_deleted=False, mill=mill)
+    entries = ProcessingSideEntry.objects.filter(is_deleted=False)
+    return render(request, "materials/processing.html", {"stocks": stocks, "sources": sources, "categories": categories, "entries": entries})
 
 
 # outgoing sources
@@ -227,6 +315,12 @@ def configuration(request):
             return redirect("materials-configuration", millcode=request.millcode)
     return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides})
 
+@login_required
+@set_mill_session
+def stock(request: WSGIRequest):
+    mill = Mill.objects.get(code=request.millcode)
+    stocks = IncomingStockEntry.objects.raw('SELECT id, c.name, SUM(bags) as stock FROM ( SELECT category_id, bags FROM materials_incomingstockentry i GROUP BY category_id UNION SELECT i.category_id, 0 - SUM(o.bags) bags FROM materials_incomingstockentry i LEFT OUTER JOIN materials_outgoingstockentry o ON i.id = o.stock_id GROUP BY o.stock_id, i.category_id UNION SELECT i.category_id, 0 - SUM(p.bags) bags FROM materials_incomingstockentry i LEFT OUTER JOIN materials_processingsideentry p ON i.id = p.stock_id GROUP BY p.stock_id, i.category_id) as bags INNER JOIN materials_category c ON category_id=c.id WHERE mill_id={} GROUP by category_id'.format(mill.pk))
+    return render(request, "materials/stocks.html", { "stocks": stocks })
 
 @login_required
 @set_mill_session

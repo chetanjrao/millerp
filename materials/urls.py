@@ -14,6 +14,7 @@ urlpatterns = [
     path('godowns/',  views.godowns, name="materials-godowns"),
     path('godowns/action/<int:id>/',  views.godownsAction, name="materials-godowns-action"),
     path('configuration/', views.configuration, name="materials-configuration"),
+    path('stocks/', views.stock, name="materials-stock"),
     path('configuration/action/<int:id>/', views.configurationAction, name="materials-configuration-action"),
     path('stock/<int:category>/check/', views.get_stock_available, name='stock_check')
 ]

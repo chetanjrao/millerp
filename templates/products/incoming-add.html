@@ -5,12 +5,21 @@
 <link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
 <link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
     type="text/css" />
+<link rel="stylesheet" href="/static/libs/twitter-bootstrap-wizard/prettify.css">
 <link href="/static/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
 <link href="/static/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css">
 <link href="/static/libs/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" type="text/css">
 <link href="/static/libs/bootstrap-timepicker/css/bootstrap-timepicker.min.css" rel="stylesheet" type="text/css">
 <link href="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" href="/static/libs/@chenfengyuan/datepicker/datepicker.min.css">
+<style>
+    .step-app > .step-steps > li.active {
+        background-color: #556ee6;
+    }
+</style>
+{% endblock %}
+{% block extralinks %}
+<link rel="stylesheet" href="/static/libs/jquery-steps/jquery.steps.css">
 {% endblock %}
 {% block body %}
 <div class="container-fluid">
@@ -18,12 +27,12 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-sm-4">
-                    <h4 class="card-title mt-2">Add Incoming product Entry</h4>
+                    <h4 class="card-title mt-2">Add Production Entry</h4>
                 </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-10">
+            <div class="col-12 pr-4">
                 {% if success_message %}
                 <div class="alert alert-success alert-dismissible fade show ml-3" role="alert">
                     <i class="mdi mdi-check-all mr-2"></i>
@@ -45,68 +54,76 @@
                 {% endif %}
             </div>
         </div>
-        <form class="p-3" method="POST" action="{% url 'products-incoming-add' millcode=request.millcode%}">
-            {% csrf_token %}
-            <div class="row ">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Select Date</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="yyyy-mm-dd"
-                                data-date-format="yyyy-mm-dd" data-provide="datepicker" name="date" required>
-                            <div class="input-group-append">
-                                <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+        <div class="col-md-12">
+            <form id="example-form" action="#">
+                <div>
+                    <h3>Incoming Stock Entry</h3>
+                    <section>
+                        <div class="row ">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Select Date</label>
+                                    <div class="input-group">
+                                        <input data-parsley-errors-container="#derror" data-date-autoclose="true" data-date-orientation="bottom left" value="{% now 'Y-m-d' %}" autocomplete="off" type="text" class="form-control" placeholder="yyyy-mm-dd"
+                                            data-date-format="yyyy-mm-dd" data-provide="datepicker" name="date" required>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                        </div>
+                                    </div>
+                                    <div id="derror"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="horizontal-number-input" class="control-label">Number of
+                                        bags</label>
+                                    <div>
+                                        <input data-parsley-type="number" type="text" class="form-control" required
+                                            placeholder="Ex. 10,20,30" name="bags" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="horizontal-number-input" class="control-label">Number of
-                            bags</label>
-                        <div>
-                            <input data-parsley-type="number" type="text" class="form-control" required
-                                placeholder="Ex. 10,20,30" name="bags" />
+                        <div class="row mb-4 mt-4">
+                            <div class="col-md-6">
+                                <div class="form-group mb-2">
+                                    <label for="staff" class="control-label">Select category</label>
+                                    <select id="category" name="category" required>
+                                        <option></option>
+                                        {% for cat in categories %}
+                                        <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-2">
+                                    <label for="cashier" class="control-label">Select product type</label>
+                                    <select id="source" name="product_type" required>
+                                        <option></option>
+                                        {% for type in production_types %}
+                                        <option value="{{ type.pk }}">{{ type.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </section>
+                    <h3>Outgoing Stock Entry</h3>
+                    <section>
+                        <label for="name">First name *</label>
+                        <input id="name" name="name" type="text" class="required">
+                        <label for="surname">Last name *</label>
+                        <input id="surname" name="surname" type="text" class="required">
+                        <label for="email">Email *</label>
+                        <input id="email" name="email" type="text" class="required email">
+                        <label for="address">Address</label>
+                        <input id="address" name="address" type="text">
+                        <p>(*) Mandatory</p>
+                    </section>
                 </div>
-            </div>
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="form-group mb-2">
-                        <label for="staff" class="control-label">Select category</label>
-                        <select id="category" class="select2" name="category" required>
-                            <option></option>
-                            {% for cat in categories %}
-                            <option value="{{ cat.pk }}">{{ cat.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group mb-2">
-                        <label for="cashier" class="control-label">Select product type</label>
-                        <select id="source" class="select2" name="product_type" required>
-                            <option></option>
-                            {% for type in production_types %}
-                            <option value="{{ type.pk }}">{{ type.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class=" form-group row justify-content-end">
-                <div class="col-md-12">
-                    <div>
-                        <button type="submit" class="btn btn-success w-md">Add entry</button>
-                    </div>
-                </div>
-            </div>
-
-        </form>
+            </form> 
+        </div>       
     </div>
 </div>
 {% endblock %}
@@ -132,13 +149,33 @@
 <script src="/static/libs/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
 <script src="/static/libs/@chenfengyuan/datepicker/datepicker.min.js"></script>
 <script src="/static/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+<script src="/static/libs/twitter-bootstrap-wizard/prettify.js"></script>
+<script src="/static/libs/twitter-bootstrap-wizard/jquery.bootstrap.wizard.min.js"></script>
 <script src="/static/js/pages/datatables.init.js"></script>
 <script src="/static/js/pages/form-advanced.init.js"></script>
 <script src="/static/libs/parsleyjs/parsley.min.js"></script>
 <script src="/static/js/pages/form-validation.init.js"></script>
 <script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/libs/jquery-steps/jquery.steps.js"></script>
 <script src="/static/js/app.js"></script>
 <script>
+    var form = $("#example-form");
+    form.children("div").steps({
+        headerTag: "h3",
+        bodyTag: "section",
+        transitionEffect: "slideLeft",
+        titleTemplate: '#title#',
+        onStepChanging: function (event, currentIndex, newIndex){
+            return form.parsley().validate();
+        },
+        onFinishing: function (event, currentIndex){
+            return form.parsley().validate();
+        },
+        onFinished: function (event, currentIndex){
+            alert("Submitted!");
+        }
+    });
+
     $('#category').select2({
         width: "100%",
         placeholder: "Select Category"
