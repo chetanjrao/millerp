@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="Mill ERP Login" />
+    <meta name="author" content="Tecidexa Services" />
+
+    <title>FuelCharge | Delegate Login | Tecidexa Services Pvt. Ltd.</title>
+
+    <link href="/static/css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css" />
+    <link href="/static/core/css/common.css" rel="stylesheet" />
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap">
+    <link href="/static/core/css/theme-03.css" rel="stylesheet" />
+    <link
+      href="/static/css/app.min.css"
+      id="app-style"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+<style>
+  * {
+    font-family: 'Poppins';
+  }
+    input:focus {
+        background-color: white;
+    }
+    input {
+        color: black;
+    }
+    .forny-form .form-control {
+        color: black;
+    }
+</style>
+  </head>
+
+  <body>
+    <div class="forny-container">
+      <div class="forny-inner">
+        <div style="border-radius: 4px;" class="forny-form">
+          <div class="mb-8 text-center forny-logo">
+            <img height="64" src="/static/images/logo-dark.png" />
+          </div>
+          <div class="text-center">
+            <h4 style="font-weight: 600;">Login to MillERP</h4>
+          </div>
+          {% if error_message %}
+                <div class="alert alert-danger alert-dismissible fade show pt-4" role="alert">
+                    {{ error_message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+            {% endif %}
+            {% if success_message %}
+                <div class="alert alert-success alert-dismissible fade show pt-4" role="alert">
+                    {{ success_message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+            {% endif %}
+          <form id="registrationForm" class="pt-4" method="POST" action="" >
+              {% csrf_token %}
+            <div style="border-radius: 4px; margin-bottom: 2px; margin-top: 24px" class="form-group mt-4">
+              <input
+                required
+                class="form-control"
+                name="code"
+                type="number"
+                data-parsley-type="integer"
+                data-parsley-required-message="Station code is required"
+                data-parsley-errors-container="#nerror"
+                placeholder="6 Digits Station Code"
+              />
+            </div>
+            <div id="nerror" style="margin-bottom: 24px; font-weight: 500;"></div>
+            <div style="border-radius: 4px; margin-bottom: 2px;" class="form-group">
+              <input
+                required
+                class="form-control"
+                name="mobile"
+                type="tel"
+                minlength="10"
+                maxlength="10"
+                autocomplete="off"
+                data-parsley-errors-container="#merror"
+                data-parsley-required-message="Mobile number is required"
+                placeholder="Mobile Number"
+              />
+            </div>
+            <div id="merror" style="margin-bottom: 24px; font-weight: 500;"></div>
+            <div class="mt-4">
+              <button id="button" type="submit" style="border-radius: 4px;" class="btn btn-primary btn-block mt-4">
+                <div id="title" style="font-weight: 500;">
+                    Login
+                </div>
+                <div id="loader" style="height: 24px; width: 24px" class="spinner-border text-white m-1" role="status" hidden>
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="/static/libs/jquery/jquery.min.js"></script>
+    <script src="/static/core/js/bootstrap.min.js"></script>
+    <script src="/static/core/js/main.js"></script>
+    <script src="/static/core/js/demo.js"></script>
+    <script src="/static/libs/parsleyjs/parsley.min.js"></script>
+  </body>
+</html>
+<script>
+    $('#registrationForm').parsley({
+
+    }).on('form:submit', (e) => {
+      $('#button').attr("disabled", "disabled")
+      $('#title').attr("hidden", "true")
+      $("#loader").removeAttr("hidden")
+    })
+</script>

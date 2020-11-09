@@ -50,6 +50,7 @@ class Stock(models.Model):
 class IncomingStockEntry(models.Model):
     source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')
     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
+    include_trading = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
 
@@ -64,3 +65,8 @@ class ProcessingSideEntry(models.Model):
     source = models.ForeignKey(to=ProcessingSide, on_delete=models.CASCADE, related_name='processingsideentrys')
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
+
+class Trading(models.Model):
+    entry = models.ForeignKey(to=Stock, on_delete=models.PROTECT)
+    buying_price = models.FloatField()
+    selling_price = models.FloatField()

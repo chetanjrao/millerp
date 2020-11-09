@@ -6,11 +6,10 @@ INSTALLED_APPS += [
     'core.apps.CoreConfig',
     'materials.apps.MaterialsConfig',
     'products.apps.ProductsConfig',
+    'miscs.apps.MiscsConfig',
     'django.contrib.humanize'
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
+LOGIN_URL = '/login/'

@@ -30,11 +30,31 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
     email = None
-    mobile = models.CharField(max_length=10, unique=True)
-
+    mobile = models.CharField(max_length=16, unique=True)
+    ROLES = (
+        (1, 'Staff'),
+        (2, 'Mill Manager'),
+        (3, 'Owner'),
+        (4, 'Support Staff'),
+        (5, 'Administrator')
+    )
+    role = models.IntegerField(choices=ROLES, default=3)
     USERNAME_FIELD = 'mobile'
     REQUIRED_FIELDS = [ 'first_name' ]
 
     objects = UserManager()
 
     def __str__(self) -> str: return '{} - {}'.format(self.first_name, self.mobile)
+
+class OTP(models.Model):
+    mobile = models.CharField(max_length=16)
+    otp = models.CharField(max_length=4)
+    created_at = models.DateTimeField(auto_now=True, null=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.otp
+
+    class Meta:
+        verbose_name = "OTP"

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>{% block title %} Dashboard | Mill ERP Administration | Fuel Charge | Tecidexa Services Pvt. Ltd. {% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta content="Mill ERP Administration Console" name="description" />
+        <meta content="Fuel Charge" name="author" />
+        <link rel="shortcut icon" href="/static/images/edukriya.ico">
+        <link href="/static/libs/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css" />
+        <link href="/static/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+        <link href="/static/css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css" />
+        <link href="/static/css/icons.min.css" rel="stylesheet" type="text/css" />
+        <link href="/static/css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
+    </head>
+    <body data-sidebar="dark">
+        <div class="page-content">
+                    <div class="container-fluid">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-6">
+                                <div class="text-center mb-5">
+                                    <h1>Welcome {{ dealer.name }}</h1>
+                                    {% if not purchase %}
+                                        <p class="text-muted">Kindly choose a package to complete your registration towards Mill ERP</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div id="createModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                            aria-hidden="true">
+                            <form class="custom-validation" action="#" method="POST">
+                                {% csrf_token %}
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title mt-0" id="myModalLabel">Add New Mill</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input name="action" hidden value="1" readonly />
+                                            <div class="row mb-2">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label for="#">Name of Mill</label>
+                                                        <input data-parsley-required-message="Mill name is required" name="name" type="text" class="form-control" id="#"
+                                                            placeholder="Enter firm name" required>
+                                                        <div class="invalid-feedback">
+                                                            Mill name is invalid
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label for="#">Choose City</label>
+                                                        <select data-parsley-required-message="City is to be choosen" class="select2" data-parsley-errors-container="#cerror" name="city" id="city" required>
+                                                            <option value=""></option>
+                                                            {% for city in cities %}
+                                                                <option value="{{ city.pk }}">{{ city.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        <div id="cerror"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label for="#">Mill Address</label>
+                                                        <textarea data-parsley-required-message="Mill Address is required" name="address" class="form-control" id="#"
+                                                            placeholder="Enter mill address" required></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary waves-effect"
+                                                data-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary waves-effect waves-light">Add Mill</button>
+                                        </div>
+                                    </div><!-- /.modal-content -->
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row justify-content-center">
+                            {% if not purchase %}
+                                {% for bundle in bundles %}
+                                    <div class="col-xl-3 col-md-6">
+                                        <div class="card plan-box">
+                                            <div class="card-body p-4">
+                                                <div class="media">
+                                                    <div class="media-body">
+                                                        <h5>{{ bundle.name }}</h5>
+                                                    </div>
+                                                    <div class="ml-3">
+                                                        <i class="bx bx-walk h1 text-primary"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="py-4">
+                                                    <h2><sup><small>&#x20b9;</small></sup> {{ bundle.amount }}/-</h2>
+                                                </div>
+                                                <div class="text-center plan-btn">
+                                                    <a href="{% url 'payment_process' bundle=bundle.pk %}" class="btn btn-primary btn-sm waves-effect waves-light">Choose Package</a>
+                                                </div>
+                                                <div class="plan-features mt-5">
+                                                    {% for addon in addons %}
+                                                        {% if addon in bundle.addons.all %}
+                                                        <p><i class="bx bx-checkbox-square text-primary mr-2"></i>{{ addon }}</p>
+                                                        {% else %}
+                                                            <del><p><i class="bx bx-checkbox-square text-primary mr-2"></i>{{ addon }}</p></del>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                {% else %}
+                                <div class="text-center col-12">
+                                    <h3 class="mb-4">Your mills</h3>
+                                    <div class="row justify-content-center">
+                                        {% for mill in mills %}
+                                            <div class="card col-3 p-4 mr-4 text-center">
+                                                <div class="text-center p-4 border-bottom">
+                                                    <div class="avatar-sm mx-auto mb-4">
+                                                        <span class="avatar-title rounded-circle bg-soft-primary text-primary font-size-16">
+                                                            {{ mill.name|make_list|first }}
+                                                        </span>
+                                                    </div>
+                                                    <h4 class="text-truncate">{{ mill.name }}</h4>
+                                                </div>
+                                                <div class="p-4 text-center text-white text-xl-left">
+                                                    <div class="text-center">
+                                                        <a href="{% url 'dashboard_home' millcode=mill.code %}" class="btn btn-primary">Click here</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                        <div class="card p-4 col-3 text-center">
+                                            <div style="position: absolute; top: 50%; align-self: center; z-index: 100">
+                                                <button data-toggle="modal" data-target="#createModal" class="btn btn-primary btn-rounded"><i style="vertical-align: middle; font-size: 21px; font-weight: 500;" class="bx bx-plus"></i>Add Mill</button>
+                                            </div>
+                                            <div class="text-center p-4 border-bottom" style="filter: blur(5px);">
+                                                <div class="avatar-sm mx-auto mb-4">
+                                                    <span class="avatar-title rounded-circle bg-soft-primary text-primary font-size-16">
+                                                        N
+                                                    </span>
+                                                </div>
+                                                <h4 class="text-truncate">Mill Name</h4>
+                                            </div>
+                                            <div class="p-4 text-center text-white text-xl-left" style="filter: blur(5px);">
+                                                <div class="text-center">
+                                                    <div class="btn btn-primary">Click here</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <!-- end row -->
+
+                    </div>
+                </div>
+        <script src="/static/libs/jquery/jquery.min.js"></script>
+        <script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="/static/libs/metismenu/metisMenu.min.js"></script>
+        <script src="/static/libs/simplebar/simplebar.min.js"></script>
+        <script src="/static/libs/node-waves/waves.min.js"></script>
+        <script src="/static/js/app.js"></script>
+        <script src="/static/libs/sweetalert2/sweetalert2.min.js"></script>
+        <script src="/static/libs/parsleyjs/parsley.min.js"></script>
+        <script src="/static/libs/select2/js/select2.min.js"></script>
+        <script>
+            {% if success %}
+                Swal.fire({
+                    title: "Payment Successful",
+                    text: "",
+                    type: "success",
+                    showCancelButton: !1,
+                    confirmButtonColor: "#556ee6",
+                    cancelButtonColor: "#f46a6a",
+                });
+            {% endif %}
+            {% if mill_success %}
+                Swal.fire({
+                    title: "Mill created succesfully",
+                    text: "",
+                    type: "success",
+                    showCancelButton: !1,
+                    confirmButtonColor: "#556ee6",
+                    cancelButtonColor: "#f46a6a",
+                });
+            {% endif %}
+            $('.custom-validation').parsley({})
+            $('#city').select2({
+                placeholder: "Type city name",
+                width: '100%'
+            })
+        </script>
+    </body>
+</html>
