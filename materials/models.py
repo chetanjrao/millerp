@@ -46,7 +46,7 @@ class Stock(models.Model):
 
     @property
     def average_weight(self):
-        return round(self.quantity / self.bags, 2)
+        return round(self.quantity * 100 / self.bags, 2)
 
 class IncomingStockEntry(models.Model):
     source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')

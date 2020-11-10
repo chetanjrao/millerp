@@ -119,7 +119,7 @@
                         <div class="form-group mb-4">
                             <label>Select Date</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" placeholder="yyyy-mm-dd" autocomplete="off" data-date-orientation="bottom left" data-date-autoclose="true" value="{% now 'Y-m-d' %}" data-date-format="yyyy-mm-dd" data-provide="datepicker" name="incoming_date" required>
+                                <input type="text" class="form-control" placeholder="yyyy-mm-dd" autocomplete="off" data-date-orientation="bottom left" data-date-autoclose="true" value="{% now 'Y-m-d' %}" data-date-format="yyyy-mm-dd" data-provide="datepicker" name="date" required>
                                 <div class="input-group-append">
                                     <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
                                 </div>
@@ -145,6 +145,16 @@
                             <div class="col-md-12">
                                 <input data-parsley-type="number" type="text" class="form-control" id="processing_weight" name="processing_weight" placeholder="Ex. 40.5, 50.0" readonly disabled>
                             </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mt-3">
+                        <div class="form-group mb-2">
+                            <label for="staff" class="control-label">Select processing unit</label>
+                            <select id="side" name="processing_side" required>
+                                {% for side in sides %}
+                                <option value="{{ side.pk }}">{{ side.name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -246,15 +256,19 @@
             return form.parsley().validate();
         },
         onFinished: function (event, currentIndex){
-            alert("Submitted!");
+            $('#counter').val(counter)
+            $('form').submit()
         }
     });
     let average_weight = 0;
-    
     let hasDestroyed = false;
     $('#category').select2({
         width: "100%",
         placeholder: "Select Category"
+    })
+    $('#side').select2({
+        width: "100%",
+        placeholder: "Select processing unit"
     })
     $('#source').select2({
         width: "100%",
@@ -270,23 +284,6 @@
             cache: true
         }
     })
-    // $('#category').change((e) => {
-    //     let selection = $(e.target).select2('data')[0]
-    //     $('#source').select2({
-    //         width: "100%",
-    //         placeholder: "Select Source",
-    //         ajax: {
-    //             url: "{% url 'materials_sources' millcode=request.millcode %}",
-    //             dataType: 'json',
-    //             processResults: function(data) {
-    //                 return {
-    //                     results: data
-    //                 }
-    //             },
-    //             cache: true
-    //         }
-    //     })
-    // })
     $('#source').change((e) => {
         let selection = $(e.target).select2('data')[0]
         if(selection.is_trading){
@@ -327,6 +324,12 @@
             $('.godowns').select2({
                 width: '100%',
                 placeholder: "Type godown name"
+            })
+            $('.bags').change((e) => {
+                let node = e.target.parentElement
+                let weightNode = node.nextElementSibling.children.item(1)
+                let bags = Number.parseInt($(e.target).val() || 0)
+                $(weightNode).val((bags * Number.parseFloat(average_weight)).toFixed(2) / 100)
             })
         }, 50)
     })

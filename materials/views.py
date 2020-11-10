@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from selenium.webdriver.chrome.webdriver import WebDriver
 from core.decorators import set_mill_session
 from core.models import Mill
-from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry
+from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry, Stock
 from datetime import datetime
 import os
 from PIL import Image
@@ -114,18 +114,31 @@ def incomingAdd(request):
     sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     godowns = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
+    sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         date = request.POST.get('date', datetime.now())
-        category = Category.objects.get(id=int(request.POST.get('category')))
-        source = IncomingSource.objects.get(id=request.POST.get("source"))
+        category = Category.objects.get(id=int(request.POST.get('incoming_category')))
+        source = IncomingSource.objects.get(id=request.POST.get("incoming_source"))
         try:
-            bags = float(request.POST.get('bags'))
-            average_weight = float(request.POST.get('avg_wt'))
+            in_bags = int(request.POST['incoming_bags'])
+            in_weight = float(request.POST['incoming_weight'])
+            average_weight = in_weight * 100 / in_bags
+            entry = Stock.objects.create(bags=in_bags, quantity=in_weight, category=source, date=date)
+            IncomingStockEntry.objects.create(source=source, entry=entry, created_by=request.user)
+            pr_bags = float(request.POST["processing_bags"])
+            entry = Stock.objects.create(bags=0 - in_bags, quantity=0 - (pr_bags * average_weight / 100), category=source, date=date)
+            pr_side = ProcessingSide.objects.get(pk=request.POST["processing_side"], is_deleted=False)
+            ProcessingSideEntry.objects.create(source=pr_side, entry=entry, created_by=request.user)
+            counter = int(request.POST.get("counter", 0))
+            for i in range(counter):
+                godown = OutgoingSource.objects.get(pk=request.POST["outgoing[{}][godown]".format(i)], is_deleted=False)
+                bags = request.POST["outgoing[{}][bags]".format(i)]
+                entry = Stock.objects.create(bags=0 - bags, quantity=0 - (pr_bags * average_weight / 100), category=source, date=date)
+                OutgoingStockEntry.objects.create(entry=entry, godown=godown, created_by=request.user)
         except ValueError:
             return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "error_message": "Number of bags and average weight must be a valid number"})
-        IncomingStockEntry.objects.create(date=date, category=category, source=source, bags=bags, average_weight=average_weight, created_by=request.user)
-        return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns, "success_message": "Incoming entry added successfully"})
-    return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns})
+        return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns, "sides": sides, "success_message": "Incoming entry added successfully"})
+    return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns, "sides": sides})
 
 
 @login_required
