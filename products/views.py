@@ -100,12 +100,18 @@ def outgoingAction(request, id):
         id = int(id)
         obj = OutgoingProductEntry.objects.get(id=id)
         if action == 1:
-            pass
+            obj.entry.date = request.POST.get('date')
+            obj.entry.bags = 0 - int(request.POST.get('bags'))
+            obj.entry.category = ProductCategory.objects.get(id=int(request.POST.get('category')))
+            obj.entry.product = ProductionType.objects.get(id=int(request.POST.get('product')))
+            obj.entry.save()
+            obj.save()
         elif action == 2:
-            obj.is_deleted = True
+            obj.entry.is_deleted = True
+            obj.entry.save()
             obj.save()
             return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'error_message': "Entry deleted successfully"})
-    return redirect("products-incoming", millcode=request.millcode)
+    return redirect("products-outgoing", millcode=request.millcode)
 
 
 @login_required
