@@ -145,29 +145,33 @@ def incomingAdd(request):
 @set_mill_session
 def incomingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingStockEntry.objects.filter(is_deleted=False)
+    stocks = IncomingStockEntry.objects.filter(entry__is_deleted=False)
     sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-
     if request.method == 'POST':
         id = int(id)
         obj = IncomingStockEntry.objects.get(id=id)
         action = int(request.POST.get('action', '0'))
         if action == 1:
             try:
-                obj.date = request.POST.get('date_in')
+                obj.entry.date = request.POST.get('date_in')
+                obj.entry.source = IncomingSource.objects.get(
+                    id=int(request.POST.get('source_id')))
                 obj.source = IncomingSource.objects.get(
                     id=int(request.POST.get('source_id')))
-                obj.category = Category.objects.get(
+                obj.entry.category = Category.objects.get(
                     id=int(request.POST.get('category_id')))
-                obj.bags = float(request.POST.get('bags'))
-                obj.average_weight = float(request.POST.get('avg_wt'))
+                obj.entry.bags = float(request.POST.get('bags'))
+                obj.entry.quantity = float(request.POST.get('total_weight'))
+                obj.entry.save()
+                obj.save()
             except ValueError:
                 return render(request, "materials/incoming.html", {"stocks": stocks, "sources": sources, "categories": categories, "error_message": "PLease enter valid entries to update"})
             obj.save()
             return render(request, "materials/incoming.html", {"stocks": stocks, "sources": sources, "categories": categories, "success_message": "Entry updated successfully"})
         elif action == 2:
-            obj.is_deleted = True
+            obj.entry.is_deleted = True
+            obj.entry.save()
             obj.save()
             return render(request, "materials/incoming.html", {"stocks": stocks, "sources": sources, "categories": categories,
                                                                "error_message": "Entry deleted successfully"})
@@ -179,7 +183,6 @@ def incomingAction(request, id):
 def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
     stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False)
-    print(stocks)
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     return render(request, "materials/outgoing.html", {"stocks": stocks, "sources": sources, "categories": categories})

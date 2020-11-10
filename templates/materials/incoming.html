@@ -91,7 +91,7 @@
                                                             </label>
                                                             <div class="col-md-12">
                                                                 <div class="input-group">
-                                                                    <input type="text" placeholder="yyyy-mm-dd" value="{{stock.date|date:'Y-m-d'}}" class="form-control date-input" name="date_in"  data-date-format="yyyy-mm-dd" data-provide="datepicker">
+                                                                    <input type="text" placeholder="yyyy-mm-dd" value="{{stock.entry.date|date:'Y-m-d'}}" class="form-control date-input" name="date_in"  data-date-format="yyyy-mm-dd" data-provide="datepicker">
                                                                     <div class="input-group-append">
                                                                         <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
                                                                     </div>
@@ -153,19 +153,19 @@
                                                                     <div class="col-md-10">
                                                                         <input type="text" class="form-control"
                                                                             id="horizontal-number-input" name="bags"
-                                                                            value="{{stock.bags}}" required>
+                                                                            value="{{stock.entry.bags}}" required>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group row mb-4">
                                                                     <label for="horizontal-number-input"
-                                                                        class="col-sm-6 col-form-label">Average
+                                                                        class="col-sm-6 col-form-label">Total
                                                                         weight</label>
                                                                     <div class="col-md-10">
                                                                         <input type="text" class="form-control"
-                                                                            id="horizontal-number-input" name="avg_wt"
-                                                                            value="{{stock.average_weight}}" required>
+                                                                            id="horizontal-number-input" name="total_weight"
+                                                                            value="{{stock.entry.quantity}}" required>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -192,13 +192,13 @@
                                     action="{% url 'materials-incoming-action' id=stock.id millcode=request.millcode%}">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="2" readonly>
-                                    <input type="hidden" name="product" value="{{ stock.pk }}" readonly>
+                                    <input type="hidden" name="entry" value="{{ stock.pk }}" readonly>
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h5 class="modal-title mt-0" id="myModalLabel">Delete
-                                                    {{stock.category.name }} -
-                                                    {{stock.date}}
+                                                    {{stock.entry.category.name }} -
+                                                    {{stock.entry.date}}
                                                 </h5>
                                                 <button type="button" class="close" data-dismiss="modal"
                                                     aria-label="Close">
@@ -206,8 +206,8 @@
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                Are you sure to delete product <strong>{{ stock.category.name }} -
-                                                    {{stock.date}}</strong> ?
+                                                Are you sure to delete entry <strong>{{ stock.entry.category.name }} -
+                                                    {{stock.entry.date}}</strong> ?
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary waves-effect"
