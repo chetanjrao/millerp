@@ -308,8 +308,6 @@
         },
         hide: function (e) {
             counter--;
-            let element = $(this)[0].children[0].getAttribute("data-select2-id")
-            element != null ? delete fuelsObj[`${element}`] : {}
             $(this).slideUp(e);
         },
         ready: function (e) {
