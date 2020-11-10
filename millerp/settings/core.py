@@ -7,7 +7,8 @@ INSTALLED_APPS += [
     'materials.apps.MaterialsConfig',
     'products.apps.ProductsConfig',
     'miscs.apps.MiscsConfig',
-    'django.contrib.humanize'
+    'django.contrib.humanize',
+    'mathfilters'
 ]
 
 AUTH_USER_MODEL = 'accounts.User'

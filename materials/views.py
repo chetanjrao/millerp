@@ -123,18 +123,18 @@ def incomingAdd(request):
             in_bags = int(request.POST['incoming_bags'])
             in_weight = float(request.POST['incoming_weight'])
             average_weight = in_weight * 100 / in_bags
-            entry = Stock.objects.create(bags=in_bags, quantity=in_weight, category=source, date=date)
+            entry = Stock.objects.create(bags=in_bags, quantity=in_weight, category=category, source=source, date=date)
             IncomingStockEntry.objects.create(source=source, entry=entry, created_by=request.user)
             pr_bags = float(request.POST["processing_bags"])
-            entry = Stock.objects.create(bags=0 - in_bags, quantity=0 - (pr_bags * average_weight / 100), category=source, date=date)
+            entry = Stock.objects.create(bags=0 - pr_bags, quantity=0 - (pr_bags * average_weight / 100), category=category, source=source, date=date)
             pr_side = ProcessingSide.objects.get(pk=request.POST["processing_side"], is_deleted=False)
             ProcessingSideEntry.objects.create(source=pr_side, entry=entry, created_by=request.user)
             counter = int(request.POST.get("counter", 0))
             for i in range(counter):
                 godown = OutgoingSource.objects.get(pk=request.POST["outgoing[{}][godown]".format(i)], is_deleted=False)
-                bags = request.POST["outgoing[{}][bags]".format(i)]
-                entry = Stock.objects.create(bags=0 - bags, quantity=0 - (pr_bags * average_weight / 100), category=source, date=date)
-                OutgoingStockEntry.objects.create(entry=entry, godown=godown, created_by=request.user)
+                bags = int(request.POST["outgoing[{}][bags]".format(i)])
+                entry = Stock.objects.create(bags=0 - bags, quantity=0 - (bags * average_weight / 100), category=category, source=source, date=date)
+                OutgoingStockEntry.objects.create(entry=entry, source=godown, created_by=request.user)
         except ValueError:
             return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "error_message": "Number of bags and average weight must be a valid number"})
         return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns, "sides": sides, "success_message": "Incoming entry added successfully"})
@@ -177,19 +177,12 @@ def incomingAction(request, id):
 @login_required
 @set_mill_session
 def outgoing(request):
-    # options = Options()
-    # options.add_argument('--headless')
-    # options.binary_location = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-    # start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify19/MillLogin.aspx"
-    # driver = webdriver.Chrome('/Users/chethanjkulkarni/Downloads/chromedriver')
-    # driver.get(start_url)
-    # get_captcha(driver)
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(is_deleted=False)
+    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False)
+    print(stocks)
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-    incoming_stock = IncomingStockEntry.objects.filter(is_deleted=False)
-    return render(request, "materials/outgoing.html", {"stocks": stocks, "sources": sources, "categories": categories, "incoming_stock": incoming_stock})
+    return render(request, "materials/outgoing.html", {"stocks": stocks, "sources": sources, "categories": categories})
 
 
 # To be completed
@@ -267,10 +260,10 @@ def processingAdd(request):
 @set_mill_session
 def processing(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(is_deleted=False)
+    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False)
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-    entries = ProcessingSideEntry.objects.filter(is_deleted=False)
+    entries = ProcessingSideEntry.objects.filter(entry__is_deleted=False)
     return render(request, "materials/processing.html", {"stocks": stocks, "sources": sources, "categories": categories, "entries": entries})
 
 

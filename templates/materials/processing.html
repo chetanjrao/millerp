@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load mathfilters %}
 {% block extralinks %}
 <link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
 <link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
@@ -40,12 +41,12 @@
                         <tbody>
                             {% for stock in entries %}
                                 <tr>
-                                    <td>{{stock.stock.date}}</td>
-                                    <td>{{stock.stock.category.name}}</td>
+                                    <td>{{stock.entry.date}}</td>
+                                    <td>{{stock.entry.category.name}}</td>
                                     <td>{{stock.source.name}}</td>
-                                    <td>{{stock.bags}}</td>
-                                    <td>{{stock.to_quintal}}</td>
-                                    <td>{{stock.stock.average_weight}}</td>
+                                    <td>{{stock.entry.bags|mul:-1}}</td>
+                                    <td>{{stock.entry.quantity|mul:-1}}</td>
+                                    <td>{{stock.entry.average_weight}}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                             data-target="#editModal{{stock.pk}}">

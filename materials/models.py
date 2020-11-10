@@ -40,7 +40,8 @@ class Stock(models.Model):
     bags = models.IntegerField()
     quantity = models.FloatField()
     remarks = models.TextField(null=True, blank=True)
-    category = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='stocks')
+    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='stocks')
+    source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='stocks')
     date = models.DateField()
     is_deleted = models.BooleanField(default=False)
 

@@ -222,12 +222,12 @@
                             </div>
 
                             <tr>
-                                <td>{{stock.date}}</td>
-                                <td>{{stock.category.name}}</td>
+                                <td>{{stock.entry.date}}</td>
+                                <td>{{stock.entry.category.name}}</td>
                                 <td>{{stock.source.name}}</td>
-                                <td>{{stock.bags}}</td>
-                                <td>{{stock.to_quintal}}</td>
-                                <td>{{stock.average_weight}}</td>
+                                <td>{{stock.entry.bags}}</td>
+                                <td>{{stock.entry.quantity}}</td>
+                                <td>{{stock.entry.average_weight}}</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                         data-target="#editModal{{stock.pk}}">
