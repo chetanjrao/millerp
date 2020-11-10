@@ -6,6 +6,7 @@ urlpatterns = [
      path('<int:category>/types/', views.get_production_types, name="products-types"),
      path('incoming/', views.incoming, name="products-incoming"),
      path('book/', views.analysis, name="products-book"),
+     path('stock/', views.stocks, name="products-stocks"),
      path('incoming/add/', views.incomingAdd, name="products-incoming-add"),
      path('incoming/action/<int:id>/', views.incomingAction, name="products-incoming-action"),
      path('outgoing/', views.outgoing, name="products-outgoing"),

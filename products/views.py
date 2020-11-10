@@ -53,28 +53,25 @@ def incomingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
     stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
-    production_types = ProductionType.objects.filter(
-        is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         action = int(request.POST.get('action', '0'))
         id = int(id)
-        obj = IncomingProductEntry.objects.get(id=id)
+        obj = IncomingProductEntry.objects.get(id=id, entry__category__mill__code=request.millcode)
         if action == 1:
             try:
-                obj.date = request.POST.get('date')
-                obj.bags = float(request.POST.get('bags'))
-                obj.category = ProductCategory.objects.get(
-                    id=int(request.POST.get('category')))
-                obj.product_type = ProductionType.objects.get(
-                    id=int(request.POST.get('product')))
+                obj.entry.date = request.POST.get('date')
+                obj.entry.bags = float(request.POST.get('bags'))
+                obj.entry.category = ProductCategory.objects.get(id=int(request.POST.get('category')))
+                obj.entry.product = ProductionType.objects.get(id=int(request.POST.get('product')))
+                obj.entry.save()
                 obj.save()
-                print(request.POST.get('date'), request.POST.get('bags'),
-                      request.POST.get('category'), request.POST.get('product'))
                 return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'success_message': "Product entry updated successfully"})
             except ValueError:
                 return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'error_message': "Number of bags must be a valid number"})
         elif action == 2:
-            obj.is_deleted = True
+            obj.entry.is_deleted = True
+            obj.entry.save()
             obj.save()
             return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'error_message': "Entry deleted successfully"})
     return redirect("products-incoming", millcode=request.millcode)
@@ -190,6 +187,12 @@ def configurationAction(request, id):
             obj.save()
             return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "error_message": "Production type deleted successfully"})
     return redirect("products-configuration", millcode=request.millcode)
+
+@login_required
+@set_mill_session
+def stocks(request):
+    stocks = ProductStock.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode)
+    return render(request, "products/stocks.html", { "stocks": stocks })
 
 @login_required
 @set_mill_session
