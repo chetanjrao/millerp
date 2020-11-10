@@ -10,7 +10,7 @@ from core.models import Mill
 @set_mill_session
 def incoming(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingProductEntry.objects.filter(is_deleted=False)
+    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
@@ -43,7 +43,7 @@ def incomingAdd(request):
 @set_mill_session
 def incomingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingProductEntry.objects.filter(is_deleted=False)
+    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
     production_types = ProductionType.objects.filter(
         is_deleted=False, mill=mill)
@@ -76,7 +76,7 @@ def incomingAction(request, id):
 @set_mill_session
 def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingProductEntry.objects.filter(is_deleted=False)
+    stocks = OutgoingProductEntry.objects.filter(entry__is_deleted=False)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
     production_types = ProductionType.objects.filter(
         is_deleted=False, mill=mill)
@@ -87,7 +87,7 @@ def outgoing(request):
 @set_mill_session
 def outgoingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingProductEntry.objects.filter(is_deleted=False)
+    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
     production_types = ProductionType.objects.filter(
         is_deleted=False, mill=mill)
@@ -124,8 +124,9 @@ def configuration(request):
                 category = ProductCategory.objects.get(
                     id=int(request.POST.get('category')))
                 quantity = float(request.POST.get('quantity'))
-                ProductionType.objects.create(
-                    name=name, category=category, quantity=quantity, mill=mill, created_by=request.user, created_at=datetime.now())
+                trade = bool(request.POST["trade"])
+                mix = bool(request.POST["mix"])
+                ProductionType.objects.create(name=name, category=category, include_trading=trade, is_mixture=mix, quantity=quantity, mill=mill, created_by=request.user, created_at=datetime.now())
                 return redirect("products-configuration", millcode=request.millcode)
             except ValueError:
                 return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "error_message": "Please enter valid entries"})

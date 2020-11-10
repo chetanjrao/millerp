@@ -18,10 +18,10 @@ class ProductionType(models.Model):
     is_deleted = models.BooleanField(default=False)
     quantity = models.FloatField(default=0.0)
     include_trading = models.BooleanField(default=False)
+    is_mixture = models.BooleanField(default=False)
     mill = models.ForeignKey(to=Mill, on_delete=models.PROTECT)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
-
 
 class Stock(models.Model):
     bags = models.IntegerField()
@@ -53,3 +53,10 @@ class OutgoingProductEntry(models.Model):
     @property
     def total(self):
         return self.entry.total
+
+
+class Trading(models.Model):
+    entry = models.ForeignKey(to=Stock, on_delete=models.PROTECT)
+    price = models.FloatField()
+    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT, related_name='products')
+    created_at = models.DateTimeField(auto_now=True)

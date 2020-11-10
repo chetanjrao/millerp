@@ -46,12 +46,12 @@
                                 {% if entry.bags > 0 %}
                                     <td class="text-success" style="font-weight: 600;">{{ entry.bags }}</td>
                                 {% else %}
-                                    <td>{{ entry.bags|mul:-1 }}</td>
+                                    <td>{{ entry.bags|mul:-1|floatformat:0 }}</td>
                                 {% endif %}
                                 {% if entry.quantity > 0 %}
                                     <td class="text-success" style="font-weight: 600;">{{ entry.quantity }}</td>
                                 {% else %}
-                                    <td>{{ entry.quantity|mul:-1 }}</td>
+                                    <td>{{ entry.quantity|mul:-1|floatformat:2 }}</td>
                                 {% endif %}
                                 <td>{{ entry.remarks }}</td>
                             </tr>

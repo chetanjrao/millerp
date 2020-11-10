@@ -361,7 +361,7 @@ def configuration(request):
             return redirect("materials-configuration", millcode=request.millcode)
         elif action == 2:
             name = request.POST.get('name')
-            trade = bool(request.POST["trade"])
+            trade = bool(request.POST.get("trade", 0))
             IncomingSource.objects.create(name=name, mill=mill, include_trading=trade, created_by=request.user, created_at=datetime.now())
             return redirect("materials-configuration", millcode=request.millcode)
         elif action == 3:

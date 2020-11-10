@@ -70,5 +70,5 @@ class ProcessingSideEntry(models.Model):
 class Trading(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.PROTECT)
     price = models.FloatField()
-    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
+    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT, related_name='materials')
     created_at = models.DateTimeField(auto_now=True)

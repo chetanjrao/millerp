@@ -289,6 +289,22 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="row mb-2 ml-2">
+                                <div class="form-group col-md-10">
+                                    <div class="custom-control custom-checkbox">
+                                        <input name="trade" type="checkbox" class="custom-control-input" id="trade">
+                                        <label class="custom-control-label" for="trade">Include production type in trading</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2 ml-2">
+                                <div class="form-group col-md-10">
+                                    <div class="custom-control custom-checkbox">
+                                        <input name="mix" type="checkbox" class="custom-control-input" id="mix">
+                                        <label class="custom-control-label" for="mix">Is this a mixture of rice ? <small>(Ex. Kanki Mix)</small></label>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary waves-effect"
                                     data-dismiss="modal">Close</button>
@@ -320,6 +336,8 @@
                                 <th>Name</th>
                                 <th>Category</th>
                                 <th>Quantity <small> (in kgs)</small></th>
+                                <th>Included in trading</th>
+                                <th>Considered as mixture</th>
                                 <th>Created by</th>
                                 <th>Actions</th>
                             </tr>
@@ -392,6 +410,14 @@
 
                                                     </div>
                                                 </div>
+                                                <div class="row">
+                                                    <div class="col-md-10">
+                                                        <div class="custom-control custom-checkbox">
+                                                            <input name="trade" type="checkbox" class="custom-control-input" id="trade">
+                                                            <label class="custom-control-label" for="trade">Include source in trading</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary waves-effect"
@@ -442,6 +468,8 @@
                                 <td>{{ type.name }}</td>
                                 <td>{{ type.category.name }}</td>
                                 <td>{{ type.quantity }} </td>
+                                <td>{{ type.include_trading }}</td>
+                                <td>{{ type.is_mixture }}</td>
                                 <td>{{ type.created_by.first_name}}</td>
                                 <td>
                                     <a href="#" class="btn btn-primary btn-sm" data-toggle="modal"
