@@ -6,15 +6,124 @@
 <link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
     type="text/css" />
 {% endblock %}
+{% block corestyles %}
+<link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
+    type="text/css" />
+<link href="/static/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-timepicker/css/bootstrap-timepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/static/libs/@chenfengyuan/datepicker/datepicker.min.css">
+{% endblock %}
 {% block body %}
 <div class="container-fluid">
+    <div id="createModal{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">Sell Paddy</h4>
+                        <form action="#" method="POST">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label class="control-label">Category</label>
+                                        <select id="category" name="category" required>
+                                            <option></option>
+                                            {% for cat in categories %}
+                                                <option value="{{cat.id}}">{{ cat.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group row mb-4">
+                                        <label class="control-label">Outgoing Source</label>
+                                        <select id="source" name="source" required>
+                                            {% for src in sources %}
+                                            {% if src.id == stock.source.id %}
+                                            <option value="{{src.id}}" selected>
+                                                {{ src.name }}
+                                            </option>
+                                            {% else%}
+                                            <option value="{{src.id}}">{{ src.name }}
+                                            </option>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label">Total Quantity <small>(in quintal)</small></label>
+                                        <input type="number" class="form-control" id="quantity" name="quantity" value="" step="any" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="control-label">Price <small>(&#x20b9; per quintal)</small></label>
+                                        <input type="number" class="form-control" id="price" name="price" value="" step="any" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class=" form-group row justify-content-end">
+                                <div class="col-sm-12">
+                                    <div>
+                                        <button type="submit"
+                                            class="btn btn-primary w-md">Sell Paddy</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
                     <div class="row mb-2">
                         <div class="col-sm-4">
-                            <h4 class="card-title mt-2 mb-3">Trading</h4>
+                            <h4 class="card-title mt-2 mb-3">Sell Trading Paddy</h4>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="text-sm-right">
+                                <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Sell Paddy</button></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            {% if success_message %}
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="mdi mdi-check-all mr-2"></i>
+                                {{ success_message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            {% endif %}
+                            {% if error_message %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bx bx-x
+                                 mr-2"></i>
+                                {{ error_message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     <table id="datatable" class="table table-striped table-bordered dt-responsive nowrap"
@@ -35,7 +144,11 @@
                                     <td>{{trade.entry.date}}</td>
                                     <td>{{trade.entry.category.name}}</td>
                                     <td>{{trade.entry.source.name}}</td>
-                                    <td>{{trade.entry.quantity}}</td>
+                                    {% if trade.entry.quantity > 0 %}
+                                        <td class="text-success"><strong>{{trade.entry.quantity}}</strong></td>
+                                    {% else %}
+                                        <td>{{trade.entry.quantity|abs}}</td>
+                                    {% endif %}
                                     <td>&#x20b9;{{ trade.price }}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
@@ -77,6 +190,7 @@
 <script src="/static/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
 <script src="/static/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
 <script src="/static/js/pages/datatables.init.js"></script>
+<script src="/static/libs/select2/js/select2.min.js"></script>
 <script src="/static/libs/node-waves/waves.min.js"></script>
 
 <!-- apexcharts -->
@@ -86,4 +200,35 @@
 
 <!-- App js -->
 <script src="/static/js/app.js"></script>
+<script>
+    $('#category').select2({
+        width: '100%',
+        placeholder: 'Choose category'
+    })
+    $('#source').select2({
+        width: '100%',
+        placeholder: 'Choose source'
+    })
+    $('#category').change((e) => {
+        let selection = $(e.target).select2('data')[0]
+        $('#source').select2({
+            width: '100%',
+            placeholder: 'Choose source',
+            ajax: {
+                url: `${selection["id"]}/max/`,
+                dataType: 'json',
+                processResults: function(data){
+                    return {
+                        results: data
+                    }
+                }
+            },
+            cache: true
+        })
+    })
+    $('#source').change((e) => {
+        let selection = $(e.target).select2('data')[0]
+        $('#quantity').attr("max", selection["max"])
+    })
+</script>
 {% endblock %}

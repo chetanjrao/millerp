@@ -73,91 +73,53 @@
                                                     <form action="#" method="POST">
                                                         {% csrf_token %}
                                                         <input type="hidden" value="1" name="action">
-                                                        <div class="form-group row mb-2">
+                                                        <div class="form-group row">
                                                             <div class="col-md-6">
-                                                                <div class="form-group row">
-                                                                    <label for="horizontal-number-input"
-                                                                        class="col-sm-6 col-form-label">Select Incoming
-                                                                        Stock
-                                                                    </label>
-                                                                    <div class="col-md-10">
-                                                                        <select class="form-control select2"
-                                                                            name="category_id" id="incoming_stock"
-                                                                            required>
-                                                                            {% for incoming in incoming_stock %}
-                                                                            {% if incoming.id == stock.stock.id %}
-                                                                            <option value="{{incoming.id}}" selected>
-                                                                                {{ incoming.date }} -
-                                                                                {{incoming.category.name}}
-                                                                            </option>
-                                                                            {% else%}
-                                                                            <option value="{{incoming.id}}">
-                                                                                {{ incoming.date }} -
-                                                                                {{incoming.category.name}}
-                                                                            </option>
-                                                                            {% endif %}
-                                                                            {% endfor %}
-                                                                        </select>
-                                                                    </div>
+                                                                <div class="form-group">
+                                                                    <label class="control-label">Number of bags</label>
+                                                                    <input type="text" class="form-control" id="horizontal-number-input" name="bags" value="{{stock.entry.bags|abs}}" required>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
-                                                                <div class="form-group row mb-4">
-                                                                    <label for="horizontal-number-input"
-                                                                        class="col-sm-6 col-form-label">Number of
-                                                                        bags</label>
-                                                                    <div class="col-md-10">
-                                                                        <input type="text" class="form-control"
-                                                                            id="horizontal-number-input" name="bags"
-                                                                            value="{{stock.bags}}" required>
-                                                                    </div>
+                                                                <div class="form-group">
+                                                                    <label class="control-label">Total Quantity <small>(in quintal)</small></label>
+                                                                    <input type="text" class="form-control" id="horizontal-number-input" name="quantity" value="{{stock.entry.quantity|abs}}" required>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-md-6">
-                                                                <div class="form-group row mb-4">
-                                                                    <label for="horizontal-number-input"
-                                                                        class="col-sm-3 col-form-label">Category
-                                                                    </label>
-                                                                    <div class="col-md-10">
-                                                                        <select class="form-control select2"
-                                                                            name="category_id" id="category" required>
-                                                                            {% for cat in categories %}
-                                                                            {% if cat.id == stock.category.id %}
-                                                                            <option value="{{cat.id}}" selected>
-                                                                                {{ cat.name }}
-                                                                            </option>
-                                                                            {% else%}
-                                                                            <option value="{{cat.id}}">{{ cat.name }}
-                                                                            </option>
-                                                                            {% endif %}
-                                                                            {% endfor %}
-                                                                        </select>
-                                                                    </div>
+                                                                <div class="form-group mb-4">
+                                                                    <label class="control-label">Category</label>
+                                                                    <select class="drop" name="category_id" required>
+                                                                        {% for cat in categories %}
+                                                                        {% if cat.id == stock.category.id %}
+                                                                        <option value="{{cat.id}}" selected>
+                                                                            {{ cat.name }}
+                                                                        </option>
+                                                                        {% else%}
+                                                                        <option value="{{cat.id}}">{{ cat.name }}
+                                                                        </option>
+                                                                        {% endif %}
+                                                                        {% endfor %}
+                                                                    </select>
                                                                 </div>
                                                             </div>
-
                                                             <div class="col-md-6">
                                                                 <div class="form-group row mb-4">
-                                                                    <label for="horizontal-number-input"
-                                                                        class="col-sm-6 col-form-label">Outgoing
-                                                                        Source</label>
-                                                                    <div class="col-md-10">
-                                                                        <select class="form-control select2"
-                                                                            name="source_id" id="source" required>
-                                                                            {% for src in sources %}
-                                                                            {% if src.id == stock.source.id %}
-                                                                            <option value="{{src.id}}" selected>
-                                                                                {{ src.name }}
-                                                                            </option>
-                                                                            {% else%}
-                                                                            <option value="{{src.id}}">{{ src.name }}
-                                                                            </option>
-                                                                            {% endif %}
-                                                                            {% endfor %}
-                                                                        </select>
-                                                                    </div>
+                                                                    <label class="control-label">Outgoing Source</label>
+                                                                    <select class="drop" name="source_id" required>
+                                                                        {% for src in sources %}
+                                                                        {% if src.id == stock.source.id %}
+                                                                        <option value="{{src.id}}" selected>
+                                                                            {{ src.name }}
+                                                                        </option>
+                                                                        {% else%}
+                                                                        <option value="{{src.id}}">{{ src.name }}
+                                                                        </option>
+                                                                        {% endif %}
+                                                                        {% endfor %}
+                                                                    </select>
                                                                 </div>
                                                             </div>
 
@@ -219,7 +181,7 @@
                                                     <div class="col-md-12">
                                                         <div class="form-group mb-2">
                                                             <label for="staff" class="control-label">Select processing unit</label>
-                                                            <select id="side" class="side" name="processing_side" required>
+                                                            <select class="mside" name="processing_side" required>
                                                                 {% for side in sides %}
                                                                 <option value="{{ side.pk }}">{{ side.name }}</option>
                                                                 {% endfor %}
@@ -245,13 +207,13 @@
                                     action="{% url 'materials-outgoing-action' id=stock.id millcode=request.millcode%}">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="2" readonly>
-                                    <input type="hidden" name="product" value="{{ stock.pk }}" readonly>
+                                    <input type="hidden" name="stock" value="{{ stock.pk }}" readonly>
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h5 class="modal-title mt-0" id="myModalLabel">Delete
-                                                    {{stock.category.name }} -
-                                                    {{stock.stock.date}}
+                                                    {{stock.entry.category.name }} -
+                                                    {{stock.entry.date}}
                                                 </h5>
                                                 <button type="button" class="close" data-dismiss="modal"
                                                     aria-label="Close">
@@ -259,8 +221,8 @@
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                Are you sure to delete product <strong>{{ stock.category.name }} -
-                                                    {{stock.stock.date}}</strong> ?
+                                                Are you sure to delete product <strong>{{ stock.entry.category.name }} -
+                                                    {{stock.entry.date}}</strong> ?
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary waves-effect"
@@ -341,6 +303,9 @@
     $('#incoming_stock').select2({
         width: "100%",
     })
+    $('.drop').select2({
+        width: "100%",
+    })
     $('#category').select2({
         width: "100%",
     })
@@ -348,6 +313,9 @@
         width: "100%",
     })
     $('.side').select2({
+        width: "100%",
+    })
+    $('.mside').select2({
         width: "100%",
     })
 

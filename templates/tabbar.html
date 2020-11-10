@@ -1,35 +1,28 @@
 <div class="vertical-menu">
 
     <div data-simplebar class="h-100">
-
-        <!--- Sidemenu -->
         <div id="sidebar-menu">
-            <!-- Left Menu Start -->
             <ul class="metismenu list-unstyled" id="side-menu">
                 <li class="menu-title">Home</li>
-
                 <li>
                     <a href="#" class="waves-effect">
                         <i class="bx bx-home-circle"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
-
                 <li>
                     <a href="#" class="waves-effect">
                         <i class="bx bx-bar-chart-alt-2"></i>
                         <span>Reports</span>
                     </a>
                 </li>
-
                 <li class="menu-title">Paddy</li>
                 <li>
                     <a href="{% url 'materials-analysis' millcode=request.millcode %}" class=" waves-effect">
                         <i class="bx bx-line-chart"></i>
-                        <span>Analysis & Reports</span>
+                        <span>Entry Book</span>
                     </a>
                 </li>
-
                 <li>
                     <a href="{% url 'materials-incoming' millcode=request.millcode %}" class=" waves-effect">
                         <i class="bx bx-download"></i>
@@ -82,7 +75,7 @@
                 <li>
                     <a href="#" class=" waves-effect">
                         <i class="bx bx-pie-chart"></i>
-                        <span>Analysis & Reports</span>
+                        <span>Entry Book</span>
                     </a>
                 </li>
 

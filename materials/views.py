@@ -1,3 +1,5 @@
+from django.db.models.expressions import F
+from django.db.models.query_utils import Q
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.core.handlers.wsgi import WSGIRequest
@@ -20,6 +22,7 @@ import numpy as np
 import re
 from bs4 import BeautifulSoup
 from django.utils.timezone import datetime
+from django.db.models import Sum
 
 def get_captcha(driver: WebDriver):
     data = []
@@ -194,7 +197,7 @@ def incomingAction(request, id):
 @set_mill_session
 def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__bags__lte=0)
+    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__bags__lte=0).order_by('-created_at')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
@@ -215,7 +218,7 @@ def outgoingAdd(request):
 @set_mill_session
 def outgoingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False)
+    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False).order_by('-entry__date')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
@@ -235,7 +238,8 @@ def outgoingAction(request, id):
             ProcessingSideEntry.objects.create(entry=entry, source=side, created_by=request.user)
             return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "success_message": "Stock sent to processing successfully"})
         elif action == 2:
-            obj.is_deleted = True
+            obj.entry.is_deleted = True
+            obj.entry.save()
             obj.save()
             return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "error_message": "Entry deleted successfully"})
     return redirect('materials-outgoing', millcode=request.millcode)
@@ -284,11 +288,26 @@ def processingAdd(request):
 @set_mill_session
 def processing(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False)
-    sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
+    sources = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     entries = ProcessingSideEntry.objects.filter(entry__is_deleted=False)
-    return render(request, "materials/processing.html", {"stocks": stocks, "sources": sources, "categories": categories, "entries": entries})
+    if request.method == "POST":
+        action = int(request.POST["action"])
+        stock = ProcessingSideEntry.objects.get(pk=request.POST["entry"], entry__is_deleted=False)
+        if action == 1:
+            stock.entry.bags = 0 - int(request.POST["bags"])
+            stock.entry.quantity = 0 - float(request.POST["quantity"])
+            stock.entry.category = Category.objects.get(pk=request.POST["category"])
+            stock.source = ProcessingSide.objects.get(pk=request.POST["side"])
+            stock.entry.date = request.POST["date"]
+            stock.entry.save()
+            stock.save()
+        elif action == 2:
+            stock.entry.is_deleted = True
+            stock.entry.save()
+            stock.save()
+        return render(request, "materials/processing.html", { "sources": sources, "categories": categories, "sides": sources, "entries": entries, "success_message": "Stock updated successfully"})
+    return render(request, "materials/processing.html", { "sources": sources, "categories": categories, "sides": sources, "entries": entries})
 
 
 # outgoing sources
@@ -412,5 +431,26 @@ def configurationAction(request, id):
 @login_required
 @set_mill_session
 def trading(request: WSGIRequest):
+    categories = Category.objects.filter(mill__code=request.millcode, is_deleted=False)
     trading = Trading.objects.filter(entry__category__mill__code=request.millcode, entry__is_deleted=False)
-    return render(request, "materials/trading.html", { "trading": trading })
+    if request.method == "POST":
+        category = Category.objects.get(pk=request.POST["category"])
+        source = IncomingSource.objects.get(pk=request.POST["source"])
+        price = float(request.POST["price"])
+        quantity = float(request.POST["quantity"])
+        bags = int(quantity * 40 / 100)
+        entry = Stock.objects.create(category=category, source=source, bags=0 - bags, quantity=0 - quantity, date=datetime.now().astimezone().date())
+        Trading.objects.create(entry=entry, price=price, created_by=request.user)
+        return render(request, "materials/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record created successfully" })
+    return render(request, "materials/trading.html", { "trading": trading, "categories": categories })
+
+@login_required
+@set_mill_session
+def get_max_quantity(request: WSGIRequest, category: int):
+    stocks = OutgoingStockEntry.objects.filter(entry__category=category, entry__category__mill__code=request.millcode, entry__source__include_trading=True).values('entry__source__pk',name=F('entry__source__name')).annotate(quantity=Sum('entry__quantity'))
+    stocks = [{
+        "id": stock["entry__source__pk"],
+        "text": stock["name"],
+        "max": abs(round(stock["quantity"], 2))
+    } for stock in stocks]
+    return JsonResponse(stocks, safe=False)
