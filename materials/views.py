@@ -123,16 +123,19 @@ def incomingAdd(request):
             in_bags = int(request.POST['incoming_bags'])
             in_weight = float(request.POST['incoming_weight'])
             average_weight = in_weight * 100 / in_bags
-            entry = Stock.objects.create(bags=in_bags, quantity=in_weight, category=category, source=source, date=date)
+            remarks = "Entry of {} - {} bags ({}qtl) from {}".format(category.name, in_bags, in_weight, source.name)
+            entry = Stock.objects.create(bags=in_bags, quantity=in_weight, category=category, source=source, remarks=remarks, date=date)
             IncomingStockEntry.objects.create(source=source, entry=entry, created_by=request.user)
             pr_bags = float(request.POST["processing_bags"])
-            entry = Stock.objects.create(bags=0 - pr_bags, quantity=0 - (pr_bags * average_weight / 100), category=category, source=source, date=date)
             pr_side = ProcessingSide.objects.get(pk=request.POST["processing_side"], is_deleted=False)
+            remarks = "Sent {} bags ({} avg. weight) for processing into {}".format(pr_bags, average_weight, pr_side.name)
+            entry = Stock.objects.create(bags=0 - pr_bags, quantity=0 - (pr_bags * average_weight / 100), category=category, source=source, remarks=remarks, date=date)
             ProcessingSideEntry.objects.create(source=pr_side, entry=entry, created_by=request.user)
             counter = int(request.POST.get("counter", 0))
             for i in range(counter):
                 godown = OutgoingSource.objects.get(pk=request.POST["outgoing[{}][godown]".format(i)], is_deleted=False)
                 bags = int(request.POST["outgoing[{}][bags]".format(i)])
+                remarks = "Sent {} bags ({} avg. weight) to {}".format(pr_bags, average_weight, godown.name)
                 entry = Stock.objects.create(bags=0 - bags, quantity=0 - (bags * average_weight / 100), category=category, source=source, date=date)
                 OutgoingStockEntry.objects.create(entry=entry, source=godown, created_by=request.user)
         except ValueError:
@@ -140,6 +143,11 @@ def incomingAdd(request):
         return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns, "sides": sides, "success_message": "Incoming entry added successfully"})
     return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns, "sides": sides})
 
+@login_required
+@set_mill_session
+def analysis(request):
+    entries = Stock.objects.filter(is_deleted=False, category__mill__code=request.millcode).order_by('-date')
+    return render(request, "materials/reports.html", { "entries": entries })
 
 @login_required
 @set_mill_session

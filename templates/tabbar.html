@@ -24,14 +24,14 @@
 
                 <li class="menu-title">Paddy</li>
                 <li>
-                    <a href="#" class=" waves-effect">
+                    <a href="{% url 'materials-analysis' millcode=request.millcode %}" class=" waves-effect">
                         <i class="bx bx-line-chart"></i>
                         <span>Analysis & Reports</span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="{% url 'materials-incoming' millcode=request.millcode%}" class=" waves-effect">
+                    <a href="{% url 'materials-incoming' millcode=request.millcode %}" class=" waves-effect">
                         <i class="bx bx-download"></i>
                         <span>Incoming</span>
                     </a>
@@ -56,12 +56,12 @@
                         <span>Godowns</span>
                     </a>
                 </li>
-                <li>
+                {% comment %}<li>
                     <a href="{% url 'materials-stock' millcode=request.millcode %}" class=" waves-effect">
                         <i class="bx bx-data"></i>
                         <span>Stock</span>
                     </a>
-                </li>
+                </li> {% endcomment %}
 
                 <li>
                     <a href="#" class=" waves-effect">
