@@ -25,15 +25,15 @@ class ProductionType(models.Model):
 
 class Stock(models.Model):
     bags = models.IntegerField()
-    quantity = models.FloatField()
     remarks = models.TextField(null=True, blank=True)
+    category = models.ForeignKey(to=ProductCategory, on_delete=models.CASCADE)
     product = models.ForeignKey(to=ProductionType, on_delete=models.CASCADE, related_name='outgoingproductentrys')
     date = models.DateField()
     is_deleted = models.BooleanField(default=False)
 
     @property
     def total(self):
-        return round(self.quantity * self.product.quantity, 2)
+        return round(self.bags * self.product.quantity / 100, 2)
 
 
 class IncomingProductEntry(models.Model):
@@ -54,9 +54,21 @@ class OutgoingProductEntry(models.Model):
     def total(self):
         return self.entry.total
 
+class ProductStock(models.Model):
+    entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total(self):
+        return self.entry.total
 
 class Trading(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.PROTECT)
     price = models.FloatField()
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT, related_name='products')
     created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total(self):
+        return self.entry.total

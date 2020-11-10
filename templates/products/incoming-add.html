@@ -20,6 +20,11 @@
 {% endblock %}
 {% block extralinks %}
 <link rel="stylesheet" href="/static/libs/jquery-steps/jquery.steps.css">
+<style>
+    .wizard > .content {
+        min-height: 27em;
+    }
+</style>
 {% endblock %}
 {% block body %}
 <div class="container-fluid">
@@ -55,7 +60,8 @@
             </div>
         </div>
         <div class="col-md-12">
-            <form id="example-form" action="#">
+            <form method="POST" id="example-form" action="">
+                {% csrf_token %}
                 <div>
                     <h3>Incoming Stock Entry</h3>
                     <section>
@@ -78,7 +84,7 @@
                                     <label for="horizontal-number-input" class="control-label">Number of
                                         bags</label>
                                     <div>
-                                        <input data-parsley-type="number" type="text" class="form-control" required
+                                        <input data-parsley-type="number" id="incoming_bags" type="text" class="form-control" required
                                             placeholder="Ex. 10,20,30" name="bags" />
                                     </div>
                                 </div>
@@ -99,27 +105,34 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-2">
                                     <label for="cashier" class="control-label">Select product type</label>
-                                    <select id="source" name="product_type" required>
+                                    <select id="source" name="type" required>
                                         <option></option>
-                                        {% for type in production_types %}
-                                        <option value="{{ type.pk }}">{{ type.name }}</option>
-                                        {% endfor %}
                                     </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div id="trade" class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">Rice price per quintal <small>(in &#x20b9;)</small></label>
+                                    <input id="price" data-parsley-type="number" type="text" name="price" class="form-control" required placeholder="Ex. 10,20,30" />
                                 </div>
                             </div>
                         </div>
                     </section>
                     <h3>Outgoing Stock Entry</h3>
                     <section>
-                        <label for="name">First name *</label>
-                        <input id="name" name="name" type="text" class="required">
-                        <label for="surname">Last name *</label>
-                        <input id="surname" name="surname" type="text" class="required">
-                        <label for="email">Email *</label>
-                        <input id="email" name="email" type="text" class="required email">
-                        <label for="address">Address</label>
-                        <input id="address" name="address" type="text">
-                        <p>(*) Mandatory</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="horizontal-number-input" class="control-label">Number of bags</label>
+                                    <div>
+                                        <input data-parsley-type="number" id="outgoing_bags" type="text" class="form-control" required
+                                            placeholder="Ex. 10,20,30" name="outgoing_bags" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </section>
                 </div>
             </form> 
@@ -166,16 +179,24 @@
         transitionEffect: "slideLeft",
         titleTemplate: '#title#',
         onStepChanging: function (event, currentIndex, newIndex){
-            return form.parsley().validate();
+            if(newIndex > currentIndex){
+                let validator = form.parsley({
+                    excluded: ":disabled, :hidden"
+                })
+                validator.validate();
+                return validator.isValid()
+            }
+            return true
         },
         onFinishing: function (event, currentIndex){
             return form.parsley().validate();
         },
         onFinished: function (event, currentIndex){
-            alert("Submitted!");
+            $('form').submit()
         }
     });
 
+    $('#trade').hide()
     $('#category').select2({
         width: "100%",
         placeholder: "Select Category"
@@ -183,6 +204,34 @@
     $('#source').select2({
         width: "100%",
         placeholder: "Select product type"
+    })
+    $('#category').change((e) => {
+        let selection = $(e.target).select2('data')[0]
+        $('#source').select2({
+            width: "100%",
+            placeholder: "Select product type",
+            ajax: {
+                url: `/{{ request.millcode }}/products/${selection["id"]}/types/`,
+                dataType: 'json',
+                processResults: function(data){
+                    return {
+                        results: data
+                    }
+                }
+            }
+        })
+    })
+    $('#incoming_bags').change((e) => {
+        $('#outgoing_bags').attr("max", $(e.target).val())
+    })
+    $('#source').change((e) => {
+        let select = $(e.target).select2('data')[0]
+            console.log(select)
+        if(select.is_trading){
+            $('#trade').show()
+        } else {
+            $('#trade').hide()
+        }
     })
 
 </script>
