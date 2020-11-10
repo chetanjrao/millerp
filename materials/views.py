@@ -131,7 +131,7 @@ def incomingAdd(request):
             remarks = "Entry of {} - {} bags ({}qtl) from {}".format(category.name, in_bags, in_weight, source.name)
             entry = Stock.objects.create(bags=in_bags, quantity=in_weight, category=category, source=source, remarks=remarks, date=date)
             IncomingStockEntry.objects.create(source=source, entry=entry, created_by=request.user)
-            if price is not None:
+            if price is not None and price > 0:
                 Trading.objects.create(entry=entry, price=price, created_by=request.user)
             pr_bags = float(request.POST["processing_bags"])
             pr_side = ProcessingSide.objects.get(pk=request.POST["processing_side"], is_deleted=False)

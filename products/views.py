@@ -35,7 +35,7 @@ def incomingAdd(request):
             remarks = "Added {} bags of {} - {}".format(bags, product_type.name, category.name)
             entry = Stock.objects.create(bags=bags, category=category, product=product_type, date=date, remarks=remarks)
             IncomingProductEntry.objects.create(entry=entry, created_by=request.user)
-            if price is not None:
+            if price is not None and price > 0:
                 Trading.objects.create(entry=entry, price=price, created_by=request.user)
             remarks = "Sent {} bags of {} - {}".format(outgoing_bags, product_type.name, category.name)
             entry = Stock.objects.create(bags=0 - outgoing_bags, category=category, product=product_type, date=date, remarks=remarks)
