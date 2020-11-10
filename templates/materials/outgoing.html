@@ -20,15 +20,7 @@
                 <div class="card-body">
                     <div class="row mb-2">
                         <div class="col-sm-4">
-                            <h4 class="card-title mt-2 mb-3">Outgoing stock entry</h4>
-                        </div>
-                        <div class="col-sm-8">
-                            <div class="text-sm-right">
-                                <a href="{% url 'materials-outgoing-add' millcode=request.millcode%}"><button
-                                        type="button"
-                                        class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i
-                                            class="mdi mdi-plus mr-1"></i> Add outgoing stock</button></a>
-                            </div>
+                            <h4 class="card-title mt-2 mb-3">Outgoing stock</h4>
                         </div>
                     </div>
                     <div class="row">
@@ -66,7 +58,6 @@
                                 <th>In Quintal</th>
                                 <th>Average Weight</th>
                                 <th>Action</th>
-
                             </tr>
                         </thead>
                         <tbody>
@@ -79,7 +70,6 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <h4 class="card-title mb-4">Update outgoing stock entry</h4>
-
                                                     <form action="#" method="POST">
                                                         {% csrf_token %}
                                                         <input type="hidden" value="1" name="action">
@@ -188,6 +178,67 @@
                                     </div><!-- /.modal-content -->
                                 </div><!-- /.modal-dialog -->
                             </div><!-- /.modal -->
+                            <div id="sendModal{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog"
+                                aria-labelledby="myModalLabel" aria-hidden="true">
+                                <form class="needs-validation" method="POST"
+                                    action="{% url 'materials-outgoing-action' id=stock.id millcode=request.millcode%}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="4" readonly>
+                                    <input type="hidden" name="product" value="{{ stock.pk }}" readonly>
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title mt-0" id="myModalLabel">Send 
+                                                    {{stock.entry.category.name }} -
+                                                    {{stock.entry.date}} to processing
+                                                </h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="form-group mb-4">
+                                                            <label for="control-label">Number of bags</label>
+                                                                <input type="number" step="1" class="form-control" id="horizontal-number-input" max="{{ stock.entry.bags|mul:-1 }}" name="bags" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <div class="form-group mb-4">
+                                                            <label>Select Date</label>
+                                                            <div class="input-group">
+                                                                <input type="text" class="form-control" placeholder="yyyy-mm-dd" autocomplete="off" data-date-orientation="bottom left" data-date-autoclose="true" value="{% now 'Y-m-d' %}" data-date-format="yyyy-mm-dd" data-provide="datepicker" name="date" required>
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <div class="form-group mb-2">
+                                                            <label for="staff" class="control-label">Select processing unit</label>
+                                                            <select id="side" class="side" name="processing_side" required>
+                                                                {% for side in sides %}
+                                                                <option value="{{ side.pk }}">{{ side.name }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary waves-effect"
+                                                    data-dismiss="modal">Close</button>
+                                                <button type="submit"
+                                                    class="btn btn-primary waves-effect waves-light">Yes,
+                                                    send to processing</button>
+                                            </div>
+                                        </div><!-- /.modal-content -->
+                                    </div>
+                                </form>
+                            </div>
                             <div id="deleteModal{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myModalLabel" aria-hidden="true">
                                 <form class="needs-validation" method="POST"
@@ -231,6 +282,11 @@
                                 <td>{{stock.entry.quantity|abs}}</td>
                                 <td>{{stock.entry.average_weight}}</td>
                                 <td>
+                                    <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
+                                        data-target="#sendModal{{stock.pk}}">
+                                        <i style="vertical-align: middle;" class="mdi mdi-progress-upload font-size-12"></i><span
+                                            class="ml-1">Send to processing</span>
+                                    </button>
                                     <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                         data-target="#editModal{{stock.pk}}">
                                         <i style="vertical-align: middle;" class="mdi mdi-pencil font-size-12"></i><span
@@ -289,6 +345,9 @@
         width: "100%",
     })
     $('#source').select2({
+        width: "100%",
+    })
+    $('.side').select2({
         width: "100%",
     })
 

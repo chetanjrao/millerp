@@ -47,7 +47,7 @@ class Stock(models.Model):
 
     @property
     def average_weight(self):
-        return round(self.quantity * 100 / self.bags, 2)
+        return 0 if self.bags == 0 else round(self.quantity * 100 / self.bags, 2)
 
 class IncomingStockEntry(models.Model):
     source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')
@@ -69,5 +69,6 @@ class ProcessingSideEntry(models.Model):
 
 class Trading(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.PROTECT)
-    buying_price = models.FloatField()
-    selling_price = models.FloatField()
+    price = models.FloatField()
+    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now=True)

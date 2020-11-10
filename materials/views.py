@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from selenium.webdriver.chrome.webdriver import WebDriver
 from core.decorators import set_mill_session
 from core.models import Mill
-from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry, Stock
+from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry, Stock, Trading
 from datetime import datetime
 import os
 from PIL import Image
@@ -19,6 +19,7 @@ import cv2
 import numpy as np
 import re
 from bs4 import BeautifulSoup
+from django.utils.timezone import datetime
 
 def get_captcha(driver: WebDriver):
     data = []
@@ -122,10 +123,13 @@ def incomingAdd(request):
         try:
             in_bags = int(request.POST['incoming_bags'])
             in_weight = float(request.POST['incoming_weight'])
+            price = float(request.POST.get("price"))
             average_weight = in_weight * 100 / in_bags
             remarks = "Entry of {} - {} bags ({}qtl) from {}".format(category.name, in_bags, in_weight, source.name)
             entry = Stock.objects.create(bags=in_bags, quantity=in_weight, category=category, source=source, remarks=remarks, date=date)
             IncomingStockEntry.objects.create(source=source, entry=entry, created_by=request.user)
+            if price is not None:
+                Trading.objects.create(entry=entry, price=price, created_by=request.user)
             pr_bags = float(request.POST["processing_bags"])
             pr_side = ProcessingSide.objects.get(pk=request.POST["processing_side"], is_deleted=False)
             remarks = "Sent {} bags ({} avg. weight) for processing into {}".format(pr_bags, average_weight, pr_side.name)
@@ -190,10 +194,11 @@ def incomingAction(request, id):
 @set_mill_session
 def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False)
+    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__bags__lte=0)
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-    return render(request, "materials/outgoing.html", {"stocks": stocks, "sources": sources, "categories": categories})
+    sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
+    return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories})
 
 
 # To be completed
@@ -210,22 +215,30 @@ def outgoingAdd(request):
 @set_mill_session
 def outgoingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(is_deleted=False)
+    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False)
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-    incoming_stock = IncomingStockEntry.objects.filter(is_deleted=False)
+    sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == 'POST':
         id = int(id)
-        obj = OutgoingStockEntry.objects.get(id=id)
+        obj: OutgoingStockEntry = OutgoingStockEntry.objects.get(id=id)
         action = int(request.POST.get('action', '0'))
         if action == 1:
             pass
+        if action == 4:
+            bags = int(request.POST["bags"])
+            date = request.POST["date"]
+            side = ProcessingSide.objects.get(pk=request.POST["processing_side"])
+            entry = Stock.objects.create(bags=bags, category=obj.entry.category, source=obj.entry.source, quantity=obj.entry.average_weight * bags / 100, remarks='{} Bags removed from godown {}'.format(bags, obj.source.name), date=date)
+            OutgoingStockEntry.objects.create(entry=entry, created_by=request.user)
+            entry = Stock.objects.create(bags=0 - bags, category=obj.entry.category, source=obj.entry.source, quantity=0 - obj.entry.average_weight * bags / 100, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
+            ProcessingSideEntry.objects.create(entry=entry, source=side, created_by=request.user)
+            return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "success_message": "Stock sent to processing successfully"})
         elif action == 2:
             obj.is_deleted = True
             obj.save()
-            return render(request, "materials/outgoing.html", {"stocks": stocks, "sources": sources, "incoming_stock": incoming_stock, "categories": categories,
-                                                               "error_message": "Entry deleted successfully"})
-    return redirect('materials-incoming', millcode=request.millcode)
+            return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "error_message": "Entry deleted successfully"})
+    return redirect('materials-outgoing', millcode=request.millcode)
 
 @csrf_exempt
 @login_required
@@ -395,3 +408,9 @@ def configurationAction(request, id):
             obj.save()
             return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Processing side deleted successfully"})
     return redirect("materials-configuration", millcode=request.millcode)
+
+@login_required
+@set_mill_session
+def trading(request: WSGIRequest):
+    trading = Trading.objects.filter(entry__category__mill__code=request.millcode, entry__is_deleted=False)
+    return render(request, "materials/trading.html", { "trading": trading })
