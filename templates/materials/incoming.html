@@ -104,8 +104,8 @@
                                                                         class="col-sm-3 col-form-label">Category
                                                                     </label>
                                                                     <div class="col-md-10">
-                                                                        <select class="form-control select2"
-                                                                            name="category_id" id="category" required>
+                                                                        <select class="form-control category"
+                                                                            name="category_id" required>
                                                                             {% for cat in categories %}
                                                                             {% if cat.id == stock.category.id %}
                                                                             <option value="{{cat.id}}" selected>
@@ -126,8 +126,8 @@
                                                                     <label for="horizontal-number-input"
                                                                         class="col-sm-3 col-form-label">Source</label>
                                                                     <div class="col-md-10">
-                                                                        <select class="form-control select2"
-                                                                            name="source_id" id="source" required>
+                                                                        <select class="form-control source"
+                                                                            name="source_id" required>
                                                                             {% for src in sources %}
                                                                             {% if src.id == stock.source.id %}
                                                                             <option value="{{src.id}}" selected>
@@ -279,10 +279,10 @@
 <script src="/static/js/pages/form-advanced.init.js"></script>
 
 <script>
-    $('#category').select2({
+    $('.category').select2({
         width: "100%",
     })
-    $('#source').select2({
+    $('.source').select2({
         width: "100%",
     })
     $('.date-input').datepicker({
