@@ -24,11 +24,93 @@
                         </div>
                         <div class="col-sm-8">
                             <div class="text-sm-right">
-                                <a href="#"><button type="button"
-                                        class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i
-                                            class="mdi mdi-plus mr-1"></i> Add outgoing product</button></a>
+                                <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Add outgoing product</button>
                             </div>
                         </div>
+                    </div>
+                    <div id="createModal" class="modal fade" tabindex="-1" role="dialog"
+                        aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="col-lg-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title mb-4">Add outgoing product entry</h4>
+                                            <form action="" method="POST">
+                                                {% csrf_token %}
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group row mb-4">
+                                                            <label for="horizontal-number-input"
+                                                                class="col-sm-3 col-form-label">Category
+                                                            </label>
+                                                            <div class="col-md-10">
+                                                                <select class="form-control select2"
+                                                                    name="category" id="category" required>
+                                                                    <option></option>
+                                                                    {% for cat in categories %}
+                                                                        <option value="{{cat.id}}">{{ cat.name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <div class="form-group row mb-4">
+                                                            <label for="horizontal-number-input"
+                                                                class="col-sm-6 col-form-label">Production
+                                                                type</label>
+                                                            <div class="col-md-10">
+                                                                <select class="form-control select2"
+                                                                    name="product" id="product" required>
+                                                                    <option value=""></option>
+                                                                    {% for type in production_types %}
+                                                                    <option value="{{type.id}}">{{ type.name }}
+                                                                    </option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group row mb-4">
+                                                            <label for="horizontal-date-input"
+                                                                class="col-sm-3 col-form-label">Date
+                                                            </label>
+                                                            <div class="col-md-12">
+                                                                <input class="form-control" type="date" value="{{stock.entry.date|date:'Y-m-d'}}" id="example-date-input" name="date" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group row mb-4">
+                                                            <label for="horizontal-number-input"
+                                                                class="col-sm-6 col-form-label">Number of bags</label>
+                                                            <div class="col-md-10">
+                                                                <input type="text" class="form-control"
+                                                                    id="horizontal-number-input" name="bags"
+                                                                    value="{{stock.entry.bags|abs}}" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class=" form-group row justify-content-end">
+                                                    <div class="col-sm-12">
+                                                        <div>
+                                                            <button type="submit"
+                                                                class="btn btn-primary w-md">Update</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div><!-- /.modal-content -->
+                        </div><!-- /.modal-dialog -->
                     </div>
                     <div class="row">
                         <div class="col-12">
@@ -76,7 +158,6 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <h4 class="card-title mb-4">Update outgoing product entry</h4>
-
                                                     <form action="{% url 'products-outgoing-action' id=stock.id millcode=request.millcode %}" method="POST">
                                                         {% csrf_token %}
                                                         <input type="hidden" value="1" name="action">
@@ -87,10 +168,7 @@
                                                                         class="col-sm-3 col-form-label">Date
                                                                     </label>
                                                                     <div class="col-md-12">
-                                                                        <input class="form-control" type="date"
-                                                                            value="{{stock.entry.date|date:'Y-m-d'}}"
-                                                                            id="example-date-input" name="date"
-                                                                            required>
+                                                                        <input class="form-control" type="date" value="{{stock.entry.date|date:'Y-m-d'}}" id="example-date-input" name="date" required>
                                                                     </div>
                                                                 </div>
                                                             </div>

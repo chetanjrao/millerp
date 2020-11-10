@@ -1,3 +1,5 @@
+from django.db.models.aggregates import Sum
+from django.db.models.expressions import F
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -87,6 +89,12 @@ def outgoing(request):
         is_deleted=False, mill=mill)
     return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
 
+@login_required
+@set_mill_session
+def max_stock(request, category: int):
+    stock = ProductStock.objects.filter(entry__category__pk=category, entry__is_deleted=False).values(category=F('entry__category__name')).annotate(max=Sum('entry__bags'))
+    print(stock)
+    return JsonResponse({}, safe=False)
 
 @login_required
 @set_mill_session
