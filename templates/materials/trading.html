@@ -29,6 +29,7 @@
                         <h4 class="card-title mb-4">Sell Paddy</h4>
                         <form action="#" method="POST">
                             {% csrf_token %}
+                            <input type="hidden" name="action" value="1" readonly>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
@@ -59,7 +60,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="form-group row">
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -140,6 +140,79 @@
                         </thead>
                         <tbody>
                             {% for trade in trading %}
+                            <div id="editModal{{ trade.pk }}" class="modal fade" tabindex="-1" role="dialog"
+                                aria-labelledby="myModalLabel" aria-hidden="true">
+                                <form class="needs-validation" method="POST"
+                                    action="">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="2" readonly>
+                                    <input type="hidden" name="trade" value="{{ trade.pk }}" readonly>
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title mt-0" id="myModalLabel">Update 
+                                                    {{trade.entry.category.name }} -
+                                                    {{trade.entry.date}}
+                                                </h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="form-group mb-4">
+                                                            <label for="control-label">Price</label>
+                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" value="{{ trade.price }}" name="price" required>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary waves-effect"
+                                                    data-dismiss="modal">Close</button>
+                                                <button type="submit"
+                                                    class="btn btn-primary waves-effect waves-light">Yes, update</button>
+                                            </div>
+                                        </div><!-- /.modal-content -->
+                                    </div>
+                                </form>
+                            </div>
+                            <div id="deleteModal{{ trade.pk }}" class="modal fade" tabindex="-1" role="dialog"
+                                aria-labelledby="myModalLabel" aria-hidden="true">
+                                <form class="needs-validation" method="POST"
+                                    action="">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="3" readonly>
+                                    <input type="hidden" name="trade" value="{{ trade.pk }}" readonly>
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title mt-0" id="myModalLabel">Delete
+                                                    {{trade.entry.category.name }} -
+                                                    {{trade.entry.date}}
+                                                </h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure to delete trade <strong>{{ trade.entry.category.name }} -
+                                                    {{trade.entry.date}}</strong> ?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary waves-effect"
+                                                    data-dismiss="modal">Close</button>
+                                                <button type="submit"
+                                                    class="btn btn-danger waves-effect waves-light">Yes,
+                                                    delete</button>
+                                            </div>
+                                        </div><!-- /.modal-content -->
+                                    </div>
+                                </form>
+                            </div>
                                 <tr>
                                     <td>{{trade.entry.date}}</td>
                                     <td>{{trade.entry.category.name}}</td>
@@ -152,15 +225,17 @@
                                     <td>&#x20b9;{{ trade.price }}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
-                                            data-target="#editModal{{stock.pk}}">
+                                            data-target="#editModal{{trade.pk}}">
                                             <i style="vertical-align: middle;" class="mdi mdi-pencil font-size-12"></i><span
                                                 class="ml-1">Edit</span>
                                         </button>
-                                        <button type="button" class="btn btn-danger btn-sm ml-2" data-toggle="modal"
-                                            data-target="#deleteModal{{stock.pk}}">
-                                            <i style="vertical-align: middle;" class="mdi mdi-delete font-size-12"></i><span
-                                                class="ml-1">Delete</span>
-                                        </button>
+                                        {% if trade.entry.quantity < 0 %}
+                                            <button type="button" class="btn btn-danger btn-sm ml-2" data-toggle="modal"
+                                                data-target="#deleteModal{{trade.pk}}">
+                                                <i style="vertical-align: middle;" class="mdi mdi-delete font-size-12"></i><span
+                                                    class="ml-1">Delete</span>
+                                            </button>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
