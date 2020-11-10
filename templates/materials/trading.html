@@ -218,7 +218,7 @@
                                     <td>{{trade.entry.category.name}}</td>
                                     <td>{{trade.entry.source.name}}</td>
                                     {% if trade.entry.quantity > 0 %}
-                                        <td class="text-success"><strong>{{trade.entry.quantity}}</strong></td>
+                                        <td class="text-success"><strong>{{trade.entry.quantity|floatformat:2}}</strong></td>
                                     {% else %}
                                         <td>{{trade.entry.quantity|abs}}</td>
                                     {% endif %}
