@@ -199,11 +199,10 @@ def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
     stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).order_by('-created_at')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
-    godowns = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
-    print(godowns)
+    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(category=F('entry__category__name'), name=F('source__name')).annotate(max=Sum('entry__bags'))
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
-    return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories})
+    return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
 
 
 # To be completed
@@ -223,6 +222,7 @@ def outgoingAction(request, id):
     stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode).order_by('-entry__date')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
+    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == 'POST':
         id = int(id)
@@ -230,7 +230,17 @@ def outgoingAction(request, id):
         action = int(request.POST.get('action', '0'))
         if action == 1:
             bags = int(request.POST["bags"])
-
+            quantity = float(request.POST["quantity"])
+            source = OutgoingSource.objects.get(pk=request.POST["source"])
+            category = Category.objects.get(pk=request.POST["category"])
+            obj.entry.bags =  0 -bags
+            obj.entry.quantity = 0 - quantity
+            obj.entry.category = category
+            obj.entry.save()
+            obj.source = source
+            obj.save()
+            entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
+            return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "success_message": "Entry updated successfully", "entries": entries})
         if action == 4:
             bags = int(request.POST["bags"])
             date = request.POST["date"]
@@ -239,12 +249,13 @@ def outgoingAction(request, id):
             OutgoingStockEntry.objects.create(entry=entry, created_by=request.user)
             entry = Stock.objects.create(bags=0 - bags, category=obj.entry.category, source=obj.entry.source, quantity=0 - obj.entry.average_weight * bags / 100, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
             ProcessingSideEntry.objects.create(entry=entry, source=side, created_by=request.user)
-            return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "success_message": "Stock sent to processing successfully"})
+            entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
+            return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "success_message": "Stock sent to processing successfully", "entries": entries})
         elif action == 2:
             obj.entry.is_deleted = True
             obj.entry.save()
             obj.save()
-            return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "error_message": "Entry deleted successfully"})
+            return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "error_message": "Entry deleted successfully", "entries": entries})
     return redirect('materials-outgoing', millcode=request.millcode)
 
 @csrf_exempt
