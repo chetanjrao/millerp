@@ -1,3 +1,4 @@
+from millerp.settings.base import CHROME, CHROMEDRIVER, HEIGHT_RATIO, WIDTH_RATIO
 import os
 import random
 import re
@@ -21,8 +22,9 @@ def get_random_string(length):
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 
-# Create your views here.
+
 start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify19/MillLogin.aspx"
+
 def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str):
     driver.get(start_url)
     data = ''
@@ -32,10 +34,10 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
             location = element.location
             size = element.size
             driver.save_screenshot(screenshot)
-            x = location['x'] * 1
-            y = location['y'] * 1
-            w = size['width'] * 1
-            h = size['height'] * 1
+            x = location['x'] * WIDTH_RATIO
+            y = location['y'] * HEIGHT_RATIO
+            w = size['width'] * WIDTH_RATIO
+            h = size['height'] * HEIGHT_RATIO
             width = x + w
             height = y + h
             im = Image.open(screenshot)
@@ -86,8 +88,8 @@ def get_guarantee(request: WSGIRequest):
     options = Options()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
-    options.binary_location = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-    driver = webdriver.Chrome('/Users/chethanjkulkarni/Downloads/chromedriver', options=options)
+    options.binary_location = CHROME
+    driver = webdriver.Chrome(CHROMEDRIVER, options=options)
     data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), 'MA41141', '100141')
     return HttpResponse(data)
 

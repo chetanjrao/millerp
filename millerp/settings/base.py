@@ -120,6 +120,13 @@ USE_L10N = True
 
 USE_TZ = True
 
+CHROME = env.str("CHROME")
+
+CHROMEDRIVER = env.str('CHROMEDRIVER')
+
+HEIGHT_RATIO= env.int('HEIGHT_RATIO')
+
+WIDTH_RATIO = env.int('WIDTH_RATIO')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
