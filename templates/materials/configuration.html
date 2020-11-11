@@ -333,7 +333,7 @@
                                                     </div>
                                                     <div class="col-md-10">
                                                         <div class="custom-control custom-checkbox">
-                                                            <input name="trade" value="{{ src.include_trading }}" type="checkbox" class="custom-control-input" id="trade{{ src.pk }}">
+                                                            <input name="trade" {% if src.include_trading is True %} checked {% endif %} type="checkbox" class="custom-control-input" id="trade{{ src.pk }}">
                                                             <label class="custom-control-label" for="trade{{ src.pk }}">Include source in trading</label>
                                                         </div>
                                                     </div>

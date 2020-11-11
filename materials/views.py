@@ -1,100 +1,21 @@
 from django.db.models.expressions import F
-from django.db.models.query_utils import Q
-from django.http.response import HttpResponse, JsonResponse
+from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
 from django.core.handlers.wsgi import WSGIRequest
 from rest_framework.views import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from selenium.webdriver.chrome.webdriver import WebDriver
 from core.decorators import set_mill_session
 from core.models import Mill
 from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry, Stock, Trading
 from datetime import datetime
-import os
-from PIL import Image
-from selenium import webdriver
-from selenium.common.exceptions import NoAlertPresentException, InvalidElementStateException, NoSuchElementException, UnexpectedAlertPresentException
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.select import Select
-import pytesseract
-import cv2
-import numpy as np
-import re
-from bs4 import BeautifulSoup
 from django.utils.timezone import datetime
 from django.db.models import Sum
-
-def get_captcha(driver: WebDriver):
-    data = []
-    while True:
-        try:
-            captcha_fn = "abc.png"
-            element = driver.find_element_by_id('ImageCaptcha')
-            location = element.location
-            size = element.size
-            driver.save_screenshot("bcd.png")
-            x = location['x'] * 2
-            y = location['y'] * 2
-            w = size['width']
-            h = size['height']
-            width = x + w * 2
-            height = y + h * 2
-            im = Image.open('bcd.png')
-            im = im.crop((x, y, width, height))
-            im = im.convert('L')
-            ret, img = cv2.threshold(np.array(im), 127, 255, cv2.THRESH_BINARY)
-            im = Image.fromarray(img.astype(np.uint8))
-            im.save(captcha_fn)
-            text = pytesseract.image_to_string(im, config='--psm 10', lang="eng")
-            text = re.sub('[^A-Za-z0-9]+', '', text)
-            try:
-                driver.find_element_by_id('txtpwd').clear()
-                driver.find_element_by_id('txtVerificationCode').clear()
-                driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
-                driver.find_element_by_id('txtpwd').send_keys('100141')
-                try:
-                    driver.find_element_by_id('txtUser').clear()
-                    driver.find_element_by_id('txtUser').send_keys('MA41141')
-                    driver.find_element_by_name('btncon').click()
-                    try:
-                        driver.switch_to.alert.accept()
-                        driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify19/SocietyPaddyDetails.aspx')
-                        select = Select(driver.find_element_by_tag_name('select'))
-                        select.select_by_value('41')
-                        driver.find_element_by_id('Btnreport').click()
-                        elem = driver.find_element_by_tag_name('tbody')
-                        soup = BeautifulSoup(elem.get_attribute('outerHTML'), 'html.parser')
-                        for row in soup.find_all('tr'):
-                            data.append([cell.get_text() for cell in row.find_all('td')])
-                    except (NoAlertPresentException, UnexpectedAlertPresentException):
-                        continue
-                    break
-                except InvalidElementStateException:
-                    try:
-                        driver.find_element_by_name('btnOk').click()
-                    except NoSuchElementException:
-                        driver.find_element_by_name('btncon').click()
-            except NoSuchElementException:
-                continue
-        except:
-            driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify19/SocietyPaddyDetails.aspx')
-            select = Select(driver.find_element_by_tag_name('select'))
-            select.select_by_value('41')
-            driver.find_element_by_id('Btnreport').click()
-            elem = driver.find_element_by_tag_name('tbody')
-            soup = BeautifulSoup(elem.get_attribute('outerHTML'), 'html.parser')
-            for row in soup.find_all('tr'):
-                data.append([cell.get_text() for cell in row.find_all('td')])
-            break
-        print(data)
-        os.remove(captcha_fn)
-    pass
 
 @login_required
 @set_mill_session
 def incoming(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode)
+    stocks = IncomingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode)
     sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     return render(request, "materials/incoming.html", {"stocks": stocks, "sources": sources, "categories": categories})
@@ -130,22 +51,22 @@ def incomingAdd(request):
             price = float(request.POST.get("price"))
             average_weight = in_weight * 100 / in_bags
             remarks = "Entry of {} - {} bags ({}qtl) from {}".format(category.name, in_bags, in_weight, source.name)
-            entry = Stock.objects.create(bags=in_bags, quantity=in_weight, category=category, source=source, remarks=remarks, date=date)
-            IncomingStockEntry.objects.create(source=source, entry=entry, created_by=request.user)
+            entry = Stock.objects.create(bags=in_bags, quantity=in_weight, remarks=remarks, date=date)
+            IncomingStockEntry.objects.create(source=source, category=category, entry=entry, created_by=request.user)
             if price is not None and price > 0:
                 Trading.objects.create(entry=entry, price=price, created_by=request.user)
             pr_bags = float(request.POST["processing_bags"])
             pr_side = ProcessingSide.objects.get(pk=request.POST["processing_side"], is_deleted=False)
             remarks = "Sent {} bags ({} avg. weight) for processing into {}".format(pr_bags, average_weight, pr_side.name)
-            entry = Stock.objects.create(bags=0 - pr_bags, quantity=0 - round((pr_bags * average_weight / 100), 2), category=category, source=source, remarks=remarks, date=date)
-            ProcessingSideEntry.objects.create(source=pr_side, entry=entry, created_by=request.user)
+            entry = Stock.objects.create(bags=0 - pr_bags, quantity=0 - round((pr_bags * average_weight / 100), 2), remarks=remarks, date=date)
+            ProcessingSideEntry.objects.create(source=pr_side, category=category, entry=entry, created_by=request.user)
             counter = int(request.POST.get("counter", 0))
             for i in range(counter):
                 godown = OutgoingSource.objects.get(pk=request.POST["outgoing[{}][godown]".format(i)], is_deleted=False)
                 bags = int(request.POST["outgoing[{}][bags]".format(i)])
                 remarks = "Sent {} bags ({} avg. weight) to {}".format(pr_bags, average_weight, godown.name)
-                entry = Stock.objects.create(bags=0 - bags, quantity=0 - round((bags * average_weight / 100), 2), category=category, source=source, date=date)
-                OutgoingStockEntry.objects.create(entry=entry, source=godown, created_by=request.user)
+                entry = Stock.objects.create(bags=0 - bags, quantity=0 - round((bags * average_weight / 100), 2), date=date)
+                OutgoingStockEntry.objects.create(entry=entry, source=godown, category=category, created_by=request.user)
         except ValueError:
             return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "error_message": "Number of bags and average weight must be a valid number"})
         return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns, "sides": sides, "success_message": "Incoming entry added successfully"})
@@ -161,7 +82,7 @@ def analysis(request):
 @set_mill_session
 def incomingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingStockEntry.objects.filter(entry__is_deleted=False)
+    stocks = IncomingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode)
     sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     if request.method == 'POST':
@@ -173,12 +94,8 @@ def incomingAction(request, id):
                 date = request.POST.get('date_in', datetime.now().strftime("%d-%m-%Y"))
                 date = datetime.strptime(date, "%d-%m-%Y")
                 obj.entry.date = date
-                obj.entry.source = IncomingSource.objects.get(
-                    id=int(request.POST.get('source_id')))
-                obj.source = IncomingSource.objects.get(
-                    id=int(request.POST.get('source_id')))
-                obj.entry.category = Category.objects.get(
-                    id=int(request.POST.get('category_id')))
+                obj.source = IncomingSource.objects.get(id=int(request.POST.get('source_id')))
+                obj.category = Category.objects.get(id=int(request.POST.get('category_id')))
                 obj.entry.bags = float(request.POST.get('bags'))
                 obj.entry.quantity = float(request.POST.get('total_weight'))
                 obj.entry.save()
@@ -200,21 +117,21 @@ def incomingAction(request, id):
 @set_mill_session
 def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).order_by('-created_at')
+    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).order_by('-created_at')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
-    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(category=F('entry__category__name'), name=F('source__name')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
+    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).values(type=F('category__name'), godown=F('source__name')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         bags = int(request.POST["bags"])
         quantity = int(request.POST["quantity"])
         category = Category.objects.get(pk=request.POST["category"])
+        source = OutgoingSource.objects.get(pk=request.POST["source"])
         date = request.POST["date"]
         date = datetime.strptime(date, "%d-%m-%Y")
         side = ProcessingSide.objects.get(pk=request.POST["processing_side"])
-        entry = Stock.objects.create(bags=bags, category=category, source=obj.entry.source, quantity=obj.entry.average_weight * bags / 100, remarks='{} Bags removed from godown {}'.format(bags, obj.source.name), date=date)
-        OutgoingStockEntry.objects.create(entry=entry, created_by=request.user)
-        entry = Stock.objects.create(bags=0 - bags, category=obj.entry.category, source=obj.entry.source, quantity=0 - obj.entry.average_weight * bags / 100, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
+        entry = Stock.objects.create(bags=bags, quantity=quantity, remarks='{} Bags removed from godown {}'.format(bags, source.name), date=date)
+        entry = Stock.objects.create(bags=0 - bags, category=category, source=source, quantity=0 - quantity, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
         ProcessingSideEntry.objects.create(entry=entry, source=side, created_by=request.user)
     return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
 
@@ -233,10 +150,10 @@ def outgoingAdd(request):
 @set_mill_session
 def outgoingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode).order_by('-entry__date')
+    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).order_by('-entry__date')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
+    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == 'POST':
         id = int(id)
@@ -249,22 +166,22 @@ def outgoingAction(request, id):
             category = Category.objects.get(pk=request.POST["category"])
             obj.entry.bags =  0 -bags
             obj.entry.quantity = 0 - quantity
-            obj.entry.category = category
+            obj.category = category
             obj.entry.save()
             obj.source = source
             obj.save()
-            entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
+            entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
             return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "success_message": "Entry updated successfully", "entries": entries})
         if action == 4:
             bags = int(request.POST["bags"])
             date = request.POST["date"]
             date = datetime.strptime(date, "%d-%m-%Y")
             side = ProcessingSide.objects.get(pk=request.POST["processing_side"])
-            entry = Stock.objects.create(bags=bags, category=obj.entry.category, source=obj.entry.source, quantity=obj.entry.average_weight * bags / 100, remarks='{} Bags removed from godown {}'.format(bags, obj.source.name), date=date)
+            entry = Stock.objects.create(bags=bags, category=obj.category, source=obj.source, quantity=obj.entry.average_weight * bags / 100, remarks='{} Bags removed from godown {}'.format(bags, obj.source.name), date=date)
             OutgoingStockEntry.objects.create(entry=entry, created_by=request.user)
-            entry = Stock.objects.create(bags=0 - bags, category=obj.entry.category, source=obj.entry.source, quantity=0 - obj.entry.average_weight * bags / 100, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
+            entry = Stock.objects.create(bags=0 - bags, category=obj.category, source=obj.source, quantity=0 - obj.entry.average_weight * bags / 100, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
             ProcessingSideEntry.objects.create(entry=entry, source=side, created_by=request.user)
-            entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
+            entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
             return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "success_message": "Stock sent to processing successfully", "entries": entries})
         elif action == 2:
             obj.entry.is_deleted = True
@@ -319,14 +236,14 @@ def processing(request):
     mill = Mill.objects.get(code=request.millcode)
     sources = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-    entries = ProcessingSideEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode)
+    entries = ProcessingSideEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode)
     if request.method == "POST":
         action = int(request.POST["action"])
         stock = ProcessingSideEntry.objects.get(pk=request.POST["entry"], entry__is_deleted=False)
         if action == 1:
             stock.entry.bags = 0 - int(request.POST["bags"])
             stock.entry.quantity = 0 - float(request.POST["quantity"])
-            stock.entry.category = Category.objects.get(pk=request.POST["category"])
+            stock.category = Category.objects.get(pk=request.POST["category"])
             stock.source = ProcessingSide.objects.get(pk=request.POST["side"])
             date = request.POST["date"]
             stock.entry.date = datetime.strptime(date, "%d-%m-%Y")
@@ -348,8 +265,7 @@ def godowns(request):
     godowns = OutgoingSource.objects.filter(mill=mill, is_deleted=False)
     if request.method == "POST":
         name = request.POST.get('name')
-        OutgoingSource.objects.create(
-            name=name, mill=mill, created_by=request.user, created_at=datetime.now)
+        OutgoingSource.objects.create(name=name, mill=mill, created_by=request.user, created_at=datetime.now)
         return redirect("materials-godowns", millcode=request.millcode)
     return render(request, "materials/godowns.html", {"godowns": godowns})
 
@@ -379,10 +295,8 @@ def godownsAction(request, id):
 def configuration(request):
     mill = Mill.objects.get(code=request.millcode)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-    incoming_sources = IncomingSource.objects.filter(
-        is_deleted=False, mill=mill)
-    processing_sides = ProcessingSide.objects.filter(
-        is_deleted=False, mill=mill)
+    incoming_sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
+    processing_sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == 'POST':
         action = int(request.POST.get('action', '0'))
         if action == 1:
@@ -396,8 +310,7 @@ def configuration(request):
             return redirect("materials-configuration", millcode=request.millcode)
         elif action == 3:
             name = request.POST.get('name')
-            ProcessingSide.objects.create(
-                name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            ProcessingSide.objects.create(name=name, mill=mill, created_by=request.user, created_at=datetime.now())
             return redirect("materials-configuration", millcode=request.millcode)
     return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides})
 
@@ -413,10 +326,8 @@ def stock(request: WSGIRequest):
 def configurationAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-    incoming_sources = IncomingSource.objects.filter(
-        is_deleted=False, mill=mill)
-    processing_sides = ProcessingSide.objects.filter(
-        is_deleted=False, mill=mill)
+    incoming_sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
+    processing_sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         id = int(id)
         action = int(request.POST.get('action', '0'))
@@ -435,8 +346,9 @@ def configurationAction(request, id):
         elif action == 3:
             name = request.POST.get('name')
             if len(name) > 0:
-                obj = IncomingSource.objects.get(id=id)
+                obj: IncomingSource = IncomingSource.objects.get(id=id)
                 obj.name = name
+                obj.include_trading = bool(request.POST.get("trade", 0))
                 obj.save()
                 return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Incoming source updated successfully"})
         elif action == 4:
@@ -462,7 +374,7 @@ def configurationAction(request, id):
 @set_mill_session
 def trading(request: WSGIRequest):
     categories = Category.objects.filter(mill__code=request.millcode, is_deleted=False)
-    trading = Trading.objects.filter(entry__category__mill__code=request.millcode, entry__is_deleted=False)
+    trading = Trading.objects.filter(category__mill__code=request.millcode, entry__is_deleted=False)
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
@@ -491,9 +403,9 @@ def trading(request: WSGIRequest):
 @login_required
 @set_mill_session
 def get_max_quantity(request: WSGIRequest, category: int):
-    stocks = OutgoingStockEntry.objects.filter(entry__category=category, entry__category__mill__code=request.millcode, entry__source__include_trading=True).values('entry__source__pk',name=F('entry__source__name')).annotate(quantity=Sum('entry__quantity'))
+    stocks = OutgoingStockEntry.objects.filter(category=category, category__mill__code=request.millcode, source__include_trading=True).values('source__pk',name=F('source__name')).annotate(quantity=Sum('entry__quantity'))
     stocks = [{
-        "id": stock["entry__source__pk"],
+        "id": stock["source__pk"],
         "text": stock["name"],
         "max": abs(round(stock["quantity"], 2))
     } for stock in stocks]

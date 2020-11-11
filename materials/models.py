@@ -40,8 +40,6 @@ class Stock(models.Model):
     bags = models.IntegerField()
     quantity = models.FloatField()
     remarks = models.TextField(null=True, blank=True)
-    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='stocks')
-    source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='stocks')
     date = models.DateField()
     is_deleted = models.BooleanField(default=False)
 
@@ -50,19 +48,22 @@ class Stock(models.Model):
         return 0 if self.bags == 0 else round(self.quantity * 100 / self.bags, 2)
 
 class IncomingStockEntry(models.Model):
-    source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')
     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
+    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='stocks')
+    source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
 
 class OutgoingStockEntry(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.PROTECT)
+    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='outgoingstockentrys')
     source = models.ForeignKey(to=OutgoingSource, on_delete=models.CASCADE, related_name='outgoingstockentrys')
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
 
 class ProcessingSideEntry(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.PROTECT)
+    category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='processingsideentrys')
     source = models.ForeignKey(to=ProcessingSide, on_delete=models.CASCADE, related_name='processingsideentrys')
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
