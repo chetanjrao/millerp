@@ -94,7 +94,7 @@ def get_captcha(driver: WebDriver):
 @set_mill_session
 def incoming(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingStockEntry.objects.filter(entry__is_deleted=False)
+    stocks = IncomingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode)
     sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     return render(request, "materials/incoming.html", {"stocks": stocks, "sources": sources, "categories": categories})
@@ -218,7 +218,7 @@ def outgoingAdd(request):
 @set_mill_session
 def outgoingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False).order_by('-entry__date')
+    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode).order_by('-entry__date')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
@@ -290,7 +290,7 @@ def processing(request):
     mill = Mill.objects.get(code=request.millcode)
     sources = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-    entries = ProcessingSideEntry.objects.filter(entry__is_deleted=False)
+    entries = ProcessingSideEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode)
     if request.method == "POST":
         action = int(request.POST["action"])
         stock = ProcessingSideEntry.objects.get(pk=request.POST["entry"], entry__is_deleted=False)
