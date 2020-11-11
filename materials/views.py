@@ -199,7 +199,7 @@ def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
     stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).order_by('-created_at')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
-    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(category=F('entry__category__name'), name=F('source__name')).annotate(max=Sum('entry__bags'))
+    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(category=F('entry__category__name'), name=F('source__name')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})

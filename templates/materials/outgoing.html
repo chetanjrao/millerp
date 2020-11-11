@@ -24,6 +24,7 @@
                             <tr>
                                 <th>Godown Name</th>
                                 <th>Category</th>
+                                <th>Average Weight</th>
                                 <th>Total Quantity</th>
                             </tr>
                         </thead>
@@ -93,6 +94,7 @@
                                 <tr>
                                     <td>{{ entry.name }}</td>
                                     <td>{{ entry.category }}</td>
+                                    <td>{{ entry.max_quantity|div:entry.max|mul:100|floatformat:2 }}</td>
                                     <td>{{ entry.max|abs }}</td>
                                 </tr>
                             {% endfor %}
