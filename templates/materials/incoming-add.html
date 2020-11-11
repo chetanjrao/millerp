@@ -231,11 +231,11 @@
     function calculateRemaining(){
         let bags = $('.bags')
         let quantity = 0
-        let totalQuantity = Number.parseInt($('#incoming_bags').val() || 0) - Number.parseInt($('#processing_bags').val())
+        let totalQuantity = Number.parseInt($('#incoming_bags').val() || 0)
         bags.each((i, e) => {
-            quantity += $(e).val()
+            quantity += Number.parseInt($(e).val() || 0)
         })
-        return totalQuantity 
+        return totalQuantity - quantity 
     }
     form.steps({
         headerTag: "h3",
@@ -294,7 +294,6 @@
     })
     $('#incoming_bags, #incoming_weight').on("change keydown" ,() => {
         average_weight = Number.parseFloat($('#incoming_weight').val() || 0) * 100 /  Number.parseFloat($('#incoming_bags').val() || 1).toFixed(2)
-        $('#processing_bags').attr("max", Number.parseFloat($('#incoming_bags').val() || 0))
     })
     $('#processing_bags').change((e) => {
         let bags = Number.parseInt(e.target.value || 0)
@@ -328,6 +327,13 @@
                 let weightNode = node.nextElementSibling.children.item(1)
                 let bags = Number.parseInt($(e.target).val() || 0)
                 $(weightNode).val((bags * Number.parseFloat(average_weight)).toFixed(2) / 100)
+                let calc = calculateRemaining()
+                if(calc < 0){
+                    alert("Excess stock sent to godowns")
+                } else {
+                    $('#processing_bags').val(calc)
+                    $('#processing_bags').attr("max", calc)
+                }
             })
         }, 50)
     })

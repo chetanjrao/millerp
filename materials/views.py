@@ -205,6 +205,17 @@ def outgoing(request):
     entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(category=F('entry__category__name'), name=F('source__name')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
+    if request.method == "POST":
+        bags = int(request.POST["bags"])
+        quantity = int(request.POST["quantity"])
+        category = Category.objects.get(pk=request.POST["category"])
+        date = request.POST["date"]
+        date = datetime.strptime(date, "%d-%m-%Y")
+        side = ProcessingSide.objects.get(pk=request.POST["processing_side"])
+        entry = Stock.objects.create(bags=bags, category=category, source=obj.entry.source, quantity=obj.entry.average_weight * bags / 100, remarks='{} Bags removed from godown {}'.format(bags, obj.source.name), date=date)
+        OutgoingStockEntry.objects.create(entry=entry, created_by=request.user)
+        entry = Stock.objects.create(bags=0 - bags, category=obj.entry.category, source=obj.entry.source, quantity=0 - obj.entry.average_weight * bags / 100, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
+        ProcessingSideEntry.objects.create(entry=entry, source=side, created_by=request.user)
     return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
 
 
