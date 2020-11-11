@@ -136,14 +136,14 @@ def incomingAdd(request):
             pr_bags = float(request.POST["processing_bags"])
             pr_side = ProcessingSide.objects.get(pk=request.POST["processing_side"], is_deleted=False)
             remarks = "Sent {} bags ({} avg. weight) for processing into {}".format(pr_bags, average_weight, pr_side.name)
-            entry = Stock.objects.create(bags=0 - pr_bags, quantity=0 - (pr_bags * average_weight / 100), category=category, source=source, remarks=remarks, date=date)
+            entry = Stock.objects.create(bags=0 - pr_bags, quantity=0 - round((pr_bags * average_weight / 100), 2), category=category, source=source, remarks=remarks, date=date)
             ProcessingSideEntry.objects.create(source=pr_side, entry=entry, created_by=request.user)
             counter = int(request.POST.get("counter", 0))
             for i in range(counter):
                 godown = OutgoingSource.objects.get(pk=request.POST["outgoing[{}][godown]".format(i)], is_deleted=False)
                 bags = int(request.POST["outgoing[{}][bags]".format(i)])
                 remarks = "Sent {} bags ({} avg. weight) to {}".format(pr_bags, average_weight, godown.name)
-                entry = Stock.objects.create(bags=0 - bags, quantity=0 - (bags * average_weight / 100), category=category, source=source, date=date)
+                entry = Stock.objects.create(bags=0 - bags, quantity=0 - round((bags * average_weight / 100), 2), category=category, source=source, date=date)
                 OutgoingStockEntry.objects.create(entry=entry, source=godown, created_by=request.user)
         except ValueError:
             return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "error_message": "Number of bags and average weight must be a valid number"})
@@ -230,7 +230,7 @@ def outgoingAction(request, id):
         action = int(request.POST.get('action', '0'))
         if action == 1:
             bags = int(request.POST["bags"])
-            
+
         if action == 4:
             bags = int(request.POST["bags"])
             date = request.POST["date"]
