@@ -127,38 +127,8 @@
                     </div>
                 </div>
             </section>
-            <h3>Send stock to Processing</h3>
-            <section>
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group row mb-2">
-                            <label for="horizontal-number-input" class="col-sm-6 col-form-label">Number of bags</label>
-                            <div class="col-md-12">
-                                <input data-parsley-type="number" type="text" class="form-control" required placeholder="Ex. 10,20,30" id="processing_bags" name="processing_bags" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group row mb-4">
-                            <label for="horizontal-number-input" class="col-sm-6 col-form-label">Total weight <small>(in quintals)</small></label>
-                            <div class="col-md-12">
-                                <input data-parsley-type="number" type="text" class="form-control" id="processing_weight" name="processing_weight" placeholder="Ex. 40.5, 50.0" readonly disabled>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mt-3">
-                        <div class="form-group mb-2">
-                            <label for="staff" class="control-label">Select processing unit</label>
-                            <select id="side" name="processing_side" required>
-                                {% for side in sides %}
-                                <option value="{{ side.pk }}">{{ side.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <h3>Send remaining stock to godowns</h3>
+
+            <h3>Send stock to godowns</h3>
             <section>
                 <input type="number" name="counter" readonly value="0" id="counter" hidden />
                 <div class="repeater">
@@ -187,6 +157,37 @@
                         </div>
                     </div>
                     <button id="repeater-button" data-repeater-create type="button" class="btn btn-success mt-3">Add Godown</button>
+                </div>
+            </section>
+            <h3>Send remaining stock to Processing</h3>
+            <section>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group row mb-2">
+                            <label for="horizontal-number-input" class="col-sm-6 col-form-label">Number of bags</label>
+                            <div class="col-md-12">
+                                <input data-parsley-type="number" type="text" class="form-control" required placeholder="Ex. 10,20,30" id="processing_bags" name="processing_bags" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group row mb-4">
+                            <label for="horizontal-number-input" class="col-sm-6 col-form-label">Total weight <small>(in quintals)</small></label>
+                            <div class="col-md-12">
+                                <input data-parsley-type="number" type="text" class="form-control" id="processing_weight" name="processing_weight" placeholder="Ex. 40.5, 50.0" readonly disabled>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mt-3">
+                        <div class="form-group mb-2">
+                            <label for="staff" class="control-label">Select processing unit</label>
+                            <select id="side" name="processing_side" required>
+                                {% for side in sides %}
+                                <option value="{{ side.pk }}">{{ side.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </section>
         </form>
