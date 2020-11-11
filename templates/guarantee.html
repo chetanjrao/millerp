@@ -13,61 +13,16 @@
 <link href="/static/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css">
 {% endblock %}
 {% block body %}
-<div id="spinner" class="spinner-border text-dark m-1" role="status">
-    <span class="sr-only">Loading...</span>
+<div class="card loader">
+    <div class="card-body text-center">
+        <div id="spinner" class="spinner-border text-dark m-1" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <div class="card-title mt-4">Please wait while we are loading the live data from site</div>
+    </div>
 </div>
 <div id="guarantee" class="card">
     <div class="card-body">
-        <!-- <table id="data">
-
-            <tbody><tr>
-                <td align="center" colspan="2">
-                    <strong>प्रतिभूति विवरण</strong>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span id="ctl00_Miller_content1_Label2" style="display:inline-block;font-weight:bold;height:22px;width:118px;">मिल का नाम :</span></td>
-                <td>
-                    <span id="ctl00_Miller_content1_lblmill" style="display:inline-block;height:15px;width:305px;">Ms JAGDISH RICE MILL PVT LTD</span></td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <table cellspacing="1" border="0" style="background-color:Black;border-color:WhiteSmoke;border-width:1px;border-style:solid;width:900px;">
-	<tbody><tr style="color:Black;background-color:White;">
-		<td>क्र</td><td>प्रतिभूति</td><td>कुल राशि(रु.मे)</td><td>बैंक क्र./सैम्पल स्लिप नं.</td><td>बैंक का नाम</td><td>कुल चावल की मात्रा(क्विं. मे)</td><td>कुल धान की मात्रा(क्विं. मे)</td><td>प्रतिभूति की स्थिति</td><td style="width:75px;">जमा दिनांक</td><td style="width:75px;">वैद्यता प्रारंभिक दिनांक</td><td style="width:75px;">वैद्यता समाप्ति दिनांक</td><td style="width:75px;">DO कटने की अंतिम तिथि (वैद्यता समाप्ति से 10 दिन पूर्व)</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>1</td><td>बैंक गारंटी</td><td align="right">10000000.00</td><td>152GT02193310013</td><td>RGH</td><td align="right">0.00</td><td align="right">4403.35</td><td>रिलीज</td><td>28/11/2019</td><td>05/12/2019</td><td>27/05/2020</td><td>17/05/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>2</td><td>बैंक गारंटी</td><td align="right">6600000.00</td><td>152GT02193600005</td><td>RGH</td><td align="right">0.00</td><td align="right">2906.21</td><td>रिलीज</td><td>26/12/2019</td><td>27/12/2019</td><td>25/06/2020</td><td>15/06/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>3</td><td>बैंक गारंटी</td><td align="right">10000000.00</td><td>152GT0219332007</td><td>RGH</td><td align="right">0.00</td><td align="right">4403.35</td><td>रिलीज</td><td>28/11/2019</td><td>05/12/2019</td><td>27/05/2020</td><td>17/05/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>4</td><td>बैंक गारंटी</td><td align="right">10000000.00</td><td>152GT02193410007</td><td>RGH</td><td align="right">0.00</td><td align="right">4403.35</td><td>रिलीज</td><td>07/12/2019</td><td>11/12/2019</td><td>06/06/2020</td><td>27/05/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>5</td><td>बैंक गारंटी</td><td align="right">5000000.00</td><td>152GT02193520007</td><td>RGH</td><td align="right">0.00</td><td align="right">2201.67</td><td>रिलीज</td><td>18/12/2019</td><td>19/12/2019</td><td>17/06/2020</td><td>07/06/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>6</td><td>बैंक गारंटी</td><td align="right">10000000.00</td><td>152GT02193310013	</td><td>RGH</td><td align="right">0.00</td><td align="right">4403.35</td><td>रिलीज</td><td>28/11/2019</td><td>12/05/2020</td><td>27/08/2020</td><td>17/08/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>7</td><td>बैंक गारंटी</td><td align="right">10000000.00</td><td>152GT02193570007</td><td>RGH</td><td align="right">0.00</td><td align="right">4403.35</td><td>रिलीज</td><td>23/12/2019</td><td>12/05/2020</td><td>22/06/2020</td><td>12/06/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>8</td><td>बैंक गारंटी</td><td align="right">10000000.00</td><td>152GT02193320007</td><td>RGH</td><td align="right">0.00</td><td align="right">4403.35</td><td>रिलीज</td><td>28/11/2019</td><td>29/05/2020</td><td>27/08/2020</td><td>17/08/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>9</td><td>बैंक गारंटी</td><td align="right">10000000.00</td><td>152GT02193570007</td><td>RGH</td><td align="right">0.00</td><td align="right">4403.35</td><td>रिलीज</td><td>23/12/2019</td><td>30/05/2020</td><td>22/09/2020</td><td>12/09/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>10</td><td>बैंक गारंटी</td><td align="right">10000000.00</td><td>152GT02193570007</td><td>RGH</td><td align="right">0.00</td><td align="right">4403.35</td><td>रिलीज</td><td>23/12/2019</td><td>24/12/2019</td><td>22/06/2020</td><td>12/06/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>11</td><td>बैंक गारंटी</td><td align="right">10000000.00</td><td>152GT02193410007</td><td>RGH</td><td align="right">0.00</td><td align="right">4403.35</td><td>रिलीज</td><td>07/12/2019</td><td>22/07/2020</td><td>06/09/2020</td><td>27/08/2020</td>
-	</tr><tr style="color:Black;background-color:White;height:40px;">
-		<td>12</td><td>कस्टम मिलिंग के विरुद्ध देय राशि</td><td align="right">839200.00</td><td>CG410005</td><td>कस्टम मिलिंग के विरुद्ध देय राशि</td><td align="right">0.00</td><td align="right">369.53</td><td>रिलीज</td><td>25/08/2020</td><td>25/08/2020</td><td>24/09/2020</td><td>14/09/2020</td>
-	</tr><tr style="color:Black;background-color:WhiteSmoke;font-weight:bold;height:30px;">
-		<td colspan="2">योग : </td><td align="right">102439200.00</td><td></td><td></td><td align="right">0.00</td><td align="right">45107.53</td><td></td><td></td><td></td><td></td><td></td>
-	</tr>
-</tbody></table>
-                </td>
-            </tr>
-        </tbody>
-        </table> -->
         <table class="data table table-striped table-bordered dt-responsive nowrap">
             <thead id="dataHead">
 
@@ -108,6 +63,7 @@
 <script src="/static/js/pages/form-advanced.init.js"></script>
 <script src="/static/js/app.js"></script>
 <script>
+    $('#guarantee').hide()
     $.ajax({
         url: 'api/',
         type: 'GET',
@@ -141,14 +97,14 @@
                 searching: false,
                 paging: false
             })
-            $('#spinner').hide()
+            $('.loader').hide()
         },
         error: function (xhr, status) {
             alert("Sorry, there was a problem!");
         },
         complete: function (xhr, status) {
             $('#guarantee').show()
-            $('#spinner').hide()
+            $('.loader').hide()
         }
     })
 </script>
