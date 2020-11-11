@@ -1,0 +1,46 @@
+{% extends 'base.html' %} 
+{% block body %}
+<div id="spinner" class="spinner-border text-dark m-1" role="status">
+    <span class="sr-only">Loading...</span>
+</div>
+<div id="guarantee" class="card">
+    <div class="card-body">
+        <table id="datatable">
+
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/libs/jquery/jquery.min.js"></script>
+<script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/libs/simplebar/simplebar.min.js"></script>
+<script src="/static/libs/node-waves/waves.min.js"></script>
+
+<!-- apexcharts -->
+<script src="/static/libs/apexcharts/apexcharts.min.js"></script>
+
+<script src="/static/js/pages/dashboard.init.js"></script>
+
+<!-- App js -->
+<script src="/static/js/app.js"></script>
+<script>
+    $('#guarantee').hide()
+    $.ajax({
+        url: 'api/',
+        type: 'GET',
+        dataType: "html",
+        success: function (data) {
+            $('#datatable').html(data);
+        },
+        error: function (xhr, status) {
+            alert("Sorry, there was a problem!");
+        },
+        complete: function (xhr, status) {
+            $('#guarantee').show()
+            $('#spinner').hide()
+        }
+    })
+</script>
+{% endblock %}
