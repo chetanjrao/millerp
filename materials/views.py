@@ -197,8 +197,10 @@ def incomingAction(request, id):
 @set_mill_session
 def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__bags__lte=0).order_by('-created_at')
+    stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).order_by('-created_at')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
+    godowns = OutgoingStockEntry.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode, entry__bags__lte=0).values(name=F('source__name')).annotate(max=Sum('entry__bags'))
+    print(godowns)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories})
@@ -227,7 +229,8 @@ def outgoingAction(request, id):
         obj: OutgoingStockEntry = OutgoingStockEntry.objects.get(id=id)
         action = int(request.POST.get('action', '0'))
         if action == 1:
-            pass
+            bags = int(request.POST["bags"])
+            
         if action == 4:
             bags = int(request.POST["bags"])
             date = request.POST["date"]
