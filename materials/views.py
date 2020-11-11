@@ -120,7 +120,8 @@ def incomingAdd(request):
     godowns = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
-        date = request.POST.get('date', datetime.now())
+        date = request.POST.get('date', datetime.now().strftime("%d-%m-%Y"))
+        date = datetime.strptime(date, "%d-%m-%Y")
         category = Category.objects.get(id=int(request.POST.get('incoming_category')))
         source = IncomingSource.objects.get(id=request.POST.get("incoming_source"))
         try:
@@ -169,7 +170,9 @@ def incomingAction(request, id):
         action = int(request.POST.get('action', '0'))
         if action == 1:
             try:
-                obj.entry.date = request.POST.get('date_in')
+                date = request.POST.get('date_in', datetime.now().strftime("%d-%m-%Y"))
+                date = datetime.strptime(date, "%d-%m-%Y")
+                obj.entry.date = date
                 obj.entry.source = IncomingSource.objects.get(
                     id=int(request.POST.get('source_id')))
                 obj.source = IncomingSource.objects.get(
@@ -244,6 +247,7 @@ def outgoingAction(request, id):
         if action == 4:
             bags = int(request.POST["bags"])
             date = request.POST["date"]
+            date = datetime.strptime(date, "%d-%m-%Y")
             side = ProcessingSide.objects.get(pk=request.POST["processing_side"])
             entry = Stock.objects.create(bags=bags, category=obj.entry.category, source=obj.entry.source, quantity=obj.entry.average_weight * bags / 100, remarks='{} Bags removed from godown {}'.format(bags, obj.source.name), date=date)
             OutgoingStockEntry.objects.create(entry=entry, created_by=request.user)
@@ -313,7 +317,8 @@ def processing(request):
             stock.entry.quantity = 0 - float(request.POST["quantity"])
             stock.entry.category = Category.objects.get(pk=request.POST["category"])
             stock.source = ProcessingSide.objects.get(pk=request.POST["side"])
-            stock.entry.date = request.POST["date"]
+            date = request.POST["date"]
+            stock.entry.date = datetime.strptime(date, "%d-%m-%Y")
             stock.entry.save()
             stock.save()
         elif action == 2:
