@@ -36,13 +36,15 @@
                         </thead>
                         <tbody>
                             {% for entry in entries %}
-                                <div id="sendModal{{ entry.pk }}" class="modal fade" tabindex="-1" role="dialog"
+                                <div id="sendModal{{ forloop.counter }}" class="modal fade" tabindex="-1" role="dialog"
                                     aria-labelledby="myModalLabel" aria-hidden="true">
                                     <form class="needs-validation" method="POST"
                                         action="">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="1" readonly>
-                                        <input type="hidden" name="product" value="{{ stock.pk }}" readonly>
+                                        <input type="hidden" name="type" value="{{ entry.type_pk }}" readonly>
+                                        <input type="hidden" name="godown" value="{{ entry.godown_pk }}" readonly>
+                                        <input type="hidden" name="average_weight" value="{{ entry.max_quantity|div:entry.max|mul:100|floatformat:2 }}" readonly>
                                         <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
                                                 <div class="modal-header">
@@ -105,7 +107,7 @@
                                     <td>{{ entry.max|abs }}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
-                                        data-target="#sendModal{{stock.pk}}">
+                                        data-target="#sendModal{{ forloop.counter }}">
                                         <i style="vertical-align: middle;" class="mdi mdi-progress-upload font-size-12"></i><span
                                             class="ml-1">Send to processing</span>
                                     </button>
@@ -243,7 +245,7 @@
                                     </div><!-- /.modal-content -->
                                 </div><!-- /.modal-dialog -->
                             </div><!-- /.modal -->
-                            <div id="sendModal{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog"
+                            <div id="sendModl{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myModalLabel" aria-hidden="true">
                                 <form class="needs-validation" method="POST"
                                     action="{% url 'materials-outgoing-action' id=stock.id millcode=request.millcode%}">

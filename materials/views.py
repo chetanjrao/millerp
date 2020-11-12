@@ -54,7 +54,7 @@ def incomingAdd(request):
             entry = Stock.objects.create(bags=in_bags, quantity=in_weight, remarks=remarks, date=date)
             IncomingStockEntry.objects.create(source=source, category=category, entry=entry, created_by=request.user)
             if price is not None and price > 0:
-                Trading.objects.create(entry=entry, price=price, created_by=request.user)
+                Trading.objects.create(entry=entry, mill=mill, price=price, created_by=request.user)
             pr_bags = float(request.POST["processing_bags"])
             pr_side = ProcessingSide.objects.get(pk=request.POST["processing_side"], is_deleted=False)
             remarks = "Sent {} bags ({} avg. weight) for processing into {}".format(pr_bags, average_weight, pr_side.name)
@@ -119,20 +119,22 @@ def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
     stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).order_by('-created_at')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
-    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).values(type=F('category__name'), godown=F('source__name')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
+    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).values(type=F('category__name'), godown=F('source__name'),type_pk=F('category__pk'), godown_pk=F('source__pk')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         bags = int(request.POST["bags"])
-        quantity = int(request.POST["quantity"])
+        average_weight = float(request.POST["average_weight"])
+        quantity = round(bags * average_weight / 100, 2)
         category = Category.objects.get(pk=request.POST["category"])
         source = OutgoingSource.objects.get(pk=request.POST["source"])
         date = request.POST["date"]
         date = datetime.strptime(date, "%d-%m-%Y")
         side = ProcessingSide.objects.get(pk=request.POST["processing_side"])
         entry = Stock.objects.create(bags=bags, quantity=quantity, remarks='{} Bags removed from godown {}'.format(bags, source.name), date=date)
+        OutgoingStockEntry.objects.create(entry=entry, category=category, source=source, created_by=request.user)
         entry = Stock.objects.create(bags=0 - bags, category=category, source=source, quantity=0 - quantity, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
-        ProcessingSideEntry.objects.create(entry=entry, source=side, created_by=request.user)
+        ProcessingSideEntry.objects.create(entry=entry, category=category, source=side, created_by=request.user)
     return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
 
 
@@ -374,17 +376,18 @@ def configurationAction(request, id):
 @set_mill_session
 def trading(request: WSGIRequest):
     categories = Category.objects.filter(mill__code=request.millcode, is_deleted=False)
-    trading = Trading.objects.filter(category__mill__code=request.millcode, entry__is_deleted=False)
+    mill = Mill.objects.get(code=request.millcode)
+    trading = Trading.objects.filter(mill__code=request.millcode, entry__is_deleted=False)
+    quantity = trading.values().aggregate(quantity=Sum('entry__quantity'), bags=Sum('entry__bags'))
+    average_weight = 0 if quantity['quantity'] is None else quantity['quantity'] * 100 / quantity['bags'] if quantity['bags'] is not None else 1
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
-            category = Category.objects.get(pk=request.POST["category"])
-            source = IncomingSource.objects.get(pk=request.POST["source"])
             price = float(request.POST["price"])
             quantity = float(request.POST["quantity"])
-            bags = int(quantity * 40 / 100)
-            entry = Stock.objects.create(category=category, source=source, bags=0 - bags, quantity=0 - quantity, date=datetime.now().astimezone().date(), remarks='Sold {} - {} quintal for \u20b9{}/- per/qtl'.format(category.name, quantity, price))
-            Trading.objects.create(entry=entry, price=price, created_by=request.user)
+            bags = int(quantity * 100 / average_weight)
+            entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, date=datetime.now().astimezone().date(), remarks='Sold {} - {} quintal for \u20b9{}/- per/qtl'.format(quantity, price))
+            Trading.objects.create(entry=entry, price=price, mill=mill, created_by=request.user)
             return render(request, "materials/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record created successfully" })
         elif action == 2:
             price = float(request.POST["price"])
