@@ -120,13 +120,11 @@ def outgoing(request):
     stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).order_by('-created_at')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).values(type=F('category__name'), godown=F('source__name'),type_pk=F('category__pk'), godown_pk=F('source__pk')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
-    print(entries)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         bags = int(request.POST["bags"])
         average_weight = float(request.POST["average_weight"])
-        print(average_weight)
         quantity = round(bags * average_weight / 100, 2)
         category = Category.objects.get(pk=request.POST["category"])
         source = OutgoingSource.objects.get(pk=request.POST["source"])
@@ -388,7 +386,7 @@ def trading(request: WSGIRequest):
             price = float(request.POST["price"])
             quantity = float(request.POST["quantity"])
             bags = int(quantity * 100 / average_weight)
-            entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, date=datetime.now().astimezone().date(), remarks='Sold {} - {} quintal for \u20b9{}/- per/qtl'.format(quantity, price))
+            entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, date=datetime.now().astimezone().date(), remarks='Sold {} - {} quintal for \u20b9{}/- per/qtl'.format(bags, quantity, price))
             Trading.objects.create(entry=entry, price=price, mill=mill, created_by=request.user)
             return render(request, "materials/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record created successfully" })
         elif action == 2:
