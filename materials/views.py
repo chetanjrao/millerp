@@ -119,12 +119,14 @@ def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
     stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).order_by('-created_at')
     sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
-    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).values(type=F('category__name'), godown=F('source__name'),type_pk=F('category__pk'), godown_pk=F('source__pk')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
+    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).values(type=F('category__name'), godown=F('source__name'),type_pk=F('category__pk'), godown_pk=F('source__pk')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
+    print(entries)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         bags = int(request.POST["bags"])
         average_weight = float(request.POST["average_weight"])
+        print(average_weight)
         quantity = round(bags * average_weight / 100, 2)
         category = Category.objects.get(pk=request.POST["category"])
         source = OutgoingSource.objects.get(pk=request.POST["source"])
@@ -133,7 +135,7 @@ def outgoing(request):
         side = ProcessingSide.objects.get(pk=request.POST["processing_side"])
         entry = Stock.objects.create(bags=bags, quantity=quantity, remarks='{} Bags removed from godown {}'.format(bags, source.name), date=date)
         OutgoingStockEntry.objects.create(entry=entry, category=category, source=source, created_by=request.user)
-        entry = Stock.objects.create(bags=0 - bags, category=category, source=source, quantity=0 - quantity, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
+        entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
         ProcessingSideEntry.objects.create(entry=entry, category=category, source=side, created_by=request.user)
     return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
 
@@ -400,8 +402,8 @@ def trading(request: WSGIRequest):
             trade.entry.is_deleted = True
             trade.entry.save()
             trade.save()
-            return render(request, "materials/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record deleted successfully" })
-    return render(request, "materials/trading.html", { "trading": trading, "categories": categories })
+            return render(request, "materials/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record deleted successfully", "quantity": quantity })
+    return render(request, "materials/trading.html", { "trading": trading, "categories": categories, "quantity": quantity })
 
 @login_required
 @set_mill_session

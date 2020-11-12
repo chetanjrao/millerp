@@ -34,7 +34,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="control-label">Total Quantity <small>(in quintal)</small></label>
-                                        <input type="number" class="form-control" id="quantity" name="quantity" value="" step="any" required>
+                                        <input type="number" class="form-control" id="quantity" name="quantity" max="{{ quantity.quantity|default:0 }}" value="" step="any" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">

@@ -164,7 +164,7 @@
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title mt-0" id="myModalLabel">Delete
-                                                        {{stock.entry.category.name }} -
+                                                        {{stock.category.name }} -
                                                         {{stock.entry.date}}
                                                     </h5>
                                                     <button type="button" class="close" data-dismiss="modal"
@@ -173,7 +173,7 @@
                                                     </button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    Are you sure to delete product <strong>{{ stock.entry.category.name }} -
+                                                    Are you sure to delete product <strong>{{ stock.category.name }} -
                                                         {{stock.entry.date}}</strong> ?
                                                 </div>
                                                 <div class="modal-footer">
@@ -189,7 +189,7 @@
                                 </div>
                                 <tr>
                                     <td>{{stock.entry.date}}</td>
-                                    <td>{{stock.entry.category.name}}</td>
+                                    <td>{{stock.category.name}}</td>
                                     <td>{{stock.source.name}}</td>
                                     <td>{{stock.entry.bags|mul:-1}}</td>
                                     <td>{{stock.entry.quantity|mul:-1|floatformat:2}}</td>
