@@ -24,12 +24,6 @@
                 </li>
                 <li class="menu-title">Paddy</li>
                 <li>
-                    <a href="{% url 'materials-analysis' millcode=request.millcode %}" class=" waves-effect">
-                        <i class="bx bx-line-chart"></i>
-                        <span>Entry Book</span>
-                    </a>
-                </li>
-                <li>
                     <a href="{% url 'materials-incoming' millcode=request.millcode %}" class=" waves-effect">
                         <i class="bx bx-download"></i>
                         <span>Incoming</span>
@@ -77,13 +71,6 @@
                 </li>
 
                 <li class="menu-title">Rice</li>
-
-                <li>
-                    <a href="{% url 'products-book' millcode=request.millcode%}" class=" waves-effect">
-                        <i class="bx bx-pie-chart"></i>
-                        <span>Entry Book</span>
-                    </a>
-                </li>
 
                 <li>
                     <a href="{% url 'products-incoming' millcode=request.millcode%}" class=" waves-effect">
