@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from core.decorators import set_mill_session
-from .models import IncomingProductEntry, ProductCategory, ProductStock, ProductionType, OutgoingProductEntry, Stock, Trading
+from .models import IncomingProductEntry, ProductCategory, ProductStock, ProductionType, OutgoingProductEntry, Stock, Trading, TradingSource
 from core.models import Mill
 
 
@@ -123,27 +123,34 @@ def outgoingAction(request, id):
 def configuration(request):
     mill = Mill.objects.get(code=request.millcode)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
-    production_types = ProductionType.objects.filter(
-        is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
+    trading_sources = TradingSource.objects.filter(is_deleted=False, category__mill=mill)
     if request.method == 'POST':
         action = int(request.POST.get('action', '0'))
         if action == 1:
             name = request.POST.get('name')
-            ProductCategory.objects.create(
-                name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            ProductCategory.objects.create(name=name, mill=mill, created_by=request.user, created_at=datetime.now())
             return redirect("products-configuration", millcode=request.millcode)
         elif action == 2:
             try:
                 name = request.POST.get('name')
                 category = ProductCategory.objects.get(id=int(request.POST.get('category')))
                 quantity = float(request.POST.get('quantity'))
-                trade = bool(request.POST.get("trade", 0))
                 mix = bool(request.POST.get("mix", 0))
-                ProductionType.objects.create(name=name, category=category, include_trading=trade, is_mixture=mix, quantity=quantity, mill=mill, created_by=request.user, created_at=datetime.now())
+                ProductionType.objects.create(name=name, category=category, is_mixture=mix, quantity=quantity, mill=mill, created_by=request.user, created_at=datetime.now())
                 return redirect("products-configuration", millcode=request.millcode)
             except ValueError:
-                return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "error_message": "Please enter valid entries"})
-    return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types})
+                return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "error_message": "Please enter valid entries"})
+        elif action == 3:
+            try:
+                name = request.POST.get('name')
+                category = ProductCategory.objects.get(id=int(request.POST.get('category')))
+                quantity = float(request.POST.get('quantity'))
+                TradingSource.objects.create(name=name, category=category, quantity=quantity, created_by=request.user)
+                return redirect("products-configuration", millcode=request.millcode)
+            except ValueError:
+                return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "error_message": "Please enter valid entries"})
+    return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources })
 
 @login_required
 @set_mill_session

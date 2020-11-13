@@ -67,7 +67,6 @@ class TradingSource(models.Model):
     category = models.ForeignKey(to=ProductCategory, on_delete=models.CASCADE, related_name='tradingsources')
     is_deleted = models.BooleanField(default=False)
     quantity = models.FloatField(default=0.0)
-    mill = models.ForeignKey(to=Mill, on_delete=models.PROTECT)
     created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
 
@@ -80,4 +79,4 @@ class Trading(models.Model):
 
     @property
     def total(self):
-        return self.entry.total
+        return round(self.entry.bags * self.product.quantity / 100, 2)
