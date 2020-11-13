@@ -428,12 +428,11 @@ def daterange(start_date, end_date):
 @set_mill_session
 def export_to_excel(request):
     output = io.BytesIO()
+    start = datetime.strptime(request.GET["from"], "%Y-%m-%d")
+    end = datetime.strptime(request.GET["to"], "%Y-%m-%d")
+    day = (end - start).days + 1
     wb = xlsxwriter.Workbook(output)
     categories = Category.objects.filter(mill__code=request.millcode, is_deleted=False)
-    now = datetime.now().astimezone().date()
-    _, day = calendar.monthrange(now.year, now.month)
-    start = now.replace(day=1)
-    end = now.replace(day=day)
     title_format = wb.add_format({ "font_size": 24, "underline": True, "bold": True, "align": 'center' })
     source_format = wb.add_format({ "bg_color": '#FFFF00', "bold": True, "font_size": 11, "align": 'center' })
     source_format.set_bold()
