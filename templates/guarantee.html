@@ -24,12 +24,14 @@
 <div id="guarantee" class="card">
     <div class="card-body">
         <table class="data table table-striped table-bordered dt-responsive nowrap">
-            <thead id="dataHead">
-
+            <thead>
+                <th>क्र</th>
+                <th>कुल राशि(रु.मे)</th>
+                <th>बैंक क्र./सैम्पल स्लिप नं.</th>
+                <th>कुल धान की मात्रा(क्विं. मे)</th>
+                <th>प्रतिभूति की स्थिति</th>
+                <th>DO कटने की अंतिम तिथि (वैद्यता समाप्ति से 10 दिन पूर्व)</th>
             </thead>
-            <tbody id="dataBody">
-
-            </tbody>
         </table>
     </div>
 </div>
@@ -67,32 +69,10 @@
     $.ajax({
         url: 'api/',
         type: 'GET',
-        dataType: "html",
-        success: function (data) {
-            let elem = document.createElement("table")
-            elem.innerHTML = data;
-            let rootNode = $(elem).children().get(0).children.item(2).children.item(0).children.item(0).children.item(0).children
-            let headerNode = rootNode.item(0)
-            let itemNode = $(rootNode).slice(1, rootNode.length - 1)
-            let headerTag = document.createElement('tr')
-            $(headerNode.children).each((i, v) => {
-                let subNode = document.createElement("th")
-                let textNode = document.createTextNode($(v).text())
-                subNode.appendChild(textNode)
-                headerTag.appendChild(subNode)
-            })
-            $('#dataHead').append(headerTag)
-            $(itemNode).each((i, e) => {
-                let dataNode = document.createElement("tr")
-                $(e.children).each((j, v) => {
-                    let subNode = document.createElement("td")
-                    let textNode = document.createTextNode($(v).text())
-                    subNode.appendChild(textNode)
-                    dataNode.appendChild(subNode)
-                })
-                $('#dataBody').append(dataNode)
-            })
+        dataType: "json",
+        success: function (results) {
             $('.data').DataTable({
+                data: Object.values(results["results"])
             })
             $('.loader').hide()
         },

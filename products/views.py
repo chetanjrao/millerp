@@ -89,7 +89,6 @@ def outgoing(request):
 @set_mill_session
 def max_stock(request, category: int):
     stock = ProductStock.objects.filter(entry__category__pk=category, entry__is_deleted=False).values(category=F('entry__category__name')).annotate(max=Sum('entry__bags'))
-    print(stock)
     return JsonResponse({}, safe=False)
 
 @login_required
