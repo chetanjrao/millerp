@@ -47,7 +47,6 @@
                                                             <div class="col-md-10">
                                                                 <select class="form-control select2"
                                                                     name="category" id="category" required>
-                                                                    <option></option>
                                                                     {% for cat in categories %}
                                                                         <option value="{{cat.id}}">{{ cat.name }}</option>
                                                                     {% endfor %}
@@ -64,7 +63,6 @@
                                                             <div class="col-md-10">
                                                                 <select class="form-control select2"
                                                                     name="product" id="product" required>
-                                                                    <option value=""></option>
                                                                     {% for type in production_types %}
                                                                     <option value="{{type.id}}">{{ type.name }}
                                                                     </option>
@@ -245,9 +243,9 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div><!-- /.modal-content -->
-                                </div><!-- /.modal-dialog -->
-                            </div><!-- /.modal -->
+                                    </div>
+                                </div>
+                            </div>
                             <div id="deleteModal{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myModalLabel" aria-hidden="true">
                                 <form class="needs-validation" method="POST"
@@ -278,11 +276,10 @@
                                                     class="btn btn-danger waves-effect waves-light">Yes,
                                                     delete</button>
                                             </div>
-                                        </div><!-- /.modal-content -->
+                                        </div>
                                     </div>
                                 </form>
                             </div>
-
                             <tr>
                                 <td>{{stock.entry.date}}</td>
                                 <td>{{stock.category.name}}</td>
