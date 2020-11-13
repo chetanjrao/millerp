@@ -1,15 +1,21 @@
-from django.db.models.expressions import F
-from django.http.response import JsonResponse
+import io
+from django.db.models.expressions import Case, F, When
+from django.db.models.fields import IntegerField
+from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.core.handlers.wsgi import WSGIRequest
 from rest_framework.views import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from xlsxwriter import workbook
 from core.decorators import set_mill_session
 from core.models import Mill
 from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry, Stock, Trading
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils.timezone import datetime
 from django.db.models import Sum
+from django.db.models.functions import Coalesce
+import xlsxwriter
+import calendar
 
 @login_required
 @set_mill_session
@@ -413,3 +419,49 @@ def get_max_quantity(request: WSGIRequest, category: int):
         "max": abs(round(stock["quantity"], 2))
     } for stock in stocks]
     return JsonResponse(stocks, safe=False)
+
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days) + 1):
+        yield start_date + timedelta(n)
+
+@login_required
+@set_mill_session
+def export_to_excel(request):
+    output = io.BytesIO()
+    wb = xlsxwriter.Workbook(output)
+    categories = Category.objects.filter(mill__code=request.millcode, is_deleted=False)
+    now = datetime.now().astimezone().date()
+    _, day = calendar.monthrange(now.year, now.month)
+    start = now.replace(day=1)
+    end = now.replace(day=day)
+    title_format = wb.add_format({ "font_size": 24, "underline": True, "bold": True })
+    source_format = wb.add_format({ "bg_color": '#FFFF00', "bold": True, "font_size": 11 })
+    for category in categories:
+        ws = wb.add_worksheet(category.name)
+        incoming_sources = IncomingSource.objects.filter(is_deleted=False, mill__code=request.millcode)
+        ws.write(0, 0, "Incoming", title_format)
+        for i in range(0, len(incoming_sources), 1):
+            ws.write(1, 2 * i + 1, incoming_sources[i].name, source_format)
+            ws.write(2, 2 * i + 1, '(In Bags)')
+            ws.write(2, 2 * i + 2, '(In Qtl)')
+            for j, date in zip(range(day), daterange(start, end)):
+                ws.write(j+3, 0, '{}'.format(date.strftime("%d/%m/%Y")))
+                incoming = IncomingStockEntry.objects.filter(entry__is_deleted=False, category=category, source=incoming_sources[i], entry__date=date).values('source').annotate(bags=Coalesce(Sum('entry__bags'), 0), quantity=Coalesce(Sum('entry__quantity'), 0)).values('bags', 'quantity')
+                ws.write(j+3, 2 * i + 1, incoming[0]["bags"] if len(incoming) > 0 else '')
+                ws.write(j+3, 2 * i + 2, incoming[0]["quantity"] if len(incoming) > 0 else '')
+        outgoing_sources = OutgoingSource.objects.filter(is_deleted=False, mill__code=request.millcode)
+        ws.write(0, 2 * len(incoming_sources) + 1, "Outgoing", title_format)
+        for i in range(len(incoming_sources), len(incoming_sources) + len(outgoing_sources), 1):
+            ws.write(1, 2 * i + 1, outgoing_sources[i - len(incoming_sources)].name, source_format)
+            ws.write(2, 2 * i + 1, '(In Bags)')
+            ws.write(2, 2 * i + 2, '(In Qtl)')
+            for j, date in zip(range(day), daterange(start, end)):
+                ws.write(j+3, 0, '{}'.format(date.strftime("%d/%m/%Y")))
+                incoming = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category=category, source=outgoing_sources[i - len(incoming_sources)], entry__date=date).values('source').annotate(bags=Coalesce(Sum('entry__bags'), 0), quantity=Coalesce(Sum('entry__quantity'), 0)).values('bags', 'quantity')
+                ws.write(j+3, 2 * i + 1, abs(incoming[0]["bags"]) if len(incoming) > 0 else '')
+                ws.write(j+3, 2 * i + 2, abs(incoming[0]["quantity"]) if len(incoming) > 0 else '')      
+    wb.close()
+    output.seek(0)
+    response = HttpResponse(output ,content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="users.xlsx"'
+    return response

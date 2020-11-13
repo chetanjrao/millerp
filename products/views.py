@@ -29,20 +29,17 @@ def incomingAdd(request):
             date = request.POST.get('date')
             bags = int(request.POST.get('bags'))
             outgoing_bags = int(request.POST.get('outgoing_bags', '0'))
-            price = float(request.POST["price"])
             category: ProductCategory = ProductCategory.objects.get(id=int(request.POST.get('category')))
             product_type: ProductionType = ProductionType.objects.get(id=int(request.POST.get('type')))
             remarks = "Added {} bags of {} - {}".format(bags, product_type.name, category.name)
-            entry = Stock.objects.create(bags=bags, category=category, product=product_type, date=date, remarks=remarks)
-            IncomingProductEntry.objects.create(entry=entry, created_by=request.user)
-            if price is not None and price > 0:
-                Trading.objects.create(entry=entry, price=price, created_by=request.user)
+            entry = Stock.objects.create(bags=bags, date=date, remarks=remarks)
+            IncomingProductEntry.objects.create(entry=entry, created_by=request.user, category=category, product=product_type)
             remarks = "Sent {} bags of {} - {}".format(outgoing_bags, product_type.name, category.name)
-            entry = Stock.objects.create(bags=0 - outgoing_bags, category=category, product=product_type, date=date, remarks=remarks)
-            OutgoingProductEntry.objects.create(entry=entry, created_by=request.user)
+            entry = Stock.objects.create(bags=0 - outgoing_bags, date=date, remarks=remarks)
+            OutgoingProductEntry.objects.create(entry=entry, category=category, product=product_type, created_by=request.user)
             remarks = "Stock {} bags of {} - {}".format(bags - outgoing_bags, product_type.name, category.name)
-            entry = Stock.objects.create(bags=0 - (bags - outgoing_bags), category=category, product=product_type, date=date, remarks=remarks)
-            ProductStock.objects.create(entry=entry, created_by=request.user)
+            entry = Stock.objects.create(bags=0 - (bags - outgoing_bags), date=date, remarks=remarks)
+            ProductStock.objects.create(entry=entry, category=category, product=product_type, created_by=request.user)
             return render(request, "products/incoming-add.html", {'categories': categories, 'success_message': "Incoming product entry added successfully"})
         except ValueError:
             return render(request, "products/incoming-add.html", {'categories': categories, 'error_message': "Please enter valid entries"})
@@ -85,8 +82,7 @@ def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
     stocks = OutgoingProductEntry.objects.filter(entry__is_deleted=False)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
-    production_types = ProductionType.objects.filter(
-        is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
 
 @login_required
@@ -156,7 +152,7 @@ def get_production_types(request, category: int):
         "id": ptype.pk,
         "text": ptype.name,
         "quantity": ptype.quantity,
-        "is_trading": ptype.include_trading
+        "is_trading": False
     } for ptype in ProductionType.objects.filter(category=category, is_deleted=False)]
     return JsonResponse(types, safe=False)
 
@@ -165,8 +161,7 @@ def get_production_types(request, category: int):
 def configurationAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
-    production_types = ProductionType.objects.filter(
-        is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         id = int(id)
         action = int(request.POST.get('action', '0'))
@@ -205,11 +200,14 @@ def configurationAction(request, id):
 @login_required
 @set_mill_session
 def stocks(request):
-    stocks = ProductStock.objects.filter(entry__is_deleted=False, entry__category__mill__code=request.millcode)
+    stocks = ProductStock.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode)
     return render(request, "products/stocks.html", { "stocks": stocks })
 
 @login_required
 @set_mill_session
 def analysis(request):
+    mill = Mill.objects.get(code=request.millcode)
     entries = Stock.objects.filter(is_deleted=False, category__mill__code=request.millcode).order_by('-date')
-    return render(request, "products/reports.html", { "entries": entries })
+    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
+    return render(request, "products/reports.html", { "entries": entries, "categories": categories, "production_types": production_types })

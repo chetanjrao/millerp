@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
     path('incoming/',  views.incoming, name="materials-incoming"),
+    path('excel/',  views.export_to_excel, name="materials-excel"),
     path('analysis/',  views.analysis, name="materials-analysis"),
     path('incoming/add/',  views.incomingAdd, name="materials-incoming-add"),
     path('sources/', views.get_sources, name='materials_sources'),

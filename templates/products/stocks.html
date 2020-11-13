@@ -93,7 +93,7 @@
                                                                     <div class="col-md-10">
                                                                         <input type="text" class="form-control"
                                                                             id="horizontal-number-input" name="bags"
-                                                                            value="{{stock.entry.bags}}" required>
+                                                                            value="{{stock.entry.bags|abs}}" required>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -109,14 +109,14 @@
                                                                         <select class="form-control select2"
                                                                             name="category" id="category" required>
                                                                             {% for cat in categories %}
-                                                                            {% if cat.id == stock.entry.category.id %}
-                                                                            <option value="{{cat.id}}" selected>
-                                                                                {{ cat.name }}
-                                                                            </option>
-                                                                            {% else%}
-                                                                            <option value="{{cat.id}}">{{ cat.name }}
-                                                                            </option>
-                                                                            {% endif %}
+                                                                                {% if cat.id == stock.category.id %}
+                                                                                    <option value="{{cat.id}}" selected>
+                                                                                        {{ cat.name }}
+                                                                                    </option>
+                                                                                {% else%}
+                                                                                    <option value="{{cat.id}}">{{ cat.name }}
+                                                                                    </option>
+                                                                                {% endif %}
                                                                             {% endfor %}
                                                                         </select>
                                                                     </div>
@@ -132,7 +132,7 @@
                                                                         <select class="form-control select2"
                                                                             name="product" id="product" required>
                                                                             {% for type in production_types %}
-                                                                            {% if type.id == stock.entry.product.id %}
+                                                                            {% if type.id == stock.product.id %}
                                                                             <option value="{{type.id}}" selected>
                                                                                 {{ type.name }}
                                                                             </option>
@@ -200,10 +200,10 @@
 
                             <tr>
                                 <td>{{stock.entry.date}}</td>
-                                <td>{{stock.entry.category.name}}</td>
-                                <td>{{stock.entry.product.name}}</td>
+                                <td>{{stock.category.name}}</td>
+                                <td>{{stock.product.name}}</td>
                                 <td>{{stock.entry.bags|abs}}</td>
-                                <td>{{stock.entry.total|abs}}</td>
+                                <td>{{stock.total|abs}}</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                         data-target="#editModal{{stock.pk}}">
