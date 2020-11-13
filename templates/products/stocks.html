@@ -22,6 +22,11 @@
                         <div class="col-sm-4">
                             <h4 class="card-title mt-2 mb-3">Products Stock</h4>
                         </div>
+                        <div class="col-sm-8">
+                            <div class="text-sm-right">
+                                <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Send Products</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-12">
@@ -45,6 +50,85 @@
                             </div>
                             {% endif %}
                         </div>
+                    </div>
+                    <div id="createModal" class="modal fade" tabindex="-1" role="dialog"
+                        aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="col-lg-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title mb-4">Add outgoing product entry</h4>
+                                            <form action="" method="POST">
+                                                {% csrf_token %}
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group row mb-4">
+                                                            <label for="horizontal-number-input"
+                                                                class="col-sm-3 col-form-label">Category
+                                                            </label>
+                                                            <div class="col-md-10">
+                                                                <select class="form-control select2"
+                                                                    name="category" id="category" required>
+                                                                    <option value=""></option>
+                                                                    {% for cat in categories %}
+                                                                        <option value="{{cat.id}}">{{ cat.name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <div class="form-group row mb-4">
+                                                            <label for="horizontal-number-input"
+                                                                class="col-sm-6 col-form-label">Production
+                                                                type</label>
+                                                            <div class="col-md-10">
+                                                                <select class="form-control select2"
+                                                                    name="product" id="product" required>
+                                                                    <option value=""></option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group row mb-4">
+                                                            <label for="horizontal-date-input"
+                                                                class="col-sm-3 col-form-label">Date
+                                                            </label>
+                                                            <div class="col-md-12">
+                                                                <input class="form-control" type="date"  id="example-date-input" name="date" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group row mb-4">
+                                                            <label for="horizontal-number-input"
+                                                                class="col-sm-6 col-form-label">Number of bags</label>
+                                                            <div class="col-md-10">
+                                                                <input type="number" step="1" class="form-control"
+                                                                    id="bags" name="bags" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class=" form-group row justify-content-end">
+                                                    <div class="col-sm-12">
+                                                        <div>
+                                                            <button type="submit"
+                                                                class="btn btn-primary w-md">Update</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div><!-- /.modal-content -->
+                        </div><!-- /.modal-dialog -->
                     </div>
                     <table id="datatable" class="table table-striped table-bordered dt-responsive nowrap"
                         style="border-collapse: collapse; border-spacing: 0; width: 100%;">
@@ -259,11 +343,33 @@
 <script>
     $('#category').select2({
         width: "100%",
+        placeholder: "Choose category"
     })
     $('#product').select2({
         width: "100%",
     })
-
+    $('#category').change((e) => {
+        $('#product').val('').trigger('change')
+        let selection = $(e.target).select2('data')[0]
+        $('#product').select2({
+            width: '100%',
+            placeholder: "Select product type",
+            ajax: {
+                url: `${selection["id"]}/max/`,
+                dataType: 'json',
+                processResults: (data) => {
+                    return {
+                        results: data
+                    }
+                },
+                cache: true
+            }
+        })
+    })
+    $('#product').change((e) => {
+        let selection = $(e.target).select2('data')[0]
+        $('#bags').attr("max", selection["max"])
+    })
 </script>
 
 {% endblock %}

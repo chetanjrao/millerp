@@ -1,3 +1,4 @@
+from materials.models import Category
 from django.db.models.aggregates import Sum
 from django.db.models.expressions import F
 from django.http.response import JsonResponse
@@ -56,13 +57,13 @@ def incomingAction(request, id):
     if request.method == "POST":
         action = int(request.POST.get('action', '0'))
         id = int(id)
-        obj = IncomingProductEntry.objects.get(id=id, entry__category__mill__code=request.millcode)
+        obj = IncomingProductEntry.objects.get(id=id, category__mill__code=request.millcode)
         if action == 1:
             try:
                 obj.entry.date = request.POST.get('date')
                 obj.entry.bags = float(request.POST.get('bags'))
-                obj.entry.category = ProductCategory.objects.get(id=int(request.POST.get('category')))
-                obj.entry.product = ProductionType.objects.get(id=int(request.POST.get('product')))
+                obj.category = ProductCategory.objects.get(id=int(request.POST.get('category')))
+                obj.product = ProductionType.objects.get(id=int(request.POST.get('product')))
                 obj.entry.save()
                 obj.save()
                 return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'success_message': "Product entry updated successfully"})
@@ -88,32 +89,33 @@ def outgoing(request):
 @login_required
 @set_mill_session
 def max_stock(request, category: int):
-    stock = ProductStock.objects.filter(entry__category__pk=category, entry__is_deleted=False).values(category=F('entry__category__name')).annotate(max=Sum('entry__bags'))
-    return JsonResponse({}, safe=False)
+    stocks = ProductStock.objects.filter(category__pk=category, entry__is_deleted=False).values(name=F('product__pk')).annotate(max=Sum('entry__bags'))
+    stocks = [{
+        "id": stock["name"],
+        "text": ProductionType.objects.get(pk=stock["name"]).name,
+        "max": abs(stock["max"])
+    } for stock in stocks]
+    return JsonResponse(stocks, safe=False)
 
 @login_required
 @set_mill_session
 def outgoingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False)
-    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
-    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         action = int(request.POST.get('action', '0'))
         id = int(id)
-        obj = OutgoingProductEntry.objects.get(id=id)
+        obj = OutgoingProductEntry.objects.get(id=id, category__mill=mill)
         if action == 1:
             obj.entry.date = request.POST.get('date')
             obj.entry.bags = 0 - int(request.POST.get('bags'))
-            obj.entry.category = ProductCategory.objects.get(id=int(request.POST.get('category')))
-            obj.entry.product = ProductionType.objects.get(id=int(request.POST.get('product')))
+            obj.category = ProductCategory.objects.get(id=int(request.POST.get('category')))
+            obj.product = ProductionType.objects.get(id=int(request.POST.get('product')))
             obj.entry.save()
             obj.save()
         elif action == 2:
             obj.entry.is_deleted = True
             obj.entry.save()
             obj.save()
-            return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types, 'error_message': "Entry deleted successfully"})
     return redirect("products-outgoing", millcode=request.millcode)
 
 
@@ -207,7 +209,8 @@ def configurationAction(request, id):
 @set_mill_session
 def stocks(request):
     stocks = ProductStock.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode)
-    return render(request, "products/stocks.html", { "stocks": stocks })
+    categories = ProductCategory.objects.filter(mill__code=request.millcode, is_deleted=False)
+    return render(request, "products/stocks.html", { "stocks": stocks, "categories": categories })
 
 @login_required
 @set_mill_session
