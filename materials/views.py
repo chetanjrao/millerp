@@ -148,12 +148,12 @@ def outgoing(request):
 def outgoing_data(request):
     if request.method == "POST":
         mill = Mill.objects.get(code=request.millcode)
-        stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).order_by('-created_at')
+        category = Category.objects.get(pk=request.POST["category"])
+        stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category=category, entry__bags__lte=0).order_by('-created_at')
         sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
-        entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).values(type=F('category__name'), godown=F('source__name'),type_pk=F('category__pk'), godown_pk=F('source__pk')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
         categories = Category.objects.filter(is_deleted=False, mill=mill)
         sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
-        return render(request, "materials/particular-outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
+        return render(request, "materials/particular-outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories})
     return redirect(resolve_url('materials-outgoing', millcode=request.millcode))
 
 
