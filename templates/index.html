@@ -64,7 +64,7 @@
                             </div>
                             <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
                                 <span class="avatar-title">
-                                    <i class="bx bx-loader font-size-24"></i>
+                                    <i class="bx bx-transfer font-size-24"></i>
                                 </span>
                             </div>
                         </div>
@@ -84,7 +84,7 @@
                             </div>
                             <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
                                 <span class="avatar-title">
-                                    <i class="bx bx-download font-size-24"></i>
+                                    <i class="bx bx-downvote font-size-24"></i>
                                 </span>
                             </div>
                         </div>
@@ -101,7 +101,7 @@
                             </div>
                             <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
                                 <span class="avatar-title">
-                                    <i class="bx bx-upload font-size-24"></i>
+                                    <i class="bx bx-upvote font-size-24"></i>
                                 </span>
                             </div>
                         </div>
@@ -113,12 +113,12 @@
                     <div class="card-body">
                         <div class="media">
                             <div class="media-body">
-                                <p class="text-muted font-weight-medium">Rice Processing</p>
+                                <p class="text-muted font-weight-medium">Rice Stock</p>
                                 <h4 class="mb-0">{{ rice_stock|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
                             </div>
                             <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
                                 <span class="avatar-title">
-                                    <i class="bx bx-loader font-size-24"></i>
+                                    <i class="bx bx-data font-size-24"></i>
                                 </span>
                             </div>
                         </div>
@@ -135,7 +135,86 @@
                             </div>
                             <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
                                 <span class="avatar-title">
-                                    <i class="bx bx-loader font-size-24"></i>
+                                    <i class="bx bx-transfer-alt font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-title ml-2 mt-3">Live website data</div>
+        <div class="card loader">
+            <div class="card-body text-center">
+                <div id="spinner" class="spinner-border text-dark m-1" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <div class="card-title mt-4">Please wait while we are loading the live data from site</div>
+            </div>
+        </div>
+        <div class="row" id="live-data">
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Paddy Uplifted</p>
+                                <h4 id="paddy_uplifted" class="mb-0"></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-downvote font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Rice Deposited</p>
+                                <h4 id="rice_deposited" class="mb-0"></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-upvote font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Total DO Lifted</p>
+                                <h4 id="do_lifted" class="mb-0"></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-data font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">DO Issued</p>
+                                <h4 id="do_issued" class="mb-0"></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-transfer-alt font-size-24"></i>
                                 </span>
                             </div>
                         </div>
@@ -158,4 +237,26 @@
 
 <!-- App js -->
 <script src="/static/js/app.js"></script>
+<script>
+    $('#live-data').hide()
+    $.ajax({
+        url: '{% url "guarantee-api" millcode=request.millcode %}',
+        type: 'GET',
+        dataType: "json",
+        success: function (results) {
+            $('.loader').hide()
+            $('#paddy_uplifted').text(results["paddy_uplifted"])
+            $('#rice_deposited').text(results["rice_deposited"])
+            $('#do_lifted').text(results["total_do_lifted"])
+            $('#do_issued').text(results["total_do_issued"])
+        },
+        error: function (xhr, status) {
+            alert("Sorry, there was a problem!");
+        },
+        complete: function (xhr, status) {
+            $('#live-data').show()
+            $('.loader').hide()
+        }
+    })
+</script>
 {% endblock %}
