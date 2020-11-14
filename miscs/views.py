@@ -1,4 +1,5 @@
 from datetime import datetime
+from millerp.utils import send_message
 from django.utils.timezone import now
 from millerp.settings.base import CHROME, CHROMEDRIVER, HEIGHT_RATIO, WIDTH_RATIO
 import os
@@ -20,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from bs4 import BeautifulSoup, Tag
 from django.views.decorators.cache import cache_page
-from millerp.utils import async_message_sender
+from asgiref.sync import sync_to_async
 
 def get_random_string(length):
     letters = string.ascii_letters
@@ -32,6 +33,7 @@ start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify19/MillLogin.
 
 def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, mobile: str):
     driver.get(start_url)
+    attempts = 10
     response = {}
     total_do_lifted = 0
     total_do_pending = 0
@@ -40,6 +42,8 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
     paddy_uplifted = 0
     rice_deposited = 0
     while True:
+        if attempts <= 0:
+            break
         try:
             element = driver.find_element_by_id('ImageCaptcha')
             location = element.location
@@ -67,10 +71,12 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 driver.find_element_by_id('txtUser').clear()
                 driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
                 driver.find_element_by_name('btncon').click()
+                attempts -= 1
                 driver.switch_to.alert.accept()
             except UnexpectedAlertPresentException:
                 pass
             except (InvalidElementStateException):
+                attempts -= 1
                 try:
                     driver.find_element_by_name('btnOk').click()
                 except NoSuchElementException:
@@ -109,9 +115,10 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 body = [[row.get_text() for i, row in enumerate(row) if i in [0, 2, 3, 6, 7, 11]] for row in body]
                 # for data in body:
                 #     date = datetime.strptime(data[-1], "%d/%m/%Y")
-                #     today = now().astimezone().date()
+                #     today = now().astimezone()
                 #     if date > today:
-                #         async_message_sender()
+                #         if (date - today).days % 5 == 0:
+                #             sync_to_async(send_message, thread_sensitive=True)('Your Bank Guarantee is expiring')
                 footer = rows[-1].find_all('td')
                 bg_secured = round(sum([float(data[3]) for data in bg_secured]), 2)
                 response["results"] = body

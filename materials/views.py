@@ -2,7 +2,7 @@ import io
 from django.db.models.expressions import Case, F, When
 from django.db.models.fields import IntegerField
 from django.http.response import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, resolve_url
 from django.core.handlers.wsgi import WSGIRequest
 from rest_framework.views import csrf_exempt
 from django.contrib.auth.decorators import login_required
@@ -142,6 +142,19 @@ def outgoing(request):
         entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
         ProcessingSideEntry.objects.create(entry=entry, category=category, source=side, created_by=request.user)
     return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
+
+@login_required
+@set_mill_session
+def outgoing_data(request):
+    if request.method == "POST":
+        mill = Mill.objects.get(code=request.millcode)
+        stocks = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode, entry__bags__lte=0).order_by('-created_at')
+        sources = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
+        entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).values(type=F('category__name'), godown=F('source__name'),type_pk=F('category__pk'), godown_pk=F('source__pk')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
+        categories = Category.objects.filter(is_deleted=False, mill=mill)
+        sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
+        return render(request, "materials/particular-outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
+    return redirect(resolve_url('materials-outgoing', millcode=request.millcode))
 
 
 # To be completed

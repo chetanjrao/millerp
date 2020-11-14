@@ -89,6 +89,18 @@ def outgoing(request):
 
 @login_required
 @set_mill_session
+def outgoing_data(request):
+    if request.method == "POST":
+        mill = Mill.objects.get(code=request.millcode)
+        stocks = OutgoingProductEntry.objects.filter(entry__is_deleted=False)
+        categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+        production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
+        return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
+    return redirect('materials-outgoing', millcode=request.millcode)
+
+
+@login_required
+@set_mill_session
 def max_stock(request, category: int):
     stocks = ProductStock.objects.filter(category__pk=category, entry__is_deleted=False).values(name=F('product__pk')).annotate(max=Sum('entry__bags'))
     stocks = [{
