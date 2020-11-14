@@ -1,4 +1,5 @@
 import urllib
+from asgiref.sync import sync_to_async
 
 def send_message(message, phone):
     values = {
@@ -13,3 +14,5 @@ def send_message(message, phone):
     postdata = postdata.encode('utf-8')
     req = urllib.request.Request(url, postdata)
     response = urllib.request.urlopen(req)
+
+async_message_sender = sync_to_async(send_message, thread_sensitive=True)

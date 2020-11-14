@@ -1,3 +1,5 @@
+from datetime import datetime
+from django.utils.timezone import now
 from millerp.settings.base import CHROME, CHROMEDRIVER, HEIGHT_RATIO, WIDTH_RATIO
 import os
 import random
@@ -18,6 +20,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from bs4 import BeautifulSoup, Tag
 from django.views.decorators.cache import cache_page
+from millerp.utils import async_message_sender
 
 def get_random_string(length):
     letters = string.ascii_letters
@@ -27,7 +30,7 @@ def get_random_string(length):
 
 start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify19/MillLogin.aspx"
 
-def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str):
+def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, mobile: str):
     driver.get(start_url)
     response = {}
     total_do_lifted = 0
@@ -104,6 +107,11 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 headers = [header.get_text() for i, header in enumerate(headers) if i in [0, 2, 3, 6, 7, 11]]
                 body = [row.find_all('td') for row in rows[1:-1]]
                 body = [[row.get_text() for i, row in enumerate(row) if i in [0, 2, 3, 6, 7, 11]] for row in body]
+                # for data in body:
+                #     date = datetime.strptime(data[-1], "%d/%m/%Y")
+                #     today = now().astimezone().date()
+                #     if date > today:
+                #         async_message_sender()
                 footer = rows[-1].find_all('td')
                 bg_secured = round(sum([float(data[3]) for data in bg_secured]), 2)
                 response["results"] = body
@@ -116,7 +124,7 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
     os.remove(screenshot)
     return response
 
-@cache_page(60 * 60)
+@cache_page(60 * 45)
 @login_required
 @set_mill_session
 def get_guarantee(request: WSGIRequest):
@@ -132,13 +140,3 @@ def get_guarantee(request: WSGIRequest):
 @set_mill_session
 def guarantee(request: WSGIRequest):
     return render(request, "guarantee.html")
-
-
-'''
-ctl00_Miller_content1_lnkDocnt - Total DO Count
-ctl00_Miller_content1_lnkDopending
-ctl00_Miller_content1_lnkDoissued
-ctl00_Miller_content1_lnkDocancel
-ctl00_Miller_content1_lnkpaddylift
-ctl00_Miller_content1_lnkricesubmit
-'''

@@ -5,4 +5,5 @@ urlpatterns = [
     path('dashboard/', views.index, name='dashboard_home'),
     path('materials/', include('materials.urls')),
     path('products/', include('products.urls')),
+    path('firms/', views.firms, name='firms'),
 ]

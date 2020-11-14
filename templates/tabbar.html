@@ -50,19 +50,17 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{% url 'materials-trading' millcode=request.millcode %}" class=" waves-effect">
-                        <i class="bx bx-transfer-alt"></i>
-                        <span>Trading</span>
-                    </a>
-                </li>
-
-                <li>
                     <a href="#" class=" waves-effect">
                         <i class="bx bx-message-square-dots"></i>
                         <span>Paddy Shortage</span>
                     </a>
                 </li>
-
+                <li>
+                    <a href="{% url 'materials-trading' millcode=request.millcode %}" class=" waves-effect">
+                        <i class="bx bx-transfer-alt"></i>
+                        <span>Trading</span>
+                    </a>
+                </li>
                 <li>
                     <a href="{% url 'materials-configuration' millcode=request.millcode%}" class=" waves-effect">
                         <i class="bx bx-cog"></i>
@@ -94,13 +92,6 @@
                 </li>
 
                 <li>
-                    <a href="#" class=" waves-effect">
-                        <i class="bx bx-message-square-dots"></i>
-                        <span>Paddy Shortage</span>
-                    </a>
-                </li>
-
-                <li>
                     <a href="{% url 'products-trading' millcode=request.millcode %}" class=" waves-effect">
                         <i class="bx bx-transfer-alt"></i>
                         <span>Trading</span>
@@ -115,14 +106,18 @@
                 </li>
 
                 <li class="menu-title">Miscs</li>
-
+                <li>
+                    <a href="{% url 'firms' millcode=request.millcode %}" class="waves-effect">
+                        <i class="bx bxs-factory"></i>
+                        <span>Firms</span>
+                    </a>
+                </li>
                 <li>
                     <a href="#" class="waves-effect">
                         <i class="bx bx-wrench"></i>
                         <span>Mill Settings</span>
                     </a>
                 </li>
-
                 <li>
                     <a href="#" class="waves-effect">
                         <i class="bx bx-user-circle"></i>

@@ -1,3 +1,4 @@
+from fernet_fields.fields import EncryptedField
 from miscs.models import Addon, Bundle, City
 from accounts.models import User
 from django.db import models
@@ -25,9 +26,10 @@ class Mill(models.Model):
 
 class Firm(models.Model):
     name = models.CharField(max_length=128)
+    agreement_no = EncryptedField(max_length=64)
     mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
-    username = EncryptedCharField(null=True, max_length=64, blank=True)
-    password = EncryptedCharField(null=True, max_length=64, blank=True)
+    username = EncryptedCharField(max_length=64)
+    password = EncryptedCharField(max_length=64)
     is_deleted = models.BooleanField(default=False)
 
 
