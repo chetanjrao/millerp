@@ -1,7 +1,7 @@
 {% extends 'base.html' %} 
 {% load mathfilters %}
 {% block body %}
-<div class="card-title ml-2 mt-3">Monthly Statistics</div>
+<div class="card-title ml-2 mt-3">Paddy Monthly Statistics</div>
         <div class="row">
             <div class="col-md-3">
                 <div class="card mini-stats-wid">
@@ -61,6 +61,77 @@
                             <div class="media-body">
                                 <p class="text-muted font-weight-medium">Paddy Trading</p>
                                 <h4 class="mb-0">{{ paddy_trading|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-loader font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-title ml-2 mt-3">Rice Monthly Statistics</div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Rice Incoming</p>
+                                <h4 class="mb-0">{{ rice_incoming|default:0|floatformat:2 }} <small>qtls</small></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-download font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Rice Outgoing</p>
+                                <h4 class="mb-0">{{ rice_outgoing|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-upload font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Rice Processing</p>
+                                <h4 class="mb-0">{{ rice_stock|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-loader font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Rice Trading</p>
+                                <h4 class="mb-0">{{ rice_trading|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
                             </div>
                             <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
                                 <span class="avatar-title">
