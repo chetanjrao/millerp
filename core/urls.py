@@ -1,4 +1,5 @@
 from django.urls import path, include
+from accounts.views import profile
 from . import views
 
 urlpatterns = [
@@ -7,4 +8,5 @@ urlpatterns = [
     path('products/', include('products.urls')),
     path('firms/', views.firms, name='firms'),
     path('settings/', views.settings, name='settings'),
+    path('profile/', profile, name='profile'),
 ]

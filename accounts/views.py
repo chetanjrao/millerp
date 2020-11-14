@@ -1,3 +1,4 @@
+from core.decorators import set_mill_session
 from miscs.models import Addon, Bundle, City
 from core.models import Mill, Owner, Purchase
 from django.shortcuts import render
@@ -144,3 +145,17 @@ def verify(request):
         else:
             return render(request, "home/verify.html", { "error_message": "Invalid verification code" })
     return render(request, "home/verify.html", { "success_message": "Verification code sent to your mobile" })
+
+@login_required
+@set_mill_session
+def profile(request):
+    user = User.objects.get(pk=request.user.pk, is_active=True)
+    if request.method == "POST":
+        user: User = User.objects.get(pk=request.user.pk, is_active=True)
+        first_name = request.POST["first_name"]
+        last_name = request.POST.get("last_name", '')
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
+        return render(request, "profile.html", { "user": user, "success_message": "Profile updated successfully" })    
+    return render(request, "profile.html", { "user": user })
