@@ -15,8 +15,6 @@ class Mill(models.Model):
     name = models.CharField(max_length=128)
     address = models.TextField()
     code = models.CharField(max_length=8)
-    mill_username = models.CharField(null=True, max_length=64, blank=True)
-    mill_password = EncryptedCharField(null=True, max_length=64, blank=True)
     is_deleted = models.BooleanField(default=False)
     city = models.ForeignKey(City, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
@@ -24,6 +22,14 @@ class Mill(models.Model):
     owner = models.ForeignKey(to=Owner, on_delete=models.PROTECT)
 
     def __str__(self) -> str: return self.name
+
+class Firm(models.Model):
+    name = models.CharField(max_length=128)
+    mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    username = EncryptedCharField(null=True, max_length=64, blank=True)
+    password = EncryptedCharField(null=True, max_length=64, blank=True)
+    is_deleted = models.BooleanField(default=False)
+
 
 class Purchase(models.Model):
     amount = models.FloatField(default=0.0)

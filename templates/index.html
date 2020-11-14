@@ -1,5 +1,77 @@
 {% extends 'base.html' %} 
+{% load mathfilters %}
 {% block body %}
+<div class="card-title ml-2 mt-3">Monthly Statistics</div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Paddy Incoming</p>
+                                <h4 class="mb-0">{{ paddy_incoming|default:0|floatformat:2 }} <small>qtls</small></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-download font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Paddy Outgoing</p>
+                                <h4 class="mb-0">{{ paddy_outgoing|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-upload font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Paddy Processing</p>
+                                <h4 class="mb-0">{{ paddy_processing|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-loader font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Paddy Trading</p>
+                                <h4 class="mb-0">{{ paddy_trading|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
+                            </div>
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
+                                <span class="avatar-title">
+                                    <i class="bx bx-loader font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 {% endblock %}
 {% block scripts %}
 <script src="/static/libs/jquery/jquery.min.js"></script>
