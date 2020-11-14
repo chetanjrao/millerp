@@ -69,12 +69,6 @@
                                                             <input type="text" class="form-control" name="name" required>
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group mb-4">
-                                                            <label class="control-label">Agreement No</label>
-                                                            <input type="text" class="form-control" name="agreement" required>
-                                                        </div>
-                                                    </div>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md-6">
@@ -110,7 +104,6 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Agreement No</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -135,27 +128,7 @@
                                                                     <input type="text" value="{{ firm.name }}" class="form-control" name="name" required>
                                                                 </div>
                                                             </div>
-                                                            <div class="col-md-6">
-                                                                <div class="form-group mb-4">
-                                                                    <label class="control-label">Agreement No</label>
-                                                                    <input type="text" value="{{ firm.agreement_no }}" class="form-control" name="agreement" required>
-                                                                </div>
-                                                            </div>
                                                         </div>
-                                                        <!-- <div class="row">
-                                                            <div class="col-md-6">
-                                                                <div class="form-group mb-4">
-                                                                    <label class="control-label">Username <small>(Khadya id)</small></label>
-                                                                    <input autocomplete="none" type="text" class="form-control clear" name="username" required>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <div class="form-group mb-4">
-                                                                    <label class="control-label">Password <small>(Khadya password)</small></label>
-                                                                    <input autocomplete="none" type="password" class="form-control clear" name="password" required>
-                                                                </div>
-                                                            </div>
-                                                        </div> -->
                                                         <div class=" form-group row justify-content-end">
                                                             <div class="col-sm-12">
                                                                 <div>
@@ -205,7 +178,6 @@
 
                             <tr>
                                 <td>{{ firm.name }}</td>
-                                <td>{{ firm.agreement_no }}</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                         data-target="#editModal{{firm.pk}}">

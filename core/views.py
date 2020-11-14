@@ -31,17 +31,14 @@ def firms(request):
         action = int(request.POST["action"])
         if action == 1:
             name = request.POST["name"]
-            agreement_no = request.POST["agreement"]
             username = request.POST["username"]
             password = request.POST["password"]
-            Firm.objects.create(name=name, agreement_no=agreement_no, username=username, mill=request.mill, password=password)
+            Firm.objects.create(name=name, username=username, mill=request.mill, password=password)
             return render(request, "firms.html", { "firms": firms, "success_message": "Firm created successfully" })
         elif action == 2:
             firm = Firm.objects.get(pk=request.POST["firm"], is_deleted=False, mill=request.mill)
             name = request.POST["name"]
-            agreement_no = request.POST["agreement"]
             firm.name = name
-            firm.agreement_no = agreement_no
             firm.save()
             return render(request, "firms.html", { "firms": firms, "success_message": "Firm updated successfully" })
         elif action == 3:

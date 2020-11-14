@@ -26,7 +26,6 @@ class Mill(models.Model):
 
 class Firm(models.Model):
     name = models.CharField(max_length=128)
-    agreement_no = EncryptedField(max_length=64)
     mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
     username = EncryptedCharField(max_length=64)
     password = EncryptedCharField(max_length=64)
