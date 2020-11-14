@@ -5,4 +5,4 @@ from .decorators import set_mill_session
 @login_required
 @set_mill_session
 def index(req):
-    return render(req, "starter.html")
+    return render(req, "index.html")

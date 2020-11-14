@@ -596,7 +596,7 @@
                         <tbody>
                             {% for source in trading_sources %}
                             <!-- Modal content for edit -->
-                            <div id="editModal{{ type.pk }}" class="modal fade" tabindex="-1" role="dialog"
+                            <div id="edittModal{{ source.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myModalLabel" aria-hidden="true">
                                 <form class="custom-validation"
                                     action="{% url 'products-configuration-action' id=source.id millcode=request.millcode%}"
@@ -672,7 +672,7 @@
                                     </div>
                                 </form>
                             </div>
-                            <div id="deleteModal{{ source.pk }}" class="modal fade" tabindex="-1" role="dialog"
+                            <div id="deletetModal{{ source.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myModalLabel" aria-hidden="true">
                                 <form class="needs-validation"
                                     action="{% url 'products-configuration-action' id=source.id millcode=request.millcode%}"
@@ -711,12 +711,12 @@
                                 <td>{{ source.created_by.first_name}}</td>
                                 <td>
                                     <a href="#" class="btn btn-primary btn-sm" data-toggle="modal"
-                                        data-target="#editModal{{ source.pk }}">
+                                        data-target="#edittModal{{ source.pk }}">
                                         <i style="vertical-align: middle;" class="mdi mdi-pencil font-size-12"></i><span
                                             class="ml-1">Edit</span>
                                     </a>
                                     <button type="button" class="btn btn-danger btn-sm ml-2" data-toggle="modal"
-                                        data-target="#deleteModal{{ source.pk }}">
+                                        data-target="#deletetModal{{ source.pk }}">
                                         <i style="vertical-align: middle;" class="mdi mdi-delete font-size-12"></i><span
                                             class="ml-1">Delete</span>
                                     </button>

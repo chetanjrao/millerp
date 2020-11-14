@@ -131,7 +131,6 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Category</th>
                                 <th>Source</th>
                                 <th>Total Weight</th>
                                 <th>Price</th>
@@ -151,7 +150,7 @@
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h5 class="modal-title mt-0" id="myModalLabel">Update 
-                                                    {{trade.entry.category.name }} -
+                                                    {{trade.source.name }} -
                                                     {{trade.entry.date}}
                                                 </h5>
                                                 <button type="button" class="close" data-dismiss="modal"
@@ -215,12 +214,11 @@
                             </div>
                                 <tr>
                                     <td>{{trade.entry.date}}</td>
-                                    <td>{{trade.entry.category.name}}</td>
-                                    <td>{{trade.entry.source.name}}</td>
-                                    {% if trade.entry.quantity > 0 %}
-                                        <td class="text-success"><strong>{{trade.entry.quantity|floatformat:2}}</strong></td>
+                                    <td>{{trade.source.name}}</td>
+                                    {% if trade.entry.bags > 0 %}
+                                        <td class="text-success"><strong>{{trade.total|floatformat:2}}</strong></td>
                                     {% else %}
-                                        <td>{{trade.entry.quantity|abs}}</td>
+                                        <td>{{trade.total|abs}}</td>
                                     {% endif %}
                                     <td>&#x20b9;{{ trade.price }}</td>
                                     <td>
@@ -229,13 +227,11 @@
                                             <i style="vertical-align: middle;" class="mdi mdi-pencil font-size-12"></i><span
                                                 class="ml-1">Edit</span>
                                         </button>
-                                        {% if trade.entry.quantity < 0 %}
-                                            <button type="button" class="btn btn-danger btn-sm ml-2" data-toggle="modal"
-                                                data-target="#deleteModal{{trade.pk}}">
-                                                <i style="vertical-align: middle;" class="mdi mdi-delete font-size-12"></i><span
-                                                    class="ml-1">Delete</span>
-                                            </button>
-                                        {% endif %}
+                                        <button type="button" class="btn btn-danger btn-sm ml-2" data-toggle="modal"
+                                            data-target="#deleteModal{{trade.pk}}">
+                                            <i style="vertical-align: middle;" class="mdi mdi-delete font-size-12"></i><span
+                                                class="ml-1">Delete</span>
+                                        </button>
                                     </td>
                                 </tr>
                             {% endfor %}

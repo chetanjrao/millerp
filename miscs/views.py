@@ -17,6 +17,7 @@ from core.decorators import set_mill_session
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from bs4 import BeautifulSoup, Tag
+from django.views.decorators.cache import cache_page
 
 def get_random_string(length):
     letters = string.ascii_letters
@@ -115,6 +116,7 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
     os.remove(screenshot)
     return response
 
+@cache_page(60 * 20)
 @login_required
 @set_mill_session
 def get_guarantee(request: WSGIRequest):

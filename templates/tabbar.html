@@ -5,7 +5,7 @@
             <ul class="metismenu list-unstyled" id="side-menu">
                 <li class="menu-title">Home</li>
                 <li>
-                    <a href="#" class="waves-effect">
+                    <a href="{% url 'dashboard_home' millcode=request.millcode %}" class="waves-effect">
                         <i class="bx bx-home-circle"></i>
                         <span>Dashboard</span>
                     </a>
@@ -97,6 +97,13 @@
                     <a href="#" class=" waves-effect">
                         <i class="bx bx-message-square-dots"></i>
                         <span>Paddy Shortage</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url 'products-trading' millcode=request.millcode %}" class=" waves-effect">
+                        <i class="bx bx-transfer-alt"></i>
+                        <span>Trading</span>
                     </a>
                 </li>
 

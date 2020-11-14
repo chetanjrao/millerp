@@ -79,4 +79,4 @@ class Trading(models.Model):
 
     @property
     def total(self):
-        return round(self.entry.bags * self.product.quantity / 100, 2)
+        return round(self.entry.bags * self.source.quantity / 100, 2)

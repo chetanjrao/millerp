@@ -1,3 +1,4 @@
+from django.core.handlers.wsgi import WSGIRequest
 from materials.models import Category
 from django.db.models.aggregates import Sum
 from django.db.models.expressions import F
@@ -220,3 +221,33 @@ def analysis(request):
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     return render(request, "products/reports.html", { "entries": entries, "categories": categories, "production_types": production_types })
+
+@login_required
+@set_mill_session
+def trading(request: WSGIRequest):
+    categories = ProductCategory.objects.filter(mill__code=request.millcode, is_deleted=False)
+    mill = Mill.objects.get(code=request.millcode)
+    trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
+    quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
+    if request.method == "POST":
+        action = int(request.POST["action"])
+        if action == 1:
+            price = float(request.POST["price"])
+            source = TradingSource.objects.get(pk=request.POST["source"])
+            bags = float(request.POST["bags"])
+            entry = Stock.objects.create(bags=0 - bags, date=datetime.now().astimezone().date(), remarks='Sold {} - {} bags for \u20b9{}/-'.format(source.name, bags, price))
+            Trading.objects.create(entry=entry, price=price, source=source, created_by=request.user)
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record created successfully" })
+        elif action == 2:
+            price = float(request.POST["price"])
+            trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
+            trade.price = price
+            trade.save()
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record updated successfully" })
+        elif action == 3:
+            trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
+            trade.entry.is_deleted = True
+            trade.entry.save()
+            trade.save()
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record deleted successfully", "quantity": quantity })
+    return render(request, "products/trading.html", { "trading": trading, "categories": categories, "quantity": quantity })
