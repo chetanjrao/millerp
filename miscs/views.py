@@ -119,10 +119,15 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 #     if date > today:
                 #         if (date - today).days % 5 == 0:
                 #             sync_to_async(send_message, thread_sensitive=True)('Your Bank Guarantee is expiring')
+                for row in body:
+                    if row[4] == "सुरक्षित":
+                        bg_secured.append(row)
                 footer = rows[-1].find_all('td')
+                bg_secured_raw = round(sum([float(data[1]) for data in bg_secured]), 2)
                 bg_secured = round(sum([float(data[3]) for data in bg_secured]), 2)
                 response["results"] = body
                 response["bg_secured"] = bg_secured
+                response["bg_secured_raw"] = bg_secured_raw
                 break
             except NoSuchElementException:
                 continue
@@ -140,7 +145,7 @@ def get_guarantee(request: WSGIRequest):
     options.add_argument('--no-sandbox')
     options.binary_location = CHROME
     driver = webdriver.Chrome(CHROMEDRIVER, options=options)
-    data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), 'MA41141', '100141', request.user.mobile)
+    data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), 'MA412754', '8988825', request.user.mobile)
     return JsonResponse(data)
 
 @login_required

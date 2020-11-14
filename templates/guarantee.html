@@ -21,18 +21,58 @@
         <div class="card-title mt-4">Please wait while we are loading the live data from site</div>
     </div>
 </div>
-<div id="guarantee" class="card">
-    <div class="card-body">
-        <table class="data table table-striped table-bordered dt-responsive nowrap">
-            <thead>
-                <th>क्र</th>
-                <th>कुल राशि(रु.मे)</th>
-                <th>बैंक क्र./सैम्पल स्लिप नं.</th>
-                <th>कुल धान की मात्रा(क्विं. मे)</th>
-                <th>प्रतिभूति की स्थिति</th>
-                <th>DO कटने की अंतिम तिथि (वैद्यता समाप्ति से 10 दिन पूर्व)</th>
-            </thead>
-        </table>
+<div id="guarantee">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card mini-stats-wid">
+                <div class="card-body">
+                    <div class="media">
+                        <div class="media-body">
+                            <p class="text-muted font-weight-medium">BG Secured</p>
+                            <h4 id="bg_secured" class="mb-0">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mini-stats-wid">
+                <div class="card-body">
+                    <div class="media">
+                        <div class="media-body">
+                            <p class="text-muted font-weight-medium">BG Used</p>
+                            <h4 id="bg_used" class="mb-0">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mini-stats-wid">
+                <div class="card-body">
+                    <div class="media">
+                        <div class="media-body">
+                            <p class="text-muted font-weight-medium">BG Remaining</p>
+                            <h4 id="bg_remaining" class="mb-0">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mt-4">
+        <div class="card-body">
+            <table class="data table table-striped table-bordered dt-responsive nowrap">
+                <thead>
+                    <th>क्र</th>
+                    <th>कुल राशि(रु.मे)</th>
+                    <th>बैंक क्र./सैम्पल स्लिप नं.</th>
+                    <th>कुल धान की मात्रा(क्विं. मे)</th>
+                    <th>प्रतिभूति की स्थिति</th>
+                    <th>DO कटने की अंतिम तिथि (वैद्यता समाप्ति से 10 दिन पूर्व)</th>
+                </thead>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -74,6 +114,10 @@
             $('.data').DataTable({
                 data: Object.values(results["results"])
             })
+            let bg_used = ((results["paddy_uplifted"] * 67 / 100) - results["rice_deposited"]) * 2271
+            $('#bg_secured').text(results["bg_secured_raw"])
+            $('#bg_used').text(bg_used.toFixed(2))
+            $('#bg_remaining').text((results["bg_secured_raw"] - bg_used).toFixed(2))
             $('.loader').hide()
         },
         error: function (xhr, status) {
