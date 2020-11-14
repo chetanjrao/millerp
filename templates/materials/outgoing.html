@@ -30,7 +30,8 @@
                                 <th>Godown Name</th>
                                 <th>Category</th>
                                 <th>Average Weight</th>
-                                <th>Total Quantity</th>
+                                <th>Total Bags</th>
+                                <th>Total Quantity <small>(in quintals)</small></th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -112,6 +113,7 @@
                                     <td>0</td>
                                     {% endif %}
                                     <td>{{ entry.max|abs }}</td>
+                                    <td>{{ entry.max_quantity|abs }}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                         data-target="#sendModal{{ forloop.counter }}">
