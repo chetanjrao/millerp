@@ -1,5 +1,4 @@
-{% extends 'base.html' %}
-{% load mathfilters %}
+{% extends 'base.html' %} 
 {% block corestyles %}
 <link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
 <link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
@@ -13,66 +12,70 @@
 <link rel="stylesheet" href="/static/libs/@chenfengyuan/datepicker/datepicker.min.css">
 {% endblock %}
 {% block body %}
-<div class="card loader">
-    <div class="card-body text-center">
-        <div id="spinner" class="spinner-border text-dark m-1" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-        <div class="card-title mt-4">Please wait while we are loading the live data from site</div>
-    </div>
-</div>
-<div id="guarantee">
+<div class="card m-2">
     <div class="row">
-        <div class="col-md-3">
-            <div class="card mini-stats-wid">
-                <div class="card-body">
-                    <div class="media">
-                        <div class="media-body">
-                            <p class="text-muted font-weight-medium">BG Secured</p>
-                            <h4 id="bg_secured" class="mb-0">0</h4>
-                        </div>
-                    </div>
-                </div>
+        <div class="col-12">
+            {% if success_message %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="mdi mdi-check-all mr-2"></i>
+                {{ success_message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card mini-stats-wid">
-                <div class="card-body">
-                    <div class="media">
-                        <div class="media-body">
-                            <p class="text-muted font-weight-medium">BG Used</p>
-                            <h4 id="bg_used" class="mb-0">0</h4>
-                        </div>
-                    </div>
-                </div>
+            {% endif %}
+            {% if error_message %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bx bx-x
+                 mr-2"></i>
+                {{ error_message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card mini-stats-wid">
-                <div class="card-body">
-                    <div class="media">
-                        <div class="media-body">
-                            <p class="text-muted font-weight-medium">BG Remaining</p>
-                            <h4 id="bg_remaining" class="mb-0">0</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
-    <div class="card mt-4">
-        <div class="card-body">
-            <table class="data table table-striped table-bordered" style="border-collapse: collapse; border-spacing: 0px; width: 100%;">
-                <thead>
-                    <th>क्र</th>
-                    <th>कुल राशि(रु.मे)</th>
-                    <th>बैंक क्र./सैम्पल स्लिप नं.</th>
-                    <th>कुल धान की मात्रा(क्विं. मे)</th>
-                    <th>प्रतिभूति की स्थिति</th>
-                    <th>DO कटने की अंतिम तिथि (वैद्यता समाप्ति से 10 दिन पूर्व)</th>
-                </thead>
-            </table>
-        </div>
+    <div class="card-body">
+        <h4 class="card-title mb-4">Update Settings</h4>
+        <form action="" method="POST" autocomplete="off">
+            {% csrf_token %}
+            <input type="hidden" value="1" name="action">
+            <input type="hidden" value="{{ mill.pk }}" name="mill">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label">Name of Mill</label>
+                        <input type="text" value="{{ mill.name }}" class="form-control" name="name" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label">Select City</label>
+                        <select class="city" name="city">
+                            {% for city in cities %}
+                                <option value="{{ city.pk }}" {% if mill.city.pk == city.pk %}selected{% endif %}>{{ city.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="" class="control-label">Address</label>
+                        <textarea class="form-control" name="address" id="">{{ mill.address }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class=" form-group row justify-content-end">
+                <div class="col-sm-12">
+                    <div>
+                        <button type="submit" class="btn btn-primary w-md">Update</button>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
@@ -104,31 +107,8 @@
 <script src="/static/js/pages/form-advanced.init.js"></script>
 <script src="/static/js/app.js"></script>
 <script>
-    $('#guarantee').hide()
-    $.ajax({
-        url: 'api/',
-        type: 'GET',
-        dataType: "json",
-        success: function (results) {
-            setTimeout(() => {
-                $('.data').DataTable({
-                    data: Object.values(results["results"]),
-                    responsive: true
-                }).columns.adjust()
-            }, 50)
-            let bg_used = ((results["paddy_uplifted"] * 67 / 100) - results["rice_deposited"]) * 2271
-            $('#bg_secured').text(results["bg_secured_raw"])
-            $('#bg_used').text(bg_used.toFixed(2))
-            $('#bg_remaining').text((results["bg_secured_raw"] - bg_used).toFixed(2))
-            $('.loader').hide()
-        },
-        error: function (xhr, status) {
-            alert("Sorry, there was a problem!");
-        },
-        complete: function (xhr, status) {
-            $('#guarantee').show()
-            $('.loader').hide()
-        }
+    $('.city').select2({
+        width: '100%'
     })
 </script>
 {% endblock %}

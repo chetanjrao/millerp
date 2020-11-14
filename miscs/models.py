@@ -32,6 +32,7 @@ class Bundle(models.Model):
 
 class Country(models.Model):
     name = models.CharField(max_length=64)
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -40,6 +41,7 @@ class Country(models.Model):
 class State(models.Model):
     name = models.CharField(max_length=64)
     country = models.ForeignKey(to=Country, on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -48,6 +50,7 @@ class CountryCode(models.Model):
     name = models.CharField(max_length=128)
     abbr = models.CharField(max_length=64)
     code = models.CharField(max_length=16)
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return '{} ({})'.format(self.abbr, self.code)
@@ -55,6 +58,7 @@ class CountryCode(models.Model):
 class City(models.Model):
     name = models.CharField(max_length=64)
     state = models.ForeignKey(to=State, on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name

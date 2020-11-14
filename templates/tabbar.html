@@ -1,5 +1,4 @@
 <div class="vertical-menu">
-
     <div data-simplebar="init" class="h-100">
         <div id="sidebar-menu">
             <ul class="metismenu list-unstyled" id="side-menu">
@@ -113,7 +112,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="waves-effect">
+                    <a href="{% url 'settings' millcode=request.millcode %}" class="waves-effect">
                         <i class="bx bx-wrench"></i>
                         <span>Mill Settings</span>
                     </a>
