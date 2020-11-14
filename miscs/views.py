@@ -116,7 +116,7 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
     os.remove(screenshot)
     return response
 
-@cache_page(60 * 20)
+@cache_page(60 * 60)
 @login_required
 @set_mill_session
 def get_guarantee(request: WSGIRequest):
