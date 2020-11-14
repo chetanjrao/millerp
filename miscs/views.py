@@ -133,7 +133,7 @@ def get_guarantee(request: WSGIRequest):
     options.add_argument('--no-sandbox')
     options.binary_location = CHROME
     driver = webdriver.Chrome(CHROMEDRIVER, options=options)
-    data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), 'MA41141', '100141')
+    data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), 'MA41141', '100141', request.user.mobile)
     return JsonResponse(data)
 
 @login_required
