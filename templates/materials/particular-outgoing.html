@@ -73,9 +73,10 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <h4 class="card-title mb-4">Update outgoing stock entry</h4>
-                                                    <form action="{% url 'materials-outgoing-action' id=stock.id millcode=request.millcode%}" method="POST">
+                                                    <form action="{% url 'materials-outgoing-action' id=stock.id millcode=request.millcode%}?category={{ stock.category.pk }}" method="POST">
                                                         {% csrf_token %}
                                                         <input type="hidden" value="1" name="action">
+                                                        <input type="hidden" value="{{ stock.category.pk }}" name="category">
                                                         <div class="form-group row">
                                                             <div class="col-md-6">
                                                                 <div class="form-group">
@@ -91,23 +92,6 @@
                                                             </div>
                                                         </div>
                                                         <div class="row">
-                                                            <div class="col-md-6">
-                                                                <div class="form-group mb-4">
-                                                                    <label class="control-label">Category</label>
-                                                                    <select class="drop" name="category" required>
-                                                                        {% for cat in categories %}
-                                                                        {% if cat.id == stock.category.id %}
-                                                                        <option value="{{cat.id}}" selected>
-                                                                            {{ cat.name }}
-                                                                        </option>
-                                                                        {% else%}
-                                                                        <option value="{{cat.id}}">{{ cat.name }}
-                                                                        </option>
-                                                                        {% endif %}
-                                                                        {% endfor %}
-                                                                    </select>
-                                                                </div>
-                                                            </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-group row mb-4">
                                                                     <label class="control-label">Outgoing Source</label>
@@ -146,7 +130,7 @@
                             <div id="sendModl{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myModalLabel" aria-hidden="true">
                                 <form class="needs-validation" method="POST"
-                                    action="{% url 'materials-outgoing-action' id=stock.id millcode=request.millcode%}">
+                                    action="{% url 'materials-outgoing-action' id=stock.id millcode=request.millcode%}?category={{ stock.category.pk }}">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="4" readonly>
                                     <input type="hidden" name="product" value="{{ stock.pk }}" readonly>
@@ -207,7 +191,7 @@
                             <div id="deleteModal{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myModalLabel" aria-hidden="true">
                                 <form class="needs-validation" method="POST"
-                                    action="{% url 'materials-outgoing-action' id=stock.id millcode=request.millcode%}">
+                                    action="{% url 'materials-outgoing-action' id=stock.id millcode=request.millcode%}?category={{ stock.category.pk }}">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="2" readonly>
                                     <input type="hidden" name="stock" value="{{ stock.pk }}" readonly>

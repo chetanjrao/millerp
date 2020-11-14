@@ -129,7 +129,7 @@ def outgoingAction(request, id):
             obj.entry.is_deleted = True
             obj.entry.save()
             obj.save()
-    return redirect("products-outgoing", millcode=request.millcode)
+    return redirect("products-outgoing-data", millcode=request.millcode)
 
 
 @login_required

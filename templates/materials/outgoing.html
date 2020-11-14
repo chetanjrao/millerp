@@ -134,8 +134,7 @@
             <div class="card-title">
                 Outgoing Entry
             </div>
-            <form method="POST" action="{% url 'materials-outgoing-data' millcode=request.millcode %}">
-               {% csrf_token %}
+            <form method="GET" action="{% url 'materials-outgoing-data' millcode=request.millcode %}">
                 <div class="row">
                 <div class="col-md-4">
                     <select name="category" class="drop">
