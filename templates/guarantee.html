@@ -116,7 +116,7 @@
                     responsive: true
                 }).columns.adjust()
             }, 50)
-            let bg_used = ((results["paddy_uplifted"] * 67 / 100) - results["rice_deposited"]) * 2271
+            let bg_used = ((results["paddy_uplifted"] * 68 / 100) - results["rice_deposited"]) * 2271
             $('#bg_secured').text(results["bg_secured_raw"])
             $('#bg_used').text(bg_used.toFixed(2))
             $('#bg_remaining').text((results["bg_secured_raw"] - bg_used).toFixed(2))
