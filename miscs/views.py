@@ -151,6 +151,7 @@ def get_guarantee(request: WSGIRequest):
         options.binary_location = CHROME
         driver = webdriver.Chrome(CHROMEDRIVER, options=options)
         data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), request.user.mobile)
+        data["conversion"] = firm.conversion
         cache.set("{}".format(firm.username), data, 60 * 45)
     else:
         data = cached_response

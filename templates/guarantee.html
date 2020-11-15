@@ -28,6 +28,18 @@
                 <div class="card-body">
                     <div class="media">
                         <div class="media-body">
+                            <p class="text-muted font-weight-medium">Paddy Uplift Limit</p>
+                            <h4 id="paddy_limit" class="mb-0">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mini-stats-wid">
+                <div class="card-body">
+                    <div class="media">
+                        <div class="media-body">
                             <p class="text-muted font-weight-medium">Bank Guarantee Secured</p>
                             <h4 id="bg_secured" class="mb-0">0</h4>
                         </div>
@@ -116,10 +128,12 @@
                     responsive: true
                 }).columns.adjust()
             }, 50)
-            let bg_used = ((results["paddy_uplifted"] * 68 / 100) - results["rice_deposited"]) * 2271
-            $('#bg_secured').text(results["bg_secured_raw"])
-            $('#bg_used').text(bg_used.toFixed(2))
-            $('#bg_remaining').text((results["bg_secured_raw"] - bg_used).toFixed(2))
+            let bg_used = ((results["paddy_uplifted"] * results["conversion"] / 100) - results["rice_deposited"]) * {{ request.mill.factor }}
+            let paddy_limit = results["bg_secured_raw"] - bg_used / {{ request.mill.factor }}
+            $('#paddy_limit').text(paddy_limit.toFixed(2))
+            $('#bg_secured').text(`\u20b9${results["bg_secured_raw"]}`)
+            $('#bg_used').text(`\u20b9${bg_used.toFixed(2)}`)
+            $('#bg_remaining').text(`\u20b9${(results["bg_secured_raw"] - bg_used).toFixed(2)}`)
             $('.loader').hide()
         },
         error: function (xhr, status) {

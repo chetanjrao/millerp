@@ -20,6 +20,7 @@ class Mill(models.Model):
     city = models.ForeignKey(City, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now=True)
     access = models.ManyToManyField(to=User)
+    factor = models.FloatField(default=2271)
     owner = models.ForeignKey(to=Owner, on_delete=models.PROTECT)
 
     def __str__(self) -> str: return self.name
@@ -27,6 +28,7 @@ class Mill(models.Model):
 class Firm(models.Model):
     name = models.CharField(max_length=128)
     mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    conversion = models.FloatField(default=67.0)
     username = EncryptedCharField(max_length=64)
     password = EncryptedCharField(max_length=64)
     is_deleted = models.BooleanField(default=False)

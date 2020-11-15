@@ -69,6 +69,12 @@
                                                             <input type="text" class="form-control" name="name" required>
                                                         </div>
                                                     </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label class="control-label">Paddy to Rice conversion<small>(in %)</small></label>
+                                                            <input type="number" step="any" placeholder="Ex: 67%" class="form-control" name="conversion" required>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md-6">
@@ -104,6 +110,7 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
+                                <th>Paddy to rice conversion</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -126,6 +133,12 @@
                                                                 <div class="form-group">
                                                                     <label class="control-label">Name of firm</label>
                                                                     <input type="text" value="{{ firm.name }}" class="form-control" name="name" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label class="control-label">Paddy to Rice conversion<small>(in %)</small></label>
+                                                                    <input type="number" step="any" value="{{ firm.conversion }}" class="form-control" name="conversion" required>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -178,6 +191,7 @@
 
                             <tr>
                                 <td>{{ firm.name }}</td>
+                                <td>{{ firm.conversion }}%</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                         data-target="#editModal{{firm.pk}}">
