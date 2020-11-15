@@ -138,22 +138,27 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
     os.remove(screenshot)
     return response
 
-@cache_page(60 * 45)
+
 @login_required
 @set_mill_session
 def get_guarantee(request: WSGIRequest):
     options = Options()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    options.binary_location = CHROME
-    driver = webdriver.Chrome(CHROMEDRIVER, options=options)
     firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
-    cached_response = cache.get("{}".format(firm.pk))
-    data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), request.user.mobile)
-    cache.set("{}".format(firm.username), data, 60 * 45)
+    cached_response = cache.get("{}".format(firm.username))
+    if cached_response is None or cached_response is {}:
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.binary_location = CHROME
+        driver = webdriver.Chrome(CHROMEDRIVER, options=options)
+        data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), request.user.mobile)
+        cache.set("{}".format(firm.username), data, 60 * 45)
+    else:
+        data = cached_response
     return JsonResponse(data)
 
 @login_required
 @set_mill_session
 def guarantee(request: WSGIRequest):
+    firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
+    print(cache.get("{}".format(firm.username)))
     return render(request, "guarantee.html")
