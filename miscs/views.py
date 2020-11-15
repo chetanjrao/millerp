@@ -34,7 +34,7 @@ start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify19/MillLogin.
 
 def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, mobile: str):
     driver.get(start_url)
-    attempts = 100
+    attempts = 10
     response = {}
     total_do_lifted = 0
     total_do_pending = 0
