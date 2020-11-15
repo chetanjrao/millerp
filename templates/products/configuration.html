@@ -292,14 +292,6 @@
                             <div class="row mb-2 ml-2">
                                 <div class="form-group col-md-10">
                                     <div class="custom-control custom-checkbox">
-                                        <input name="trade" type="checkbox" class="custom-control-input" id="trade">
-                                        <label class="custom-control-label" for="trade">Include production type in trading</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row mb-2 ml-2">
-                                <div class="form-group col-md-10">
-                                    <div class="custom-control custom-checkbox">
                                         <input name="mix" type="checkbox" class="custom-control-input" id="mix">
                                         <label class="custom-control-label" for="mix">Is this a mixture of rice ? <small>(Ex. Kanki Mix)</small></label>
                                     </div>
@@ -612,6 +604,7 @@
                                                 </button>
                                             </div>
                                             <input type="hidden" value="5" name="action">
+                                            <input type="hidden" name="trading" value="{{ source.pk }}" readonly>
                                             <div class="modal-body">
                                                 <div class="row">
                                                     <div class="col-md-10">
@@ -679,6 +672,7 @@
                                     method="POST">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="6" readonly>
+                                    <input type="hidden" name="trading" value="{{ source.pk }}" readonly>
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-header">

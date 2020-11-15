@@ -20,6 +20,75 @@
 {% endblock %}
 {% block body %}
 <div class="container-fluid">
+    <div id="createModal1" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">Add Rice</h4>
+                            <form action="" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="1" readonly>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="control-label">Category</label>
+                                            <select id="category1" name="category" required>
+                                                <option></option>
+                                                {% for cat in categories %}
+                                                    <option value="{{cat.id}}">{{ cat.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group row mb-4">
+                                            <label class="control-label">Outgoing Source</label>
+                                            <select id="source1" name="source" required>
+                                                {% for src in sources %}
+                                                {% if src.id == stock.source.id %}
+                                                <option value="{{src.id}}" selected>
+                                                    {{ src.name }}
+                                                </option>
+                                                {% else%}
+                                                <option value="{{src.id}}">{{ src.name }}
+                                                </option>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="control-label">Total Bags</label>
+                                            <input type="number" class="form-control" id="bags1" name="bags" value="" step="any" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="control-label">Price <small>(&#x20b9; per quintal)</small></label>
+                                            <input type="number" class="form-control" id="price1" name="price" value="" step="any" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class=" form-group row justify-content-end">
+                                    <div class="col-sm-12">
+                                        <div>
+                                            <button type="submit"
+                                                class="btn btn-primary w-md">Sell Rice</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
     <div id="createModal{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -29,7 +98,7 @@
                         <h4 class="card-title mb-4">Sell Rice</h4>
                         <form action="#" method="POST">
                             {% csrf_token %}
-                            <input type="hidden" name="action" value="1" readonly>
+                            <input type="hidden" name="action" value="2" readonly>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
@@ -63,8 +132,8 @@
                             <div class="form-group row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="control-label">Total Quantity <small>(in quintal)</small></label>
-                                        <input type="number" class="form-control" id="quantity" name="quantity" value="" step="any" required>
+                                        <label class="control-label">Total Bags</label>
+                                        <input type="number" class="form-control" id="bags" name="bags" value="" step="any" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -99,7 +168,8 @@
                         </div>
                         <div class="col-sm-8">
                             <div class="text-sm-right">
-                                <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Sell Rice</button></a>
+                                <button type="button" data-toggle="modal" data-target="#createModal1" class="btn btn-primary btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Add Trading Rice</button>
+                                <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Sell Trading Rice</button>
                             </div>
                         </div>
                     </div>
@@ -280,6 +350,14 @@
         width: '100%',
         placeholder: 'Choose source'
     })
+    $('#category1').select2({
+        width: '100%',
+        placeholder: 'Choose category'
+    })
+    $('#source1').select2({
+        width: '100%',
+        placeholder: 'Choose source'
+    })
     $('#category').change((e) => {
         let selection = $(e.target).select2('data')[0]
         $('#source').select2({
@@ -297,9 +375,26 @@
             cache: true
         })
     })
+    $('#category1').change((e) => {
+        let selection = $(e.target).select2('data')[0]
+        $('#source1').select2({
+            width: '100%',
+            placeholder: 'Choose source',
+            ajax: {
+                url: `${selection["id"]}/sources/`,
+                dataType: 'json',
+                processResults: function(data){
+                    return {
+                        results: data
+                    }
+                }
+            },
+            cache: true
+        })
+    })
     $('#source').change((e) => {
         let selection = $(e.target).select2('data')[0]
-        $('#quantity').attr("max", selection["max"])
+        $('#bags').attr("max", selection["max"])
     })
 </script>
 {% endblock %}

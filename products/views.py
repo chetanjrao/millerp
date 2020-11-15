@@ -1,4 +1,5 @@
 from django.core.handlers.wsgi import WSGIRequest
+from django.db.models.fields import FloatField, IntegerField
 from materials.models import Category
 from django.db.models.aggregates import Sum
 from django.db.models.expressions import F
@@ -183,6 +184,7 @@ def configurationAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
+    trading_sources = TradingSource.objects.filter(is_deleted=False, category__mill=mill)
     if request.method == "POST":
         id = int(id)
         action = int(request.POST.get('action', '0'))
@@ -192,12 +194,12 @@ def configurationAction(request, id):
                 obj = ProductCategory.objects.get(id=id)
                 obj.name = name
                 obj.save()
-                return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "success_message": "Category updated successfully"})
+                return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "success_message": "Category updated successfully"})
         elif action == 2:
             obj = ProductCategory.objects.get(id=id)
             obj.is_deleted = True
             obj.save()
-            return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "error_message": "Category deleted successfully"})
+            return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "error_message": "Category deleted successfully"})
         elif action == 3:
             name = request.POST.get('name')
             if len(name) > 0:
@@ -208,14 +210,26 @@ def configurationAction(request, id):
                     obj.category = ProductCategory.objects.get(
                         id=int(request.POST.get('category')))
                     obj.save()
-                    return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "success_message": "Production type updated successfully"})
+                    return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "success_message": "Production type updated successfully"})
                 except ValueError:
-                    return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "error_message": "Please enter valid entries"})
+                    return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "error_message": "Please enter valid entries"})
         elif action == 4:
             obj = ProductionType.objects.get(id=id)
             obj.is_deleted = True
             obj.save()
-            return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "error_message": "Production type deleted successfully"})
+            return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "error_message": "Production type deleted successfully"})
+        elif action == 5:
+            obj = TradingSource.objects.get(pk=request.POST["trading"])
+            obj.name = request.POST["name"]
+            obj.quantity = request.POST["quantity"]
+            obj.category = ProductCategory.objects.get(pk=request.POST["category"])
+            obj.save()
+            return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "success_message": "Trading source updated successfully"})
+        elif action == 6:
+            obj = TradingSource.objects.get(pk=request.POST["trading"])
+            obj.is_deleted = True
+            obj.save()
+            return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "success_message": "Trading source deleted successfully"})
     return redirect("products-configuration", millcode=request.millcode)
 
 @login_required
@@ -236,9 +250,29 @@ def analysis(request):
 
 @login_required
 @set_mill_session
+def max_trading_stock(request, category):
+    entries = Trading.objects.filter(entry__is_deleted=False, source__category=category).values(name=F('source__id')).annotate(max=F("entry__bags"), output_field=IntegerField())
+    entries = [{
+        "id": entry["name"],
+        "text": TradingSource.objects.get(pk=entry["name"]).name,
+        "max": entry["max"]
+    } for entry in entries]
+    return JsonResponse(entries, safe=False)
+
+@login_required
+@set_mill_session
+def sources(request, category):
+    sources = TradingSource.objects.filter(category=category)
+    sources = [{
+        "id": source.pk,
+        "text": source.name
+    } for source in sources]
+    return JsonResponse(sources, safe=False)
+
+@login_required
+@set_mill_session
 def trading(request: WSGIRequest):
     categories = ProductCategory.objects.filter(mill__code=request.millcode, is_deleted=False)
-    mill = Mill.objects.get(code=request.millcode)
     trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
     quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
     if request.method == "POST":
@@ -246,17 +280,40 @@ def trading(request: WSGIRequest):
         if action == 1:
             price = float(request.POST["price"])
             source = TradingSource.objects.get(pk=request.POST["source"])
-            bags = float(request.POST["bags"])
-            entry = Stock.objects.create(bags=0 - bags, date=datetime.now().astimezone().date(), remarks='Sold {} - {} bags for \u20b9{}/-'.format(source.name, bags, price))
+            bags = int(request.POST["bags"])
+            entry = Stock.objects.create(category=source.category, bags=bags, date=datetime.now().astimezone().date(), remarks='Added {} - {} bags for \u20b9{}/-'.format(source.name, bags, price))
             Trading.objects.create(entry=entry, price=price, source=source, created_by=request.user)
-            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record created successfully" })
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading stock added successfully" })
         elif action == 2:
             price = float(request.POST["price"])
+            source = TradingSource.objects.get(pk=request.POST["source"])
+            bags = 0 - int(request.POST["bags"])
+            entry = Stock.objects.create(category=source.category, bags=0 - bags, date=datetime.now().astimezone().date(), remarks='Added {} - {} bags for \u20b9{}/-'.format(source.name, bags, price))
+            Trading.objects.create(entry=entry, price=price, source=source, created_by=request.user)
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading stock added successfully" })
+        elif action == 3:
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
+            price = float(request.POST["price"])
+            bags = int(request.POST["bags"])
+            source = TradingSource.objects.get(pk=request.POST["source"])
             trade.price = price
+            trade.source = source
+            trade.entry.bags = bags
+            trade.entry.save()
             trade.save()
             return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record updated successfully" })
-        elif action == 3:
+        elif action == 4:
+            trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
+            price = float(request.POST["price"])
+            bags = int(request.POST["bags"])
+            source = TradingSource.objects.get(pk=request.POST["source"])
+            trade.price = price
+            trade.source = source
+            trade.entry.bags = 0 - bags
+            trade.entry.save()
+            trade.save()
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record updated successfully" })
+        elif action == 5:
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
             trade.entry.is_deleted = True
             trade.entry.save()
