@@ -148,6 +148,7 @@ def get_guarantee(request: WSGIRequest):
     driver = webdriver.Chrome(CHROMEDRIVER, options=options)
     firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
     data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), request.user.mobile)
+    data["firm"] = firm.pk
     data["username"] = firm.username
     data["password"] = firm.password
     return JsonResponse(data)
