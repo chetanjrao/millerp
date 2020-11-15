@@ -106,7 +106,7 @@
 <script>
     $('#guarantee').hide()
     $.ajax({
-        url: 'api/',
+        url: '{% url "guarantee-api" millcode=request.millcode %}',
         type: 'GET',
         dataType: "json",
         success: function (results) {
