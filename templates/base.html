@@ -34,7 +34,7 @@
                                     <div class="card-body">
                                         <h4 class="card-title mb-4">Switch Firm</h4>
                                         {% for firm in request.firms %}
-                                            <form class="row justify-content-between align-items-center" action="{% url 'set-firm' millcode=request.millcode %}" method="POST">
+                                            <form class="row justify-content-between align-items-center mt-4" action="{% url 'set-firm' millcode=request.millcode %}" method="POST">
                                                 {% csrf_token %}
                                                 <div>
                                                     <h6>{{ firm.name }}</h6>
