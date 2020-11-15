@@ -129,7 +129,7 @@
                 }).columns.adjust()
             }, 50)
             let bg_used = ((results["paddy_uplifted"] * results["conversion"] / 100) - results["rice_deposited"]) * {{ request.mill.factor }}
-            let paddy_limit = results["bg_secured_raw"] - bg_used / {{ request.mill.factor }}
+            let paddy_limit = (results["bg_secured_raw"] - bg_used) / {{ request.mill.factor }}
             $('#paddy_limit').text(paddy_limit.toFixed(2))
             $('#bg_secured').text(`\u20b9${results["bg_secured_raw"]}`)
             $('#bg_used').text(`\u20b9${bg_used.toFixed(2)}`)
