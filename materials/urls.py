@@ -1,4 +1,4 @@
-from miscs.views import get_guarantee, guarantee
+from miscs.views import get_do_stats, get_guarantee, get_print, get_print_url, guarantee
 from materials.views import get_sources, trading
 from django.urls import path, include
 from . import views
@@ -25,5 +25,7 @@ urlpatterns = [
     path('configuration/action/<int:id>/', views.configurationAction, name="materials-configuration-action"),
     path('stock/<int:category>/check/', views.get_stock_available, name='stock_check'),
     path('guarantee/', guarantee, name='guarantee'),
-    path('live/api/', get_guarantee, name='guarantee-api')
+    path('live/api/', get_guarantee, name='guarantee-api'),
+    path('agreement/api/', get_print_url, name='print-api'),
+    path('do/api/', get_do_stats, name='do-api')
 ]

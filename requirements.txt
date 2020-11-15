@@ -53,6 +53,7 @@ numpy==1.19.2
 oauthlib==3.1.0
 opencv-python==4.4.0.44
 openpyxl==3.0.5
+pandas==1.1.4
 parsel==1.6.0
 Pillow==7.1.2
 pycparser==2.20
@@ -64,6 +65,7 @@ pyexcel-xlsx==0.6.0
 PyJWT==1.7.1
 PyPDF2==1.26.0
 pytesseract==0.3.6
+python-dateutil==2.8.1
 python-memcached==1.59
 python3-openid==3.2.0
 pytz==2020.1
