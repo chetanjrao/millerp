@@ -11,4 +11,5 @@ urlpatterns = [
     path('settings/', views.settings, name='settings'),
     path('profile/', profile, name='profile'),
     path('set-firm/', set_firm, name='set-firm'),
+    path('reload/', views.load_live, name='reload-data'),
 ]
