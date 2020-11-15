@@ -160,5 +160,4 @@ def get_guarantee(request: WSGIRequest):
 @set_mill_session
 def guarantee(request: WSGIRequest):
     firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
-    print(cache.get("{}".format(firm.username)))
     return render(request, "guarantee.html")
