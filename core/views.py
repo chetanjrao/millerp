@@ -1,5 +1,5 @@
 import re
-
+from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIRequest
 from miscs.models import City
 from core.models import Firm, Mill
@@ -81,4 +81,5 @@ def set_firm(request: WSGIRequest):
         firm = Firm.objects.get(pk=request.POST["firm"], is_deleted=False, mill=request.mill)
         response = redirect(resolve_url('dashboard_home', millcode=request.millcode))
         response.set_cookie("MERP_FIRM", firm.pk)
+        #cache.clear()
         return response

@@ -1,3 +1,4 @@
+from core.models import Firm
 from datetime import datetime
 from millerp.utils import send_message
 from django.utils.timezone import now
@@ -145,7 +146,8 @@ def get_guarantee(request: WSGIRequest):
     options.add_argument('--no-sandbox')
     options.binary_location = CHROME
     driver = webdriver.Chrome(CHROMEDRIVER, options=options)
-    data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), 'MA412754', '8988825', request.user.mobile)
+    firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
+    data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), request.user.mobile)
     return JsonResponse(data)
 
 @login_required
