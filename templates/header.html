@@ -45,9 +45,11 @@
                 </div>
             </div>
             <div class="d-none d-lg-inline-block ml-1">
-                <button data-target="#firmModal" type="button" style="color: white;" data-toggle="modal" class="btn btn-success header-item noti-icon waves-effect">
-                   <i style="color: white;" class="bx bx-shuffle"></i>
-                </button>
+                {% if request.firms|length > 0 %}
+                    <button data-target="#firmModal" type="button" style="color: white;" data-toggle="modal" class="btn btn-success header-item noti-icon waves-effect">
+                        <i style="color: white;" class="bx bx-shuffle"></i>
+                    </button>
+                {% endif %}
             </div>
         </div>
     </div>

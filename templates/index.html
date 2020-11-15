@@ -143,6 +143,7 @@
                 </div>
             </div>
         </div>
+        {% if request.COOKIES.MERP_FIRM %}
         <div class="card-title ml-2 mt-3">Live website data</div>
         <div class="card loader">
             <div class="card-body text-center">
@@ -222,6 +223,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
 {% endblock %}
 {% block scripts %}
 <script src="/static/libs/jquery/jquery.min.js"></script>
@@ -238,6 +240,7 @@
 <!-- App js -->
 <script src="/static/js/app.js"></script>
 <script>
+    {% if request.COOKIES.MERP_FIRM %}
     $('#live-data').hide()
     $.ajax({
         url: '{% url "guarantee-api" millcode=request.millcode %}',
@@ -258,5 +261,6 @@
             $('.loader').hide()
         }
     })
+    {% endif %}
 </script>
 {% endblock %}

@@ -15,12 +15,14 @@
                         <span>Reports</span>
                     </a>
                 </li>
-                <li>
-                    <a href="{% url 'guarantee' millcode=request.millcode %}" class="waves-effect">
-                        <i class="bx bxs-bank"></i>
-                        <span>Bank Guarantee</span>
-                    </a>
-                </li>
+                {% if request.COOKIES.MERP_FIRM %}
+                    <li>
+                        <a href="{% url 'guarantee' millcode=request.millcode %}" class="waves-effect">
+                            <i class="bx bxs-bank"></i>
+                            <span>Bank Guarantee</span>
+                        </a>
+                    </li>
+                {% endif %}
                 <li class="menu-title">Paddy</li>
                 <li>
                     <a href="{% url 'materials-incoming' millcode=request.millcode %}" class=" waves-effect">
@@ -48,12 +50,14 @@
                         <span>Godowns</span>
                     </a>
                 </li>
+                {% if request.COOKIES.MERP_FIRM %}
                 <li>
                     <a href="#" class=" waves-effect">
                         <i class="bx bx-message-square-dots"></i>
                         <span>Paddy Shortage</span>
                     </a>
                 </li>
+                {% endif %}
                 <li>
                     <a href="{% url 'materials-trading' millcode=request.millcode %}" class=" waves-effect">
                         <i class="bx bx-transfer-alt"></i>
@@ -66,16 +70,13 @@
                         <span>Configuration</span>
                     </a>
                 </li>
-
                 <li class="menu-title">Rice</li>
-
                 <li>
                     <a href="{% url 'products-incoming' millcode=request.millcode%}" class=" waves-effect">
                         <i class="bx bx-downvote"></i>
                         <span>Incoming</span>
                     </a>
                 </li>
-
                 <li>
                     <a href="{% url 'products-outgoing' millcode=request.millcode%}" class=" waves-effect">
                         <i class="bx bx-upvote"></i>
