@@ -277,7 +277,7 @@ def trading(request: WSGIRequest):
     trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
     quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
     average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum(F('price'), output_field=FloatField()))
-    average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None else average_price["total"]), 2)
+    average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
@@ -297,22 +297,14 @@ def trading(request: WSGIRequest):
         elif action == 3:
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
             price = float(request.POST["price"])
-            bags = int(request.POST["bags"])
-            source = TradingSource.objects.get(pk=request.POST["source"])
             trade.price = price
-            trade.source = source
-            trade.entry.bags = bags
             trade.entry.save()
             trade.save()
             return render(request, "products/trading.html", { "trading": trading, "categories": categories, 'average_price': average_price, "success_message": "Trading record updated successfully" })
         elif action == 4:
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
             price = float(request.POST["price"])
-            bags = int(request.POST["bags"])
-            source = TradingSource.objects.get(pk=request.POST["source"])
             trade.price = 0 - price
-            trade.source = source
-            trade.entry.bags = 0 - bags
             trade.entry.save()
             trade.save()
             return render(request, "products/trading.html", { "trading": trading, "categories": categories, 'average_price': average_price, "success_message": "Trading record updated successfully" })

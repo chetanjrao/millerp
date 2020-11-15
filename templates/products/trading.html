@@ -20,6 +20,20 @@
 {% endblock %}
 {% block body %}
 <div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mini-stats-wid">
+                <div class="card-body">
+                    <div class="media">
+                        <div class="media-body">
+                            <p class="text-muted font-weight-medium">Average Price <small>(per quintal)</small></p>
+                            <h4 id="bg_remaining" class="mb-0">&#x20b9;{{ average_price }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="createModal1" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -78,7 +92,7 @@
                                     <div class="col-sm-12">
                                         <div>
                                             <button type="submit"
-                                                class="btn btn-primary w-md">Sell Rice</button>
+                                                class="btn btn-success w-md">Add Rice</button>
                                         </div>
                                     </div>
                                 </div>
@@ -214,7 +228,11 @@
                                 <form class="needs-validation" method="POST"
                                     action="">
                                     {% csrf_token %}
-                                    <input type="hidden" name="action" value="2" readonly>
+                                    {% if trade.entry.bags > 0 %}
+                                        <input type="hidden" name="action" value="3" readonly>
+                                    {% else %}
+                                        <input type="hidden" name="action" value="4" readonly>
+                                    {% endif %}
                                     <input type="hidden" name="trade" value="{{ trade.pk }}" readonly>
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
@@ -253,13 +271,13 @@
                                 <form class="needs-validation" method="POST"
                                     action="">
                                     {% csrf_token %}
-                                    <input type="hidden" name="action" value="3" readonly>
+                                    <input type="hidden" name="action" value="5" readonly>
                                     <input type="hidden" name="trade" value="{{ trade.pk }}" readonly>
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h5 class="modal-title mt-0" id="myModalLabel">Delete
-                                                    {{trade.entry.category.name }} -
+                                                    {{trade.source.name }} -
                                                     {{trade.entry.date}}
                                                 </h5>
                                                 <button type="button" class="close" data-dismiss="modal"
@@ -268,7 +286,7 @@
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                Are you sure to delete trade <strong>{{ trade.entry.category.name }} -
+                                                Are you sure to delete trade <strong>{{ trade.source.name }} -
                                                     {{trade.entry.date}}</strong> ?
                                             </div>
                                             <div class="modal-footer">
