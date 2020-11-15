@@ -26,6 +26,24 @@
     {% include 'tabbar.html' %}
         <div class="main-content">
             <div class="page-content">
+                <div id="firmModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title mb-4">Add Rice</h4>
+                                        <form action="{% url 'set-firm' millcode=request.millcode %}" method="POST">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="1" readonly>
+                                            {{ request.firms }}
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div>
                 {% block body %}
                 {% endblock %}
             </div>

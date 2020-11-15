@@ -1,3 +1,4 @@
+from core.views import set_firm
 from django.urls import path, include
 from accounts.views import profile
 from . import views
@@ -9,4 +10,5 @@ urlpatterns = [
     path('firms/', views.firms, name='firms'),
     path('settings/', views.settings, name='settings'),
     path('profile/', profile, name='profile'),
+    path('set-firm/', set_firm, name='set-firm'),
 ]

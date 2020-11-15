@@ -1,4 +1,6 @@
 import re
+
+from django.core.handlers.wsgi import WSGIRequest
 from miscs.models import City
 from core.models import Firm, Mill
 from django.shortcuts import redirect, render, resolve_url
@@ -71,3 +73,12 @@ def firms(request):
             firm.save()
             return render(request, "firms.html", { "firms": firms, "success_message": "Firm deleted successfully" })
     return render(request, "firms.html", { "firms": firms })
+
+@login_required
+@set_mill_session
+def set_firm(request: WSGIRequest):
+    if request.method == "POST":
+        firm = Firm.objects.get(pk=request.POST["firm"], is_deleted=False, mill=request.mill)
+        response = redirect(resolve_url('dashboard_home', millcode=request.millcode))
+        response.set_cookie("MERP_FIRM", firm.pk)
+        return response
