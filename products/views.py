@@ -251,7 +251,7 @@ def analysis(request):
 @login_required
 @set_mill_session
 def max_trading_stock(request, category):
-    entries = Trading.objects.filter(entry__is_deleted=False, source__category=category).values(name=F('source__id')).annotate(max=F("entry__bags"), output_field=IntegerField())
+    entries = Trading.objects.filter(entry__is_deleted=False, source__category=category, source__is_deleted=False).values(name=F('source__id')).annotate(max=Sum("entry__bags"))
     entries = [{
         "id": entry["name"],
         "text": TradingSource.objects.get(pk=entry["name"]).name,
@@ -262,7 +262,8 @@ def max_trading_stock(request, category):
 @login_required
 @set_mill_session
 def sources(request, category):
-    sources = TradingSource.objects.filter(category=category)
+    sources = TradingSource.objects.filter(category=category, is_deleted=False)
+    print(sources)
     sources = [{
         "id": source.pk,
         "text": source.name
@@ -275,22 +276,24 @@ def trading(request: WSGIRequest):
     categories = ProductCategory.objects.filter(mill__code=request.millcode, is_deleted=False)
     trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
     quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
+    average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum(F('price'), output_field=FloatField()))
+    average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None else average_price["total"]), 2)
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
             price = float(request.POST["price"])
             source = TradingSource.objects.get(pk=request.POST["source"])
             bags = int(request.POST["bags"])
-            entry = Stock.objects.create(category=source.category, bags=bags, date=datetime.now().astimezone().date(), remarks='Added {} - {} bags for \u20b9{}/-'.format(source.name, bags, price))
+            entry = Stock.objects.create(bags=bags, date=datetime.now().astimezone().date(), remarks='Added {} - {} bags for \u20b9{}/-'.format(source.name, bags, price))
             Trading.objects.create(entry=entry, price=price, source=source, created_by=request.user)
-            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading stock added successfully" })
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, 'average_price': average_price, "success_message": "Trading stock added successfully" })
         elif action == 2:
-            price = float(request.POST["price"])
+            price = 0 - float(request.POST["price"])
             source = TradingSource.objects.get(pk=request.POST["source"])
             bags = 0 - int(request.POST["bags"])
-            entry = Stock.objects.create(category=source.category, bags=0 - bags, date=datetime.now().astimezone().date(), remarks='Added {} - {} bags for \u20b9{}/-'.format(source.name, bags, price))
+            entry = Stock.objects.create(bags=bags, date=datetime.now().astimezone().date(), remarks='Added {} - {} bags for \u20b9{}/-'.format(source.name, bags, price))
             Trading.objects.create(entry=entry, price=price, source=source, created_by=request.user)
-            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading stock added successfully" })
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, 'average_price': average_price, "success_message": "Trading stock added successfully" })
         elif action == 3:
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
             price = float(request.POST["price"])
@@ -301,22 +304,22 @@ def trading(request: WSGIRequest):
             trade.entry.bags = bags
             trade.entry.save()
             trade.save()
-            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record updated successfully" })
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, 'average_price': average_price, "success_message": "Trading record updated successfully" })
         elif action == 4:
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
             price = float(request.POST["price"])
             bags = int(request.POST["bags"])
             source = TradingSource.objects.get(pk=request.POST["source"])
-            trade.price = price
+            trade.price = 0 - price
             trade.source = source
             trade.entry.bags = 0 - bags
             trade.entry.save()
             trade.save()
-            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record updated successfully" })
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, 'average_price': average_price, "success_message": "Trading record updated successfully" })
         elif action == 5:
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
             trade.entry.is_deleted = True
             trade.entry.save()
             trade.save()
-            return render(request, "products/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record deleted successfully", "quantity": quantity })
-    return render(request, "products/trading.html", { "trading": trading, "categories": categories, "quantity": quantity })
+            return render(request, "products/trading.html", { "trading": trading, "categories": categories, 'average_price': average_price, "success_message": "Trading record deleted successfully", "quantity": quantity })
+    return render(request, "products/trading.html", { "trading": trading, "categories": categories, "quantity": quantity, 'average_price': average_price })
