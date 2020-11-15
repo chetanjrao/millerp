@@ -290,7 +290,7 @@
                                     {% else %}
                                         <td>{{trade.total|abs}}</td>
                                     {% endif %}
-                                    <td>&#x20b9;{{ trade.price }}</td>
+                                    <td>&#x20b9;{{ trade.price|abs }}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                             data-target="#editModal{{trade.pk}}">
