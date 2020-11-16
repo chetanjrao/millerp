@@ -23,6 +23,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{% url 'do-status' millcode=request.millcode %}" class="waves-effect">
+                            <i class="bx bx-trending-up"></i>
+                            <span>DO Stats</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="{% url 'print-do' millcode=request.millcode %}" class="waves-effect">
                             <i class="bx bx-file"></i>
                             <span>DO Acknowledgement</span>

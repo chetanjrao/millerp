@@ -268,7 +268,7 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
                 agreement_element.select_by_value(agreement)
                 driver.find_element_by_id('btnshow').click()
                 table = driver.find_elements_by_tag_name('table')[2]
-                HTML_DOCUMENT = table.get_attribute('innerHTML')
+                HTML_DOCUMENT = table.get_attribute('outerHTML')
                 parser = BeautifulSoup(HTML_DOCUMENT, 'html.parser')
                 table: Tag = parser.find_all('table')[0]
                 rows = table.find_all('tr')[1:-1]
@@ -278,12 +278,14 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
                         element = row.find_all('td')
                         do.setdefault('{}'.format(element[1].find_all('td')[0].text), []).append({
                             "date": element[4].text,
-                            "mu": element[5].text,
+                            "mu": float(element[5].text),
                             "mm": float(element[6].text),
                             "sr": float(element[10].text),
+                            "tu": float(element[5].text) + float(element[6].text) + float(element[10].text),
                             "mud": float(element[13].text),
                             "mmd": float(element[14].text),
                             "srd": float(element[18].text),
+                            "tud": float(element[13].text) + float(element[14].text) + float(element[18].text),
                             "mus": float(element[5].text) - float(element[13].text),
                             "mms": float(element[6].text) - float(element[14].text),
                             "srs": float(element[10].text) - float(element[18].text),
@@ -291,6 +293,7 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
                         })
                 for k, v in do.items():
                     df = pd.DataFrame(v)
+                    print(df)
                     groups = df.groupby('date').sum()
                     do[k] = groups.to_json(orient='index')
                 response = do
@@ -329,7 +332,7 @@ def get_print_url(request: WSGIRequest):
         do = request.POST["do"]
         firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
         cached_response = cache.get("{}-{}".format(agreement.strip(), do))
-        if cached_response is None or cached_response is "":
+        if cached_response is None or cached_response == "":
             options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             options.binary_location = CHROME
@@ -350,22 +353,30 @@ def get_do_stats(request: WSGIRequest):
         agreement = request.POST["agreement"]
         firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
         cached_response = cache.get("{}-do".format(agreement.strip()))
-        if cached_response is None or cached_response is "":
+        if cached_response is None or cached_response == {}:
             options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             options.binary_location = CHROME
             driver = webdriver.Chrome(CHROMEDRIVER, options=options)
             data = get_do_status(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), '{}'.format(agreement))
             cache.set("{}-do".format(agreement.strip()), data, 60 * 60 * 24 * 1)
+            return JsonResponse(data)
         else:
-            data = cached_response
-            return HttpResponse(data)
-    return HttpResponse("Invalid request data", status=500)
+           data = cached_response
+           return JsonResponse(data)
+    return JsonResponse({
+        "error": "Invalid request"
+    }, status=500)
 
 @login_required
 @set_mill_session
 def get_print_view(request: WSGIRequest):
     return render(request, "printer.html")
+
+@login_required
+@set_mill_session
+def get_do_view(request: WSGIRequest):
+    return render(request, "do_stats.html")
 
 @login_required
 @set_mill_session

@@ -1,4 +1,4 @@
-from miscs.views import get_print_view
+from miscs.views import get_do_view, get_print_view
 from core.views import set_firm
 from django.urls import path, include
 from accounts.views import profile
@@ -14,4 +14,5 @@ urlpatterns = [
     path('set-firm/', set_firm, name='set-firm'),
     path('reload/', views.load_live, name='reload-data'),
     path('print-do/', get_print_view, name='print-do'),
+    path('do-status/', get_do_view, name='do-status'),
 ]
