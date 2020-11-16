@@ -110,7 +110,7 @@
                         </div>
                         <div class="col-sm-8">
                             <div class="text-sm-right">
-                                <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Send Products</button>
+                                <!-- <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Send Products</button> -->
                             </div>
                         </div>
                     </div>
@@ -240,7 +240,8 @@
                                                     <h4 class="card-title mb-4">Update Stock product entry</h4>
                                                     <form action="" method="POST">
                                                         {% csrf_token %}
-                                                        <input type="hidden" value="1" name="action">
+                                                        <input type="hidden" value="2" name="action">
+                                                        <input type="hidden" value="{{ stock.pk }}" name="stock">
                                                         <div class="row">
                                                             <div class="col-md-6">
                                                                 <div class="form-group row mb-4">

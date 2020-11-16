@@ -86,7 +86,7 @@ def incomingAction(request, id):
 @set_mill_session
 def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingProductEntry.objects.filter(entry__is_deleted=False)
+    stocks = OutgoingProductEntry.objects.filter(entry__is_deleted=False, product__mill=mill, entry__bags__lte=0)
     categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
@@ -133,7 +133,7 @@ def outgoingAction(request, id):
             obj.entry.is_deleted = True
             obj.entry.save()
             obj.save()
-    return redirect("products-outgoing-data", millcode=request.millcode)
+    return redirect("products-outgoing", millcode=request.millcode)
 
 
 @login_required
@@ -238,8 +238,9 @@ def configurationAction(request, id):
 @login_required
 @set_mill_session
 def stocks(request):
-    stocks = ProductStock.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode)
+    stocks = ProductStock.objects.filter(entry__is_deleted=False, entry__bags__lte=0, category__mill__code=request.millcode)
     categories = ProductCategory.objects.filter(mill__code=request.millcode, is_deleted=False)
+    production_types = ProductionType.objects.filter(is_deleted=False, mill=request.mill)
     entries = ProductStock.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).values('product', 'category__name', name=F('product__name')).annotate(total=Sum('entry__bags'))
     if request.method == "POST":
         action = int(request.POST["action"])
@@ -255,14 +256,21 @@ def stocks(request):
             OutgoingProductEntry.objects.create(entry=entry, category=product.category, product=product, created_by=request.user)
             return render(request, "products/stocks.html", { "stocks": stocks, "categories": categories, "success_message": "Stock sent successfully", "entries": entries })
         elif action == 2:
-            pass
+            stock = ProductStock.objects.get(pk=request.POST["stock"], entry__is_deleted=False)
+            stock.entry.bags = 0 - int(request.POST["bags"])
+            stock.category = ProductCategory.objects.get(pk=request.POST["category"])
+            stock.product = ProductionType.objects.get(pk=request.POST["product"])
+            stock.entry.date = datetime.strptime(request.POST["date"], "%Y-%m-%d")
+            stock.entry.save()
+            stock.save()
+            return render(request, "products/stocks.html", { "stocks": stocks, "production_types": production_types, "categories": categories, "success_message": "Stock updated successfully", "entries": entries })
         elif action == 3:
             stock = ProductStock.objects.get(pk=request.POST["stock"], entry__is_deleted=False)
             stock.entry.is_deleted = True
             stock.entry.save()
             stock.save()
-        return render(request, "products/stocks.html", { "stocks": stocks, "categories": categories, "success_message": "Stock deleted successfully", "entries": entries })
-    return render(request, "products/stocks.html", { "stocks": stocks, "categories": categories, "entries": entries })
+        return render(request, "products/stocks.html", { "stocks": stocks, "production_types": production_types, "categories": categories, "success_message": "Stock deleted successfully", "entries": entries })
+    return render(request, "products/stocks.html", { "stocks": stocks, "production_types": production_types, "categories": categories, "entries": entries })
 
 @login_required
 @set_mill_session
