@@ -274,6 +274,7 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
                 rows = table.find_all('tr')[1:-1]
                 do = {}
                 remaining = []
+                summary = {}
                 for i, row in enumerate(rows):
                     if i % 2 == 0:
                         element = row.find_all('td')
@@ -298,7 +299,10 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
                     df = pd.DataFrame(v)
                     groups = df.groupby('date').sum()
                     do[k] = groups.to_json(orient='index')
+                    gps = df[["mu", "mm", "sr", "mud", "mmd", "srd", "mus", "mms", "srs", "s"]].sum()
+                    summary[k] = gps.to_json(orient='index')
                 response["total"] = do
+                response["summary"] = summary
                 response["remaining"] = remaining
                 break
             except NoSuchElementException:

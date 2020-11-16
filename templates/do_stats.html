@@ -85,7 +85,8 @@
     </div>
     <div class="card">
         <div class="card-body">
-            <div class="details" id="p-4 m-4">
+            <div class="summary m-4"></div>
+            <div class="details m-4">
             </div>
         </div>
     </div>
@@ -193,6 +194,41 @@
                         let selection = $(e.target).select2('data')[0]["text"]
                         $('.details').html('<h3 class="text-center">Do Status</h3>')
                         let dt = JSON.parse(data["total"][selection])
+                        let sm = JSON.parse(data["summary"][selection])
+                        $('.summary').append(`<div class="repeater">
+                        <h5 class="text-success m-4">डिओ की जानकारी</h5>
+                        <table class="table table-striped table-bordered m-4" style="border-collapse: collapse; border-spacing: 0px; width: 100%;">
+                            <thead>
+                                <th>धान का नाम</th>
+                                <th>डिओ धान (क्विं.मे .)</th>
+                                <th>जारी धान (क्विं.मे .)</th>
+                                <th>शेष धान (क्विं.मे .)</th>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>मोटा</td>
+                                    <td>${sm["mu"]}</td>
+                                    <td>${sm["mud"]}</td>
+                                    <td>${sm["mus"]}</td>
+                                </tr>
+                                <tr>
+                                    <td>महामाया</td>
+                                    <td>${sm["mm"]}</td>
+                                    <td>${sm["mmd"]}</td>
+                                    <td>${sm["mms"]}</td>
+                                </tr>
+                                <tr>
+                                    <td>सरना</td>
+                                    <td>${sm["sr"]}</td>
+                                    <td>${sm["srd"]}</td>
+                                    <td>${sm["srs"]}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                            </table>
+                        </div>`
+                        )
                         Object.keys(dt).forEach((k) => {
                             $('.details').append(`<div class="repeater">
                             <h5 class="text-success m-4">डिओ दिनांक: ${k}</h5>
