@@ -17,4 +17,5 @@ urlpatterns = [
      path('outgoing/action/<int:id>/', views.outgoingAction, name="products-outgoing-action"),
      path('configuration/', views.configuration, name="products-configuration"),
      path('configuration/action/<int:id>/', views.configurationAction, name="products-configuration-action"),
+     path('excel/',  views.export_to_excel, name="products-excel"),
 ]

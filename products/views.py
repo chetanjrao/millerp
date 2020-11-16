@@ -1,12 +1,15 @@
+import io
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.fields import FloatField, IntegerField
+from django.db.models.functions.comparison import Coalesce
+import xlsxwriter
 from materials.models import Category
 from django.db.models.aggregates import Sum
 from django.db.models.expressions import F
-from django.http.response import JsonResponse
+from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from datetime import datetime
+from datetime import datetime, timedelta
 from core.decorators import set_mill_session
 from .models import IncomingProductEntry, ProductCategory, ProductStock, ProductionType, OutgoingProductEntry, Stock, Trading, TradingSource
 from core.models import Mill
@@ -315,3 +318,59 @@ def trading(request: WSGIRequest):
             trade.save()
             return render(request, "products/trading.html", { "trading": trading, "categories": categories, 'average_price': average_price, "success_message": "Trading record deleted successfully", "quantity": quantity })
     return render(request, "products/trading.html", { "trading": trading, "categories": categories, "quantity": quantity, 'average_price': average_price })
+
+
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days) + 1):
+        yield start_date + timedelta(n)
+        
+
+@login_required
+@set_mill_session
+def export_to_excel(request):
+    output = io.BytesIO()
+    start = datetime.strptime(request.GET["from"], "%Y-%m-%d")
+    end = datetime.strptime(request.GET["to"], "%Y-%m-%d")
+    day = (end - start).days + 1
+    wb = xlsxwriter.Workbook(output)
+    categories = ProductCategory.objects.filter(mill__code=request.millcode, is_deleted=False)
+    title_format = wb.add_format({ "font_size": 16, "underline": True, "bold": True, "align": 'center' })
+    source_format = wb.add_format({ "bg_color": '#FFFF00', "bold": True, "font_size": 10, "align": 'center' })
+    source_format.set_bold()
+    source_format.set_border()
+    source_format.set_text_wrap()
+    color_format = wb.add_format({ "bg_color": '#FF7F00', "align": 'center', "bold": True })
+    color_format.set_text_wrap()
+    color_format.set_border()
+    normal_format = wb.add_format({ "align": 'center' })
+    for category in categories:
+        ws = wb.add_worksheet(category.name)
+        types = ProductionType.objects.filter(is_deleted=False, category=category)
+        ws.set_row(1, height=48)
+        ws.set_row(2, height=36)
+        ws.merge_range(0, 1, 0, len(types), "INCOMING + PRODUCTION", title_format)
+        ws.merge_range(0, len(types) + 1, 0, 2 * len(types), "OUTGOING", title_format)
+        ws.merge_range(0, 2 * len(types) + 1, 0, 3 * len(types), "STOCK", title_format)
+        for i in range(0, len(types), 1):
+            ws.write(1, i + 1, types[i].name, source_format)
+            ws.write(2, i + 1, types[i].quantity, color_format)
+            ws.write(3, i + 1, '(In Bags)', color_format)
+            ws.write(1, len(types) + i + 1, types[i].name, source_format)
+            ws.write(2, len(types) + i + 1, types[i].quantity, color_format)
+            ws.write(3, len(types) + i + 1, '(In Bags)', color_format)
+            ws.write(1, 2 * len(types) + i + 1, types[i].name, source_format)
+            ws.write(2, 2 * len(types) + i + 1, types[i].quantity, color_format)
+            ws.write(3, 2 * len(types) + i + 1, '(In Bags)', color_format)
+            for j, date in zip(range(day), daterange(start, end)):
+                ws.write(j+4, 0, '{}'.format(date.strftime("%d/%m/%Y")))
+                incoming = IncomingProductEntry.objects.filter(entry__is_deleted=False, category=category, product=types[i], entry__date=date).values('product').annotate(bags=Coalesce(Sum('entry__bags'), 0)).values('bags')
+                ws.write(j+4, i + 1, incoming[0]["bags"] if len(incoming) > 0 else '', normal_format)
+                outgoing = OutgoingProductEntry.objects.filter(entry__is_deleted=False, category=category, product=types[i], entry__date=date).values('product').annotate(bags=Coalesce(Sum('entry__bags'), 0)).values('bags')
+                ws.write(j+4, len(types) + i + 1, abs(outgoing[0]["bags"]) if len(outgoing) > 0 else '')
+                stock = ProductStock.objects.filter(entry__is_deleted=False, category=category, product=types[i], entry__date=date).values('product').annotate(bags=Coalesce(Sum('entry__bags'), 0)).values('bags')
+                ws.write(j+4, 2 * len(types) + i + 1, abs(stock[0]["bags"]) if len(stock) > 0 else '')
+        wb.close()
+    output.seek(0)
+    response = HttpResponse(output ,content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="users.xlsx"'
+    return response
