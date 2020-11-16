@@ -240,7 +240,29 @@ def configurationAction(request, id):
 def stocks(request):
     stocks = ProductStock.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode)
     categories = ProductCategory.objects.filter(mill__code=request.millcode, is_deleted=False)
-    return render(request, "products/stocks.html", { "stocks": stocks, "categories": categories })
+    entries = ProductStock.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).values('product', 'category__name', name=F('product__name')).annotate(total=Sum('entry__bags'))
+    if request.method == "POST":
+        action = int(request.POST["action"])
+        if action == 1:
+            product = ProductionType.objects.get(pk=request.POST["product"])
+            bags = int(request.POST["bags"])
+            date = datetime.strptime(request.POST["date"], "%d-%m-%Y")
+            remarks = "Removed {} bags of {} - {}".format(bags , product.name, product.category.name)
+            entry = Stock.objects.create(bags=bags, date=date, remarks=remarks)
+            ProductStock.objects.create(entry=entry, category=product.category, product=product, created_by=request.user)
+            remarks = "Sent {} bags of {} - {}".format(bags, product.name, product.category.name)
+            entry = Stock.objects.create(bags=0 - bags, date=date, remarks=remarks)
+            OutgoingProductEntry.objects.create(entry=entry, category=product.category, product=product, created_by=request.user)
+            return render(request, "products/stocks.html", { "stocks": stocks, "categories": categories, "success_message": "Stock sent successfully", "entries": entries })
+        elif action == 2:
+            pass
+        elif action == 3:
+            stock = ProductStock.objects.get(pk=request.POST["stock"], entry__is_deleted=False)
+            stock.entry.is_deleted = True
+            stock.entry.save()
+            stock.save()
+        return render(request, "products/stocks.html", { "stocks": stocks, "categories": categories, "success_message": "Stock deleted successfully", "entries": entries })
+    return render(request, "products/stocks.html", { "stocks": stocks, "categories": categories, "entries": entries })
 
 @login_required
 @set_mill_session
