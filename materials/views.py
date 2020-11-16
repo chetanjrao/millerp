@@ -406,13 +406,13 @@ def trading(request: WSGIRequest):
             bags = int(quantity * 100 / average_weight)
             entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, date=datetime.now().astimezone().date(), remarks='Sold {} - {} quintal for \u20b9{}/- per/qtl'.format(bags, quantity, price))
             Trading.objects.create(entry=entry, price=price, mill=mill, created_by=request.user)
-            return render(request, "materials/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record created successfully" })
+            return render(request, "materials/trading.html", { "average_price": average_price, "trading": trading, "categories": categories, "success_message": "Trading record created successfully" })
         elif action == 2:
             price = float(request.POST["price"])
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
             trade.price = price
             trade.save()
-            return render(request, "materials/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record updated successfully" })
+            return render(request, "materials/trading.html", { "average_price": average_price, "trading": trading, "categories": categories, "success_message": "Trading record updated successfully" })
         elif action == 3:
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
             trade.entry.is_deleted = True

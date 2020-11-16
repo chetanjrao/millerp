@@ -1,6 +1,103 @@
 {% extends 'base.html' %} 
 {% load mathfilters %}
 {% block body %}
+<div class="row justify-content-between">
+    <div class="col-md-6">
+        <div class="row live-data">
+            <div class="col-md-6">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Paddy Uplifted</p>
+                                <h4 id="paddy_uplifted" class="mb-0"></h4>
+                            </div>
+                            <div class="mini-stat-icon text-center align-self-center">
+                                <img src="/static/images/paddy.png" height="64" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Rice Deposited</p>
+                                <h4 id="rice_deposited" class="mb-0"></h4>
+                            </div>
+                            <div class="mini-stat-icon align-self-center">
+                                <img src="/static/images/rice.png" height="64" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row live-data">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-title text-center pt-4 pb-2">DO Summary</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 border-right text-center">
+                                <h4 class="do_lifted">234</h4>
+                                <div>Do Lifted</div>
+                            </div>
+                            <div class="col-md-3 border-right text-center">
+                                <h4 class="do_accepted">234</h4>
+                                <div>Do Accepted</div>
+                            </div>
+                            <div class="col-md-3 border-right text-center">
+                                <h4 class="do_pending">234</h4>
+                                <div>Do Pending</div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h4 class="do_cancelled">234</h4>
+                                <div>Do Rejected</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Paddy Trading <small>(per qtl)</small></p>
+                                <h4 id="paddy_uplifted" class="mb-0">&#x20b9; {{ average_price }}</h4>
+                            </div>
+                            <div class="mini-stat-icon text-center align-self-center">
+                                <img src="/static/images/paddy-sub.png" height="64" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mini-stats-wid">
+                    <div class="card-body">
+                        <div class="media">
+                            <div class="media-body">
+                                <p class="text-muted font-weight-medium">Rice Trading <small>(per qtl)</small></p>
+                                <h4 id="rice_deposited" class="mb-0">&#x20b9; {{ raverage_price }}</h4>
+                            </div>
+                            <div class="mini-stat-icon align-self-center">
+                                <img src="/static/images/rice-sub.png" height="64" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="card-title ml-2 mt-3">Paddy Monthly Statistics</div>
         <div class="row">
             <div class="col-md-3">
@@ -144,83 +241,12 @@
             </div>
         </div>
         {% if request.COOKIES.MERP_FIRM %}
-        <div class="card-title ml-2 mt-3">Live website data</div>
         <div class="card loader">
             <div class="card-body text-center">
                 <div id="spinner" class="spinner-border text-dark m-1" role="status">
                     <span class="sr-only">Loading...</span>
                 </div>
                 <div class="card-title mt-4">Please wait while we are loading the live data from site</div>
-            </div>
-        </div>
-        <div class="row" id="live-data">
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Paddy Uplifted</p>
-                                <h4 id="paddy_uplifted" class="mb-0"></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-downvote font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Rice Deposited</p>
-                                <h4 id="rice_deposited" class="mb-0"></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-upvote font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Total DO Lifted</p>
-                                <h4 id="do_lifted" class="mb-0"></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-data font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">DO Issued</p>
-                                <h4 id="do_issued" class="mb-0"></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-transfer-alt font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
         <div class="text-center"><a href="{% url 'reload-data' millcode=request.millcode %}"><button type="submit" class="btn btn-secondary btn-sm mb-3"><i class="bx bx-rotate-left"></i>Reload Live Data</button></a></div>
@@ -242,7 +268,7 @@
 <script src="/static/js/app.js"></script>
 <script>
     {% if request.COOKIES.MERP_FIRM %}
-    $('#live-data').hide()
+    $('.live-data').hide()
     $.ajax({
         url: '{% url "guarantee-api" millcode=request.millcode %}',
         type: 'GET',
@@ -254,14 +280,16 @@
             $('.loader').hide()
             $('#paddy_uplifted').text(results["paddy_uplifted"])
             $('#rice_deposited').text(results["rice_deposited"])
-            $('#do_lifted').text(results["total_do_lifted"])
-            $('#do_issued').text(results["total_do_issued"])
+            $('.do_lifted').text(results["total_do_lifted"])
+            $('.do_accepted').text(results["total_do_issued"])
+            $('.do_cancelled').text(results["total_do_cancelled"])
+            $('.do_pending').text(results["total_do_pending"])
         },
         error: function (xhr, status) {
             alert("Sorry, there was a problem!");
         },
         complete: function (xhr, status) {
-            $('#live-data').show()
+            $('.live-data').show()
             $('.loader').hide()
         }
     })
