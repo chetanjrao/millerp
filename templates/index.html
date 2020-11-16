@@ -248,6 +248,9 @@
         type: 'GET',
         dataType: "json",
         success: function (results) {
+            if(results.paddy_uplifted == undefined){
+                fireError()
+            }
             $('.loader').hide()
             $('#paddy_uplifted').text(results["paddy_uplifted"])
             $('#rice_deposited').text(results["rice_deposited"])

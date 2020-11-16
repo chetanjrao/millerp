@@ -122,6 +122,9 @@
         type: 'GET',
         dataType: "json",
         success: function (results) {
+            if(results.paddy_uplifted == undefined){
+                fireError()
+            }
             setTimeout(() => {
                 $('.data').DataTable({
                     data: Object.values(results["results"]),
