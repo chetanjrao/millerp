@@ -195,6 +195,7 @@
                         $('.details').html('<h3 class="text-center">Do Status</h3>')
                         let dt = JSON.parse(data["total"][selection])
                         let sm = JSON.parse(data["summary"][selection])
+                        $('.summary').html('')
                         $('.summary').append(`<div class="repeater">
                         <h5 class="text-success m-4">डिओ की जानकारी</h5>
                         <table class="table table-striped table-bordered m-4" style="border-collapse: collapse; border-spacing: 0px; width: 100%;">
