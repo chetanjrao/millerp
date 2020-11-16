@@ -309,7 +309,7 @@ def get_guarantee(request: WSGIRequest):
     firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
     cached_response = cache.get("{}".format(firm.username))
     if cached_response is None or cached_response is {}:
-        #options.add_argument('--headless')
+        options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.binary_location = CHROME
         driver = webdriver.Chrome(CHROMEDRIVER, options=options)
@@ -328,14 +328,15 @@ def get_print_url(request: WSGIRequest):
         agreement = request.POST["agreement"]
         do = request.POST["do"]
         firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
-        cached_response = cache.get("{}_{}".format(agreement, do))
+        cached_response = cache.get("{}-{}".format(agreement.strip(), do))
         if cached_response is None or cached_response is "":
             options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             options.binary_location = CHROME
             driver = webdriver.Chrome(CHROMEDRIVER, options=options)
             data = get_print(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), '{}'.format(agreement), '{}'.format(do))
-            cache.set("{}_{}".format(agreement, do), data, 60 * 60 * 24 * 15)
+            cache.set("{}-{}".format(agreement.strip(), do), data, 60 * 60 * 24 * 15)
+            return HttpResponse(data)
         else:
             data = cached_response
             return HttpResponse(data)
@@ -348,18 +349,23 @@ def get_do_stats(request: WSGIRequest):
         options = Options()
         agreement = request.POST["agreement"]
         firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
-        cached_response = cache.get("{}_do".format(agreement))
+        cached_response = cache.get("{}-do".format(agreement.strip()))
         if cached_response is None or cached_response is "":
             options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             options.binary_location = CHROME
             driver = webdriver.Chrome(CHROMEDRIVER, options=options)
-            data = get_print(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), '{}'.format(agreement))
-            cache.set("{}_do".format(agreement), data, 60 * 60 * 24 * 15)
+            data = get_do_status(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), '{}'.format(agreement))
+            cache.set("{}-do".format(agreement.strip()), data, 60 * 60 * 24 * 1)
         else:
             data = cached_response
             return HttpResponse(data)
     return HttpResponse("Invalid request data", status=500)
+
+@login_required
+@set_mill_session
+def get_print_view(request: WSGIRequest):
+    return render(request, "printer.html")
 
 @login_required
 @set_mill_session

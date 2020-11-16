@@ -22,6 +22,12 @@
                             <span>Bank Guarantee</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="{% url 'print-do' millcode=request.millcode %}" class="waves-effect">
+                            <i class="bx bx-file"></i>
+                            <span>DO Acknowledgement</span>
+                        </a>
+                    </li>
                 {% endif %}
                 <li class="menu-title">Paddy</li>
                 <li>
