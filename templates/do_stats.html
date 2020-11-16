@@ -46,7 +46,35 @@
         <div class="card-title mt-4">Loading DO Status</div>
     </div>
 </div>
-<div id="live-data" class="card">
+<div id="live-data" class="card p-4">
+    <div class="notifications">
+        <table class="data table table-striped table-bordered" id="notifications" style="border-collapse: collapse; border-spacing: 0px; width: 90%;">
+            <thead>
+                <th>क्र.</th>
+                <th>समिती - उपार्जन केन्द्र</th>
+                <th>डिओ क्र.</th>
+                <th>डिओ दिनांक</th>
+                <th>डिओ धान मोटा (क्विं.मे .)</th>
+                <th>डिओ धान महामाया (क्विं.मे .)</th>
+                <th>डिओ धान पतला (क्विं.मे .)</th>
+                <th>डिओ धान एच.एम.टी (क्विं.मे .)</th>
+                <th>डिओ धान आई.आर-36 (क्विं.मे .)</th>
+                <th>डिओ धान सरना (क्विं.मे .)</th>
+                <th>डिओ मे कुल धान (क्विं.मे .)</th>
+                <th>जारी धान बोरा</th>
+                <th>जारी धान मोटा (क्विं.मे .)</th>
+                <th>जारी धान महामाया (क्विं.मे .)</th>
+                <th>जारी धान पतला (क्विं.मे .)</th>
+                <th>जारी धान एच.एम.टी (क्विं.मे .)</th>
+                <th>जारी धान आई.आर-36 (क्विं.मे .)</th>
+                <th>जारी धान सरना (क्विं.मे .)</th>
+                <th>जारी कुल धान (क्विं.मे .)</th>
+                <th>शेष धान मोटा + महामाया + सरना (क्विं.मे .)</th>
+                <th>शेष धान पतला + एच.एम.टी + आई.आर-36 (क्विं.मे .)</th>
+                <th>शेष कुल धान (क्विं.मे .)</th>
+            </thead>
+        </table>
+    </div>
     <div class="col-md-12 mb-4 mt-4 ml-2">
        <div class="form-group">
            <label class="control-label">Select Samiti</div>
@@ -146,16 +174,25 @@
                     $('.link').attr("href", data) 
                     $('.loader2').hide()
                     $('#live-data').show()
+                    setTimeout(() => {
+                        if(data["remaining"].length > 0){
+                            $('#notifications').DataTable({
+                                data: data["remaining"],
+                                responsive: true
+                            }).columns.adjust()
+                        } else {
+                            $('.notifications').hide()
+                        }
+                    }, 100)
                     $('#samiti').select2({
                         placeholder: "Type samiti name",
                         width: '100%',
-                        data: Object.keys(data)
+                        data: Object.keys(data["total"])
                     })
-                    $('#daa').html('<h1>Hello</h1>')
                     $('#samiti').change((e) => {
                         let selection = $(e.target).select2('data')[0]["text"]
-                        let dt = JSON.parse(data[selection])
                         $('.details').html('<h3 class="text-center">Do Status</h3>')
+                        let dt = JSON.parse(data["total"][selection])
                         Object.keys(dt).forEach((k) => {
                             $('.details').append(`<div class="repeater">
                             <h5 class="text-success m-4">डिओ दिनांक: ${k}</h5>

@@ -273,9 +273,12 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
                 table: Tag = parser.find_all('table')[0]
                 rows = table.find_all('tr')[1:-1]
                 do = {}
+                remaining = []
                 for i, row in enumerate(rows):
                     if i % 2 == 0:
                         element = row.find_all('td')
+                        if float(element[22].text) > 0 or ((float(element[5].text) - float(element[13].text)) > 0) or ((float(element[6].text) - float(element[14].text)) > 0) or ((float(element[10].text) - float(element[18].text)) > 0):
+                            remaining.append([elem.text for elem in element])
                         do.setdefault('{}'.format(element[1].find_all('td')[0].text), []).append({
                             "date": element[4].text,
                             "mu": float(element[5].text),
@@ -293,10 +296,10 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
                         })
                 for k, v in do.items():
                     df = pd.DataFrame(v)
-                    print(df)
                     groups = df.groupby('date').sum()
                     do[k] = groups.to_json(orient='index')
-                response = do
+                response["total"] = do
+                response["remaining"] = remaining
                 break
             except NoSuchElementException:
                 continue
