@@ -1,5 +1,5 @@
 import io
-from django.db.models.expressions import Case, F, When
+from django.db.models.expressions import Case, F, Func, When
 from django.db.models.fields import IntegerField
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, resolve_url
@@ -396,6 +396,8 @@ def trading(request: WSGIRequest):
     trading = Trading.objects.filter(mill__code=request.millcode, entry__is_deleted=False)
     quantity = trading.values().aggregate(quantity=Sum('entry__quantity'), bags=Sum('entry__bags'))
     average_weight = 0 if quantity['quantity'] is None else quantity['quantity'] * 100 / quantity['bags'] if quantity['bags'] is not None else 1
+    average_price = Trading.objects.filter(mill=request.mill, entry__is_deleted=False).aggregate(total=Sum('entry__quantity'), price=Sum(F('price') * F('entry__quantity') / Func(F('entry__quantity'), function='ABS')))
+    average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
@@ -416,8 +418,8 @@ def trading(request: WSGIRequest):
             trade.entry.is_deleted = True
             trade.entry.save()
             trade.save()
-            return render(request, "materials/trading.html", { "trading": trading, "categories": categories, "success_message": "Trading record deleted successfully", "quantity": quantity })
-    return render(request, "materials/trading.html", { "trading": trading, "categories": categories, "quantity": quantity })
+            return render(request, "materials/trading.html", { "average_price": average_price, "trading": trading, "categories": categories, "success_message": "Trading record deleted successfully", "quantity": quantity })
+    return render(request, "materials/trading.html", { "average_price": average_price, "trading": trading, "categories": categories, "quantity": quantity })
 
 @login_required
 @set_mill_session
