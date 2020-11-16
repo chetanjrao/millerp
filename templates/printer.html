@@ -119,7 +119,7 @@
                     $('#do').empty().select2('destroy')
                     let selection = $(e.target).select2('data')[0]["text"]
                     let sub_options = []
-                    let dat = results["agreements"][selection]
+                    let dat = results["agreements"][selection].reverse()
                     dat.forEach((v, i) => {
                         sub_options.push({
                             "id": v,
