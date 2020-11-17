@@ -128,6 +128,9 @@ HEIGHT_RATIO= env.int('HEIGHT_RATIO')
 
 WIDTH_RATIO = env.int('WIDTH_RATIO')
 
+RZP_KEY = env.str('RZP_KEY')
+
+RZP_SECRET = env.str('RZP_SECRET')
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 

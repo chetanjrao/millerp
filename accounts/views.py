@@ -1,3 +1,4 @@
+from millerp.settings.base import RZP_KEY, RZP_SECRET
 from core.decorators import set_mill_session
 from miscs.models import Addon, Bundle, City
 from core.models import Mill, Owner, Purchase
@@ -13,7 +14,7 @@ from millerp.utils import send_message
 from random import randint
 
 # Create your views here.
-client = Client(auth=('rzp_test_PUQZgR1zUzYchX', 'TLtW0LE0p8WGJyCYlZxAeDU5'))
+client = Client(auth=(RZP_KEY, RZP_SECRET))
 
 @login_required
 def home(request):
