@@ -117,6 +117,18 @@
         </div>
     </div>
 </div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-title">Godown Stock Status</div>
+                <div class="apex-charts" id="pie_chart">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
         {% if request.COOKIES.MERP_FIRM %}
         <div class="card loader">
             <div class="card-body text-center">
@@ -126,7 +138,7 @@
                 <div class="card-title mt-4">Please wait while we are loading the live data from site</div>
             </div>
         </div>
-        <div class="text-center"><a href="{% url 'reload-data' millcode=request.millcode %}"><button type="submit" class="btn btn-secondary btn-sm mb-3"><i class="bx bx-rotate-left"></i>Reload Live Data</button></a></div>
+        <div class="text-center mt-4"><a href="{% url 'reload-data' millcode=request.millcode %}"><button type="submit" class="btn btn-secondary btn-sm mb-3"><i class="bx bx-rotate-left"></i>Reload Live Data</button></a></div>
         {% endif %}
 {% endblock %}
 {% block scripts %}
@@ -135,11 +147,7 @@
 <script src="/static/libs/metismenu/metisMenu.min.js"></script>
 <script src="/static/libs/simplebar/simplebar.min.js"></script>
 <script src="/static/libs/node-waves/waves.min.js"></script>
-
-<!-- apexcharts -->
 <script src="/static/libs/apexcharts/apexcharts.min.js"></script>
-
-<script src="/static/js/pages/dashboard.init.js"></script>
 
 <!-- App js -->
 <script src="/static/js/app.js"></script>
@@ -170,6 +178,40 @@
             $('.loader').hide()
         }
     })
+    options = {
+        chart: {
+            height: 480,
+            type: "pie"
+        },
+        {% autoescape off %}
+        series: [{% for entry in entries %} {{ entry.quantity }}, {% endfor %}],
+        {% endautoescape %}
+        {% autoescape off %}
+        labels: [{% for entry in entries %} '{{ entry.godown }}', {% endfor %}],
+        {% endautoescape %}
+        legend: {
+            show: !0,
+            position: "bottom",
+            horizontalAlign: "center",
+            verticalAlign: "middle",
+            floating: !1,
+            fontSize: "14px",
+            offsetX: 0,
+            offsetY: -10
+        },
+        responsive: [{
+            breakpoint: 600,
+            options: {
+                chart: {
+                    height: 240
+                },
+                legend: {
+                    show: !1
+                }
+            }
+        }]
+    };
+    (chart = new ApexCharts(document.querySelector("#pie_chart"),options)).render();
     {% endif %}
 </script>
 {% endblock %}

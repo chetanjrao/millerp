@@ -22,6 +22,7 @@ class Package(models.Model):
 class Bundle(models.Model):
     name = models.CharField(max_length=64)
     addons = models.ManyToManyField(to=Addon)
+    mills = models.IntegerField(default=1)
     amount = models.FloatField()
     is_deleted = models.BooleanField(default=False)
     icon = models.CharField(max_length=16)

@@ -17,6 +17,7 @@ from products.models import IncomingProductEntry, OutgoingProductEntry, ProductS
 @set_mill_session
 def index(req):
     month = now().astimezone().date().month
+    entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=req.millcode).values(godown=F('source__name')).annotate(quantity=Func(Sum('entry__quantity'), function='ABS'))
     paddy_incoming = IncomingStockEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill, entry__date__month=month).aggregate(total=Sum('entry__quantity'))["total"]
     paddy_outgoing = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill, entry__date__month=month).aggregate(total=Sum('entry__quantity'))["total"]
     paddy_processing = ProcessingSideEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill, entry__date__month=month).aggregate(total=Sum('entry__quantity'))["total"]
@@ -29,7 +30,7 @@ def index(req):
     average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
     raverage_price = ProductTrading.objects.filter(source__category__mill__code=req.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum(F('price'), output_field=FloatField()))
     raverage_price = round((0 if raverage_price["price"] is None else raverage_price["price"]) / (1 if raverage_price["total"] is None or raverage_price["total"] == 0 else raverage_price["total"]), 2)
-    return render(req, "index.html", { "paddy_incoming": paddy_incoming, "paddy_outgoing": paddy_outgoing, "paddy_processing": paddy_processing, "paddy_trading": paddy_trading, "rice_incoming": rice_incoming, "rice_outgoing": rice_outgoing, "rice_stock": rice_stock, "rice_trading": rice_trading, "average_price": average_price, "raverage_price": raverage_price } )
+    return render(req, "index.html", { "paddy_incoming": paddy_incoming, "paddy_outgoing": paddy_outgoing, "paddy_processing": paddy_processing, "paddy_trading": paddy_trading, "entries": entries, "rice_incoming": rice_incoming, "rice_outgoing": rice_outgoing, "rice_stock": rice_stock, "rice_trading": rice_trading, "average_price": average_price, "raverage_price": raverage_price } )
 
 @login_required
 @set_mill_session
