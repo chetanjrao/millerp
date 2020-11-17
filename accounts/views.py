@@ -23,6 +23,7 @@ def home(request):
 @check_owner_role
 def index(request):
     success = request.GET.get("success", 0)
+    error = request.GET.get("error", 0)
     mill_success = request.GET.get("done", 0)
     owner = Owner.objects.get(user=request.user)
     addons = Addon.objects.filter(is_deleted=False)
@@ -31,6 +32,8 @@ def index(request):
     mills = Mill.objects.filter(owner=owner, is_deleted=False)
     cities = City.objects.all()
     if request.method == "POST":
+        if len(mills) >= purchase[0].bundle.mills:
+            return redirect(resolve_url('index') + '?error=1', status=400) 
         name = request.POST["name"]
         city = City.objects.get(pk=request.POST["city"])
         address = request.POST["address"]
@@ -47,7 +50,7 @@ def index(request):
         mill.access.add(request.user)
         mill.save()
         return redirect(resolve_url('index') + '?done=1')
-    return render(request, "home/index.html", { "owner": owner, "bundles": bundles, "addons": addons, "purchase": len(purchase) > 0, "mills": mills, "success": success, "cities": cities, "mill_success": mill_success })
+    return render(request, "home/index.html", { "owner": owner, "bundles": bundles, "addons": addons, "purchase": len(purchase) > 0, "purchases": purchase, "mills": mills, "success": success, "cities": cities, "mill_success": mill_success, "mill_error": error })
 
 @login_required
 def payment_process(request, bundle: int):
