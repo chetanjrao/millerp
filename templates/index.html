@@ -96,150 +96,27 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-title text-center pt-4 pb-2">Overall Stock Summary</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 border-right text-center">
+                                <h4>{{ paddy_incoming|default:0|floatformat:2 }} <small>qtls</small></h4>
+                                <div>Paddy Stock</div>
+                            </div>
+                            <div class="col-md-6 border-right text-center">
+                                <h4>{{ rice_incoming|default:0|floatformat:2 }} <small>qtls</small></h4>
+                                <div>Rice Stock</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-<div class="card-title ml-2 mt-3">Paddy Monthly Statistics</div>
-        <div class="row">
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Paddy Incoming</p>
-                                <h4 class="mb-0">{{ paddy_incoming|default:0|floatformat:2 }} <small>qtls</small></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-download font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Paddy Outgoing</p>
-                                <h4 class="mb-0">{{ paddy_outgoing|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-upload font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Paddy Processing</p>
-                                <h4 class="mb-0">{{ paddy_processing|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-loader font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Paddy Trading</p>
-                                <h4 class="mb-0">{{ paddy_trading|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-transfer font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card-title ml-2 mt-3">Rice Monthly Statistics</div>
-        <div class="row">
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Rice Incoming</p>
-                                <h4 class="mb-0">{{ rice_incoming|default:0|floatformat:2 }} <small>qtls</small></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-downvote font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Rice Outgoing</p>
-                                <h4 class="mb-0">{{ rice_outgoing|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-upvote font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Rice Stock</p>
-                                <h4 class="mb-0">{{ rice_stock|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-data font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card mini-stats-wid">
-                    <div class="card-body">
-                        <div class="media">
-                            <div class="media-body">
-                                <p class="text-muted font-weight-medium">Rice Trading</p>
-                                <h4 class="mb-0">{{ rice_trading|default:0|abs|floatformat:2 }} <small>qtls</small></h4>
-                            </div>
-                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary align-self-center">
-                                <span class="avatar-title">
-                                    <i class="bx bx-transfer-alt font-size-24"></i>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         {% if request.COOKIES.MERP_FIRM %}
         <div class="card loader">
             <div class="card-body text-center">
