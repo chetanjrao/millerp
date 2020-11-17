@@ -21,6 +21,7 @@ class Mill(models.Model):
     created_at = models.DateTimeField(auto_now=True)
     access = models.ManyToManyField(to=User)
     factor = models.FloatField(default=2271)
+    ppq = models.FloatField(default=1400)
     owner = models.ForeignKey(to=Owner, on_delete=models.PROTECT)
 
     def __str__(self) -> str: return self.name

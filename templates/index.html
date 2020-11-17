@@ -99,7 +99,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-title text-center pt-4 pb-2">Overall Stock Summary</div>
+                    <div class="card-title text-center pt-4 pb-2">Overall Incoming Stock</div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6 border-right text-center">
@@ -128,6 +128,24 @@
             </div>
         </div>
     </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-title text-center pt-4 pb-2">Paddy shortage</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 border-right text-center">
+                            <h4 class="pshort">0</h4>
+                            <div>Paddy Shortage</div>
+                        </div>
+                        <div class="col-md-6 border-right text-center">
+                            <h4 class="rshort">&#x20b9;0</h4>
+                            <div>Amount Shortage</div>
+                        </div>
+                    </div>
+                    <div class="noti text-center mt-4"></div>
+                </div>
+            </div>
+        </div>
 </div>
         {% if request.COOKIES.MERP_FIRM %}
         <div class="card loader">
@@ -169,6 +187,20 @@
             $('.do_accepted').text(results["total_do_issued"])
             $('.do_cancelled').text(results["total_do_cancelled"])
             $('.do_pending').text(results["total_do_pending"])
+            let pshort = (Number.parseFloat(`${results["paddy_uplifted"]}` || 0) * 40 /100) - (( Number.parseFloat("{{paddy_outgoing|default:0|floatformat:2}}") * 40 / 100  ) + Number.parseFloat(`${results["rice_deposited"]}` || 0)) 
+            let rshort = pshort * Number.parseFloat("{{ request.mill.ppq|default:0 }}")
+            if(pshort < 0){
+                $('.pshort').text((pshort * -1).toFixed(2) + " qtls").addClass("text-success")
+                $('.noti').html(`&#x1F389; Hurry, there's no shortage`)
+            } else {
+                $('.pshort').text(`${pshort.toFixed(2)}` + "qtls").addClass("text-danger")
+                $('.noti').html(`&#x1F914; Opps, we have run out of stock`)
+            }
+            if(rshort < 0){
+                $('.rshort').text(`\u20b9${(rshort * -1).toFixed(2)}`).addClass("text-success")
+            } else {
+                $('.rshort').text(`\u20b9${rshort.toFixed(2)}`).addClass("text-danger")
+            }
         },
         error: function (xhr, status) {
             alert("Sorry, there was a problem!");
