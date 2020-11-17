@@ -23,9 +23,11 @@
                             <h4 class="card-title mt-2 mb-3">Firms</h4>
                         </div>
                         <div class="col-sm-8">
-                            <div class="text-sm-right">
-                                <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i>Add Firm</button>
-                            </div>
+                            {% if firms|length < purchase.bundle.mills|mul:3 %}
+                                <div class="text-sm-right">
+                                    <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i>Add Firm</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="row">

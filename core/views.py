@@ -3,8 +3,8 @@ from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.expressions import F, Func
 from django.db.models.fields import FloatField
-from miscs.models import City
-from core.models import Firm, Mill
+from miscs.models import City, Package
+from core.models import Firm, Mill, Purchase
 from django.shortcuts import redirect, render, resolve_url
 from django.contrib.auth.decorators import login_required
 from .decorators import set_mill_session
@@ -60,15 +60,18 @@ def settings(request):
 @set_mill_session
 def firms(request):
     firms = Firm.objects.filter(mill=request.mill, is_deleted=False)
+    purchase = Purchase.objects.get(owner__user=request.user)
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
+            if len(firms) < (purchase.bundle.mills * 3):
+                return render(request, "firms.html", { "firms": firms, "purchase": purchase, "error_message": "Firm limit exceeded" })
             name = request.POST["name"]
             conversion = float(request.POST["conversion"])
             username = request.POST["username"]
             password = request.POST["password"]
             Firm.objects.create(name=name, username=username, conversion=conversion, mill=request.mill, password=password)
-            return render(request, "firms.html", { "firms": firms, "success_message": "Firm created successfully" })
+            return render(request, "firms.html", { "firms": firms, "purchase": purchase, "success_message": "Firm created successfully" })
         elif action == 2:
             firm = Firm.objects.get(pk=request.POST["firm"], is_deleted=False, mill=request.mill)
             name = request.POST["name"]
@@ -76,13 +79,13 @@ def firms(request):
             firm.name = name
             firm.conversion = conversion
             firm.save()
-            return render(request, "firms.html", { "firms": firms, "success_message": "Firm updated successfully" })
+            return render(request, "firms.html", { "firms": firms, "purchase": purchase, "success_message": "Firm updated successfully" })
         elif action == 3:
             firm = Firm.objects.get(pk=request.POST["firm"], is_deleted=False, mill=request.mill)
             firm.is_deleted = True
             firm.save()
-            return render(request, "firms.html", { "firms": firms, "success_message": "Firm deleted successfully" })
-    return render(request, "firms.html", { "firms": firms })
+            return render(request, "firms.html", { "firms": firms, "purchase": purchase, "success_message": "Firm deleted successfully" })
+    return render(request, "firms.html", { "firms": firms, "purchase": purchase })
 
 @login_required
 @set_mill_session
