@@ -1,5 +1,5 @@
 from miscs.views import get_do_view, get_print_view
-from core.views import reports, set_firm
+from core.views import reports, set_firm, shortage
 from django.urls import path, include
 from accounts.views import profile
 from . import views
@@ -16,4 +16,5 @@ urlpatterns = [
     path('print-do/', get_print_view, name='print-do'),
     path('do-status/', get_do_view, name='do-status'),
     path('reports/', reports, name='reports'),
+    path('shortage/', shortage, name='shortage'),
 ]

@@ -64,7 +64,7 @@
                 </li>
                 {% if request.COOKIES.MERP_FIRM %}
                 <li>
-                    <a href="#" class=" waves-effect">
+                    <a href="{% url 'shortage' millcode=request.millcode %}" class=" waves-effect">
                         <i class="bx bx-message-square-dots"></i>
                         <span>Paddy Shortage</span>
                     </a>
@@ -136,11 +136,16 @@
                         <span>My Account</span>
                     </a>
                 </li>
-
                 <li>
                     <a href="tel:+917000708083" class="waves-effect">
                         <i class="bx bx-support"></i>
                         <span>Request Support</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'logout' %}" class="waves-effect">
+                        <i class="bx bx-log-out"></i>
+                        <span>Log Out</span>
                     </a>
                 </li>
             </ul>

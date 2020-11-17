@@ -105,5 +105,12 @@ def load_live(request):
 
 @login_required
 @set_mill_session
+def shortage(request):
+    paddy_outgoing = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill=request.mill).aggregate(total=Sum('entry__quantity'))["total"]
+    rice_stock = ProductStock.objects.filter(entry__is_deleted=False, category__mill=request.mill).aggregate(total=Sum(F("entry__bags") * F("product__quantity") / 100, output_field=FloatField()))["total"]
+    return render(request, "shortage.html", { "paddy_outgoing": paddy_outgoing, "rice_stock": rice_stock })
+
+@login_required
+@set_mill_session
 def reports(request):
     return render(request, "reports.html")

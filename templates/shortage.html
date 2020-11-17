@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load mathfilters %} 
+{% block body %}
+<div class="card loader mt-4">
+    <div class="card-body text-center">
+        <div id="spinner" class="spinner-border text-dark m-1" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <div class="card-title mt-4">Loading live data</div>
+    </div>
+</div>
+<div class="live-data">
+    <div class="card">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="" class="control-label">Paddy Uplifted</label>
+                        <input id="paddy_uplifted" type="text" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="control-label">Rice to be given</label>
+                        <input id="rice_to_be_given" type="text" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="control-label">Paddy Stocked</label>
+                        <input value="{{ paddy_outgoing|default:0|floatformat:2|abs }}" id="paddy_stocked" type="text" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="control-label">Enter paddy in Dheri + Handi + Godi + Truck</label>
+                        <input id="paddy_dheri" type="text" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="control-label">Rice against this paddy <small>(in %)</small></label>
+                        <input value="58" id="conversion" type="text" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="control-label">Rice Jama</label>
+                        <input id="rice_jama" type="text" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="control-label">Rice Stocked</label>
+                        <input value="{{ rice_stock|default:0|abs }}" id="rice_stocked" type="text" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="control-label">Pending Lots</label>
+                        <input id="pending_lots" type="text" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="control-label">Rice in Truck + Dheri</label>
+                        <input id="rice_dheri" type="text" class="form-control">
+                    </div>
+                    <button id="button" class="btn btn-success" type="button">Check shortage</button>
+                </div>
+                <div class="col-md-6 text-center">
+                    <div class="mt-4 mb-4">
+                        <h4 class="pshort">0 qtls</h4>
+                        <h5>Paddy Shortage</h5>
+                    </div>
+                    <div class="mt-4 pt-4 mb-4">
+                        <h4 class="rshort">&#x20b9;0</h4>
+                        <h5>Amount Shortage</h5>
+                    </div>
+                    <div class="noti"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/libs/jquery/jquery.min.js"></script>
+<script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/libs/simplebar/simplebar.min.js"></script>
+<script src="/static/libs/node-waves/waves.min.js"></script>
+
+<!-- apexcharts -->
+<script src="/static/libs/apexcharts/apexcharts.min.js"></script>
+
+<script src="/static/js/pages/dashboard.init.js"></script>
+
+<!-- App js -->
+<script src="/static/js/app.js"></script>
+<script>
+    $('.live-data').hide()
+    {% if request.COOKIES.MERP_FIRM %}
+    $.ajax({
+        url: '{% url "guarantee-api" millcode=request.millcode %}',
+        type: 'GET',
+        dataType: "json",
+        success: function (results) {
+            if(results.paddy_uplifted == undefined){
+                fireError()
+            }
+            $('.loader').hide()
+            $('.live-data').show()
+            $('#paddy_uplifted').val(results["paddy_uplifted"])
+            $('#rice_to_be_given').val((results["paddy_uplifted"] * 0.68).toFixed(2))
+            $('#rice_jama').val(results["rice_deposited"])
+        },
+        error: function (xhr, status) {
+            alert("Sorry, there was a problem!");
+        },
+        complete: function (xhr, status) {
+            $('.live-data').show()
+            $('.loader').hide()
+        }
+    })
+    $('#button').on("click", () => {
+        let paddy_uplifted = Number.parseFloat($('#paddy_uplifted').val() || 0)
+        let rice_to_be_given = Number.parseFloat($('#rice_to_be_given').val() || 0)
+        let paddy_stocked = Number.parseFloat($('#paddy_stocked').val() || 0)
+        let paddy_dheri = Number.parseFloat($('#paddy_dheri').val() || 0)
+        let rice_deposited = Number.parseFloat($('#rice_jama').val() || 0)
+        let rice_stocked = Number.parseFloat($('#rice_stocked').val() || 0)
+        let pending_lots = Number.parseFloat($('#pending_lots').val() || 0)
+        let rice_dheri = Number.parseFloat($('#rice_dheri').val() || 0)
+        let conversion = Number.parseFloat($('#conversion').val() || 0)
+        let total = rice_to_be_given - (((paddy_dheri + paddy_stocked) * conversion / 100) + ((rice_deposited + pending_lots + rice_dheri + rice_stocked)))
+        let amount = total * Number.parseFloat("{{ request.mill.ppq }}")
+        $('.pshort').text((total).toFixed(2) + ' qtls')
+        $('.rshort').text(('\u20b9 ' + amount.toFixed(2)))
+        if(total < 0){
+                $('.pshort').text((total * -1).toFixed(2) + " qtls").addClass("text-success")
+                $('.noti').html(`&#x1F389; Hurry, there's no shortage`)
+            } else {
+                $('.pshort').text(`${total.toFixed(2)}` + "qtls").addClass("text-danger")
+                $('.noti').html(`&#x1F914; Opps, we have run out of stock`)
+            }
+            if(amount < 0){
+                $('.rshort').text(`\u20b9${(amount * -1).toFixed(2)}`).addClass("text-success")
+            } else {
+                $('.rshort').text(`\u20b9${amount.toFixed(2)}`).addClass("text-danger")
+            }
+    })
+    {% endif %}
+</script>
+{% endblock %}
