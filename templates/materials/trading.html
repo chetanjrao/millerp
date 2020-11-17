@@ -197,7 +197,7 @@
                                 </form>
                             </div>
                                 <tr>
-                                    <td>{{trade.entry.date}}</td>
+                                    <td><span style="display:none;">{{ trade.entry.date|date:"U" }}</span>{{trade.entry.date}}</td>
                                     {% if trade.entry.bags > 0 %}
                                         <td class="text-success"><strong>{{trade.entry.bags|floatformat:0}}</strong></td>
                                     {% else %}

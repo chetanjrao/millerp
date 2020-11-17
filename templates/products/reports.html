@@ -40,7 +40,7 @@
                             {% for entry in entries %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ entry.date }}</td>
+                                <td><span style="display:none;">{{ entry.date|date:"U" }}</span>{{ entry.date }}</td>
                                 <td>{{ entry.category.name }}</td>
                                 <td>{{ entry.product.name }}</td>
                                 {% if entry.bags > 0 %}
