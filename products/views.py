@@ -402,5 +402,5 @@ def export_to_excel(request):
         wb.close()
     output.seek(0)
     response = HttpResponse(output ,content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="users.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename="Rice Stock Details - {}.xlsx"'.format(datetime.now().date())
     return response
