@@ -333,6 +333,11 @@
                 } else {
                     $('#processing_bags').val(calc)
                     $('#processing_bags').attr("max", calc)
+                    $('#processing_weight').val((calc * Number.parseFloat(average_weight)).toFixed(2) / 100)
+                    $('#processing_bags').change((e) => {
+                        let bags = Number.parseInt(e.target.value || 0)
+                        $('#processing_weight').val((bags * Number.parseFloat(average_weight)).toFixed(2) / 100)
+                    })
                 }
             })
         }, 50)

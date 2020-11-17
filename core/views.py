@@ -99,3 +99,8 @@ def load_live(request):
     firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
     cache.delete('{}'.format(firm.username))
     return redirect(resolve_url('dashboard_home', millcode=request.millcode))
+
+@login_required
+@set_mill_session
+def reports(request):
+    return render(request, "reports.html")
