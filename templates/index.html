@@ -187,7 +187,7 @@
             $('.do_accepted').text(results["total_do_issued"])
             $('.do_cancelled').text(results["total_do_cancelled"])
             $('.do_pending').text(results["total_do_pending"])
-            let pshort = (Number.parseFloat(`${results["paddy_uplifted"]}` || 0) * 40 /100) - (( Number.parseFloat("{{paddy_outgoing|default:0|floatformat:2}}") * 40 / 100  ) + Number.parseFloat(`${results["rice_deposited"]}` || 0)) 
+            let pshort = (Number.parseFloat(`${results["paddy_uplifted"]}` || 0) * 68 /100) - (( Number.parseFloat("{{paddy_outgoing|default:0|floatformat:2}}") * 40 / 100  ) + Number.parseFloat(`${results["rice_deposited"]}` || 0)) 
             let rshort = pshort * Number.parseFloat("{{ request.mill.ppq|default:0 }}")
             if(pshort < 0){
                 $('.pshort').text((pshort * -1).toFixed(2) + " qtls").addClass("text-success")
