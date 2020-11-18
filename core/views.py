@@ -64,7 +64,7 @@ def firms(request):
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
-            if len(firms) < (purchase.bundle.mills * 3):
+            if len(firms) >= (purchase.bundle.mills * 3):
                 return render(request, "firms.html", { "firms": firms, "purchase": purchase, "error_message": "Firm limit exceeded" })
             name = request.POST["name"]
             conversion = float(request.POST["conversion"])
