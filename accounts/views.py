@@ -1,5 +1,5 @@
 from millerp.settings.base import RZP_KEY, RZP_SECRET
-from core.decorators import set_mill_session
+from core.decorators import set_mill_session, set_rzp_session
 from miscs.models import Addon, Bundle, City
 from core.models import Mill, Owner, Purchase
 from django.shortcuts import render
@@ -54,6 +54,7 @@ def index(request):
     return render(request, "home/index.html", { "owner": owner, "bundles": bundles, "addons": addons, "purchase": len(purchase) > 0, "purchases": purchase, "mills": mills, "success": success, "cities": cities, "mill_success": mill_success, "mill_error": error })
 
 @login_required
+@set_rzp_session
 def payment_process(request, bundle: int):
     bundle = Bundle.objects.get(pk=bundle, is_deleted=False)
     owner = Owner.objects.get(user=request.user)

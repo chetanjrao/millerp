@@ -5,6 +5,11 @@ from django.shortcuts import redirect, render, resolve_url
 from django.contrib.auth.decorators import login_required
 from .models import Firm, Mill
 
+def set_rzp_session(view_func):
+    def wrapper(request, *args, **kwargs):
+        request.RZP_KEY = RZP_KEY
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 def set_mill_session(view_func):
     def wrapper(request, millcode, *args, **kwargs):
@@ -13,7 +18,6 @@ def set_mill_session(view_func):
         if mill.is_deleted == True or request.user not in mill.access.all():
             return redirect(resolve_url('home'))
         request.mill = mill
-        request.RZP_KEY = RZP_KEY
         request.millcode = millcode
         request.firms = firms
         return view_func(request, *args, **kwargs)
