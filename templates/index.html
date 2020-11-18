@@ -3,6 +3,16 @@
 {% block body %}
 <div class="row justify-content-between">
     <div class="col-md-6">
+        {% if request.COOKIES.MERP_FIRM %}
+        <div class="card loader">
+            <div class="card-body text-center">
+                <div id="spinner" class="spinner-border text-dark m-1" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <div class="card-title mt-4">Please wait while we are loading the live data from site</div>
+            </div>
+        </div>
+        {% endif %}
         <div class="row live-data">
             <div class="col-md-6">
                 <div class="card mini-stats-wid">
@@ -147,17 +157,8 @@
             </div>
         </div>
 </div>
-        {% if request.COOKIES.MERP_FIRM %}
-        <div class="card loader">
-            <div class="card-body text-center">
-                <div id="spinner" class="spinner-border text-dark m-1" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-                <div class="card-title mt-4">Please wait while we are loading the live data from site</div>
-            </div>
-        </div>
-        <div class="text-center mt-4"><a href="{% url 'reload-data' millcode=request.millcode %}"><button type="submit" class="btn btn-secondary btn-sm mb-3"><i class="bx bx-rotate-left"></i>Reload Live Data</button></a></div>
-        {% endif %}
+<div class="text-center mt-4"><a href="{% url 'reload-data' millcode=request.millcode %}"><button type="submit" class="btn btn-secondary btn-sm mb-3"><i class="bx bx-rotate-left"></i>Reload Live Data</button></a></div>
+
 {% endblock %}
 {% block scripts %}
 <script src="/static/libs/jquery/jquery.min.js"></script>
