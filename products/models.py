@@ -8,8 +8,8 @@ from django.db import models
 class ProductCategory(models.Model):
     name = models.CharField(max_length=64)
     is_deleted = models.BooleanField(default=False)
-    mill = models.ForeignKey(to=Mill, on_delete=models.PROTECT)
-    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
+    mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
 class ProductionType(models.Model):
@@ -18,8 +18,8 @@ class ProductionType(models.Model):
     is_deleted = models.BooleanField(default=False)
     quantity = models.FloatField(default=0.0)
     is_mixture = models.BooleanField(default=False)
-    mill = models.ForeignKey(to=Mill, on_delete=models.PROTECT)
-    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
+    mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
 class Stock(models.Model):
@@ -33,7 +33,7 @@ class IncomingProductEntry(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
     category = models.ForeignKey(to=ProductCategory, on_delete=models.CASCADE)
     product = models.ForeignKey(to=ProductionType, on_delete=models.CASCADE, related_name='incomingproductentrys')
-    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
     @property
@@ -44,7 +44,7 @@ class OutgoingProductEntry(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
     category = models.ForeignKey(to=ProductCategory, on_delete=models.CASCADE)
     product = models.ForeignKey(to=ProductionType, on_delete=models.CASCADE, related_name='outgoingproductentrys')
-    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
     @property
@@ -55,7 +55,7 @@ class ProductStock(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
     category = models.ForeignKey(to=ProductCategory, on_delete=models.CASCADE)
     product = models.ForeignKey(to=ProductionType, on_delete=models.CASCADE, related_name='productstocks')
-    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
     @property
@@ -67,14 +67,14 @@ class TradingSource(models.Model):
     category = models.ForeignKey(to=ProductCategory, on_delete=models.CASCADE, related_name='tradingsources')
     is_deleted = models.BooleanField(default=False)
     quantity = models.FloatField(default=0.0)
-    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
 class Trading(models.Model):
-    entry = models.ForeignKey(to=Stock, on_delete=models.PROTECT)
-    source = models.ForeignKey(to=TradingSource, on_delete=models.PROTECT)
+    entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
+    source = models.ForeignKey(to=TradingSource, on_delete=models.CASCADE)
     price = models.FloatField()
-    created_by = models.ForeignKey(to=User, on_delete=models.PROTECT, related_name='products')
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='products')
     created_at = models.DateTimeField(auto_now=True)
 
     @property
