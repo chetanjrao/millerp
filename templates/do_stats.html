@@ -123,7 +123,7 @@
     $('.loader2').hide()
     $('#live-data').hide()
     $('.display1').hide()
-    {% if request.COOKIES.MERP_FIRM %}
+    {% if request.firms|length > 0 and request.COOKIES.MERP_FIRM %}
     $('#live-data').hide()
         $.ajax({
             url: '{% url "guarantee-api" millcode=request.millcode %}',

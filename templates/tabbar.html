@@ -15,7 +15,7 @@
                         <span>Reports</span>
                     </a>
                 </li>
-                {% if request.COOKIES.MERP_FIRM %}
+                {% if request.firms|length > 0 and request.COOKIES.MERP_FIRM %}
                     <li>
                         <a href="{% url 'guarantee' millcode=request.millcode %}" class="waves-effect">
                             <i class="bx bxs-bank"></i>
@@ -62,7 +62,7 @@
                         <span>Godowns</span>
                     </a>
                 </li>
-                {% if request.COOKIES.MERP_FIRM %}
+                {% if request.firms|length > 0 and request.COOKIES.MERP_FIRM %}
                 <li>
                     <a href="{% url 'shortage' millcode=request.millcode %}" class=" waves-effect">
                         <i class="bx bx-message-square-dots"></i>

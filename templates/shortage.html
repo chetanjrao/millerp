@@ -84,7 +84,7 @@
 <script src="/static/js/app.js"></script>
 <script>
     $('.live-data').hide()
-    {% if request.COOKIES.MERP_FIRM %}
+    {% if request.firms|length > 0 and request.COOKIES.MERP_FIRM %}
     $.ajax({
         url: '{% url "guarantee-api" millcode=request.millcode %}',
         type: 'GET',

@@ -3,7 +3,7 @@
 {% block body %}
 <div class="row justify-content-between">
     <div class="col-md-6">
-        {% if request.COOKIES.MERP_FIRM %}
+        {% if request.firms|length > 0 and request.COOKIES.MERP_FIRM %}
         <div class="card loader">
             <div class="card-body text-center">
                 <div id="spinner" class="spinner-border text-dark m-1" role="status">
@@ -171,7 +171,10 @@
 <!-- App js -->
 <script src="/static/js/app.js"></script>
 <script>
-    {% if request.COOKIES.MERP_FIRM %}
+    {% if request.firms|length == 0 %}
+        $('.live-data').hide()
+    {% endif %}
+    {% if request.firms|length > 0 and request.COOKIES.MERP_FIRM %}
     $('.live-data').hide()
     $.ajax({
         url: '{% url "guarantee-api" millcode=request.millcode %}',
