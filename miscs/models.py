@@ -28,7 +28,7 @@ class Bundle(models.Model):
     icon = models.CharField(max_length=16)
 
     def __str__(self):
-        return self.name
+        return '{} - \u20b9{}'.format(self.name, self.amount)
 
 
 class Country(models.Model):
