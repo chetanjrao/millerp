@@ -11,7 +11,7 @@ class Owner(models.Model):
     addons = models.ManyToManyField(to=Addon)
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
     
-    def __str__(self) -> str: return '{} - {}'.format(self.user.first_name. self.user.mobile)
+    def __str__(self) -> str: return '{} - {}'.format(self.user.first_name, self.user.mobile)
 
 
 class Mill(models.Model):
