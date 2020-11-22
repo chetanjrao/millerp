@@ -15,19 +15,19 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="" class="control-label">Paddy Uplifted</label>
+                        <label for="" class="control-label">Paddy Uplifted <small>(in qtls)</small></label>
                         <input id="paddy_uplifted" type="text" readonly class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="" class="control-label">Rice to be given</label>
+                        <label for="" class="control-label">Rice to be given <small>(in qtls)</small></label>
                         <input id="rice_to_be_given" type="text" readonly class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="" class="control-label">Paddy Stocked</label>
+                        <label for="" class="control-label">Paddy Stocked <small>(in qtls)</small></label>
                         <input value="{{ paddy_outgoing|default:0|floatformat:2|abs }}" id="paddy_stocked" type="text" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="" class="control-label">Enter paddy in Dheri + Handi + Godi + Truck</label>
+                        <label for="" class="control-label">Enter paddy in Dheri + Handi + Godi + Truck <small>(in qtls)</small></label>
                         <input id="paddy_dheri" type="text" class="form-control">
                     </div>
                     <div class="form-group">
@@ -35,19 +35,19 @@
                         <input value="58" id="conversion" type="text" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="" class="control-label">Rice Jama</label>
+                        <label for="" class="control-label">Rice Jama <small>(in qtls)</small></label>
                         <input id="rice_jama" type="text" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="" class="control-label">Rice Stocked</label>
+                        <label for="" class="control-label">Rice Stocked <small>(in qtls)</small></label>
                         <input value="{{ rice_stock|default:0|abs }}" id="rice_stocked" type="text" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="" class="control-label">Pending Lots</label>
+                        <label for="" class="control-label">Pending Lots <small>(in qtls)</small></label>
                         <input id="pending_lots" type="text" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="" class="control-label">Rice in Truck + Dheri</label>
+                        <label for="" class="control-label">Rice in Truck + Dheri <small>(in qtls)</small></label>
                         <input id="rice_dheri" type="text" class="form-control">
                     </div>
                     <button id="button" class="btn btn-success" type="button">Check shortage</button>
@@ -121,18 +121,22 @@
         let amount = total * Number.parseFloat("{{ request.mill.ppq }}")
         $('.pshort').text((total).toFixed(2) + ' qtls')
         $('.rshort').text(('\u20b9 ' + amount.toFixed(2)))
-        if(total < 0){
-                $('.pshort').text((total * -1).toFixed(2) + " qtls").addClass("text-success")
-                $('.noti').html(`&#x1F389; Hurry, there's no shortage`)
-            } else {
-                $('.pshort').text(`${total.toFixed(2)}` + "qtls").addClass("text-danger")
-                $('.noti').html(`&#x1F914; Opps, we have run out of stock`)
-            }
-            if(amount < 0){
-                $('.rshort').text(`\u20b9${(amount * -1).toFixed(2)}`).addClass("text-success")
-            } else {
-                $('.rshort').text(`\u20b9${amount.toFixed(2)}`).addClass("text-danger")
-            }
+        if(total <= 0){
+            $('.pshort').removeClass("text-danger")
+            $('.pshort').text((total * -1).toFixed(2) + " qtls").addClass("text-success")
+            $('.noti').html(`&#x1F389; Hurrah, there's no shortage`)
+        } else {
+            $('.pshort').removeClass("text-success")
+            $('.pshort').text(`${total.toFixed(2)}` + "qtls").addClass("text-danger")
+            $('.noti').html(`&#x1F914; Opps, we ran out of stock`)
+        }
+        if(amount <= 0){
+            $('.rshort').removeClass("text-danger")
+            $('.rshort').text(`\u20b9${(amount * -1).toFixed(2)}`).addClass("text-success")
+        } else {
+            $('.rshort').removeClass("text-success")
+            $('.rshort').text(`\u20b9${amount.toFixed(2)}`).addClass("text-danger")
+        }
     })
     {% endif %}
 </script>

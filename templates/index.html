@@ -193,14 +193,14 @@
             $('.do_pending').text(results["total_do_pending"])
             let pshort = (Number.parseFloat(`${results["paddy_uplifted"]}` || 0) * 68 /100) - (( Number.parseFloat("{{paddy_outgoing|default:0|floatformat:2}}") * 40 / 100  ) + Number.parseFloat(`${results["rice_deposited"]}` || 0)) 
             let rshort = pshort * Number.parseFloat("{{ request.mill.ppq|default:0 }}")
-            if(pshort < 0){
+            if(pshort <= 0){
                 $('.pshort').text((pshort * -1).toFixed(2) + " qtls").addClass("text-success")
-                $('.noti').html(`&#x1F389; Hurry, there's no shortage`)
+                $('.noti').html(`&#x1F389; Hurrah, there's no shortage`)
             } else {
                 $('.pshort').text(`${pshort.toFixed(2)}` + "qtls").addClass("text-danger")
-                $('.noti').html(`&#x1F914; Opps, we have run out of stock`)
+                $('.noti').html(`&#x1F914; Opps, we ran out of stock`)
             }
-            if(rshort < 0){
+            if(rshort <= 0){
                 $('.rshort').text(`\u20b9${(rshort * -1).toFixed(2)}`).addClass("text-success")
             } else {
                 $('.rshort').text(`\u20b9${rshort.toFixed(2)}`).addClass("text-danger")
