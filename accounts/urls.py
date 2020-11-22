@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path('', views.home, name='home'),
     path('login/', views.mlogin, name='login'),
+    path('login/process/', views.plogin, name='plogin'),
     path('login/verify/', views.login_verify, name='login_verify'),
     re_path(r'^console/$', views.index, name='index'),
     path('payment-process/<int:bundle>/', views.payment_process, name='payment_process'),

@@ -8,7 +8,7 @@ from razorpay import Client
 from django.shortcuts import render, redirect, resolve_url
 from accounts.models import User, OTP
 from django.utils.timezone import datetime, now, timedelta, timezone
-from django.contrib.auth import login, logout
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from millerp.utils import send_message
 from random import randint
@@ -70,11 +70,12 @@ def register(request):
     if request.method == "POST":
         mobile = request.POST["mobile"]
         name = request.POST["name"]
+        password = request.POST["password"]
         firm_name = request.POST["firm_name"]
         mobile_check = User.objects.filter(mobile='+91{}'.format(mobile))
         if len(mobile_check) > 0:
             return render(request, "home/register.html", { "error_message": "User already exists with this mobile number" })
-        user = User.objects.create(mobile='+91{}'.format(mobile), first_name=name)
+        user = User.objects.create_user(mobile='+91{}'.format(mobile), first_name=name, password=password)
         Owner.objects.create(user=user, name=firm_name)
         current_time = now()
         expiry = current_time + timedelta(minutes=5)
@@ -92,6 +93,26 @@ def handler404(request, exception):
 def handler500(request):
     return render(request, 'error.html', status=500)
 
+
+def plogin(request):
+    if request.method == "POST":
+        mobile = request.POST["mobile"]
+        password = request.POST["password"]
+        mobile_check = authenticate(mobile='+91{}'.format(mobile), password=password)
+        if mobile_check is None:
+            return render(request, "home/password.html", { "error_message": "Invalid mobile number or password" }, status=400)
+        elif not mobile_check.is_mobile_verified:
+            return render(request, "home/password.html", { "error_message": "Mobile number is not verified" }, status=401)
+        else:
+            user = User.objects.get(mobile='+91{}'.format(mobile))
+            owner_check = Owner.objects.filter(user=user)
+            if len(owner_check) == 0:
+                return render(request, "home/password.html", { "error_message": "Owner does not exist" }, 400)
+            else:
+                user = User.objects.get(mobile='+91{}'.format(mobile))
+                login(request, user)
+                return redirect('index')
+    return render(request, "home/password.html")
 
 def mlogin(request):
     if request.method == "POST":
@@ -122,6 +143,8 @@ def login_verify(request):
         if len(otp_doc) > 0:
             otp_doc.update(is_used=True)
             user = User.objects.get(mobile='+91{}'.format(mobile))
+            user.is_mobile_verified = True
+            user.save()
             login(request, user)
             return redirect('index')
         else:

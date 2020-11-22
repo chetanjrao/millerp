@@ -102,7 +102,7 @@
                                                 </div>
                                                 <div class="py-4">
                                                     <h2><sup><small>&#x20b9;</small></sup> {{ bundle.amount }}/-</h2>
-                                                    <h5>({{ bundle.mills }} Mills & {{ bundle.mills|mul:3 }} Firms)</h5>
+                                                    <h5>({{ bundle.mills }} Mills & {{ bundle.firms }} Firms)</h5>
                                                 </div>
                                                 <div class="text-center plan-btn">
                                                     <a href="{% url 'payment_process' bundle=bundle.pk %}" class="btn btn-primary btn-sm waves-effect waves-light">Choose Package</a>
