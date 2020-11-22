@@ -101,7 +101,7 @@
                                 <div class="form-group row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label class="control-label">Total Bags</label>
+                                            <label class="control-label">Total Weight <small>(in kgs)</small></label>
                                             <input type="number" class="form-control" id="bags1" name="bags" value="" step="any" required>
                                         </div>
                                     </div>
@@ -206,7 +206,7 @@
                         </div>
                         <div class="col-sm-8">
                             <div class="text-sm-right">
-                                <button type="button" data-toggle="modal" data-target="#createModal1" class="btn btn-primary btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Add Trading Rice</button>
+                                <button type="button" data-toggle="modal" data-target="#createModal1" class="btn btn-primary btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Buy Trading Rice</button>
                                 <button type="button" data-toggle="modal" data-target="#createModal" class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i class="mdi mdi-plus mr-1"></i> Sell Trading Rice</button>
                             </div>
                         </div>
@@ -276,7 +276,7 @@
                                                     <div class="col-md-12">
                                                         <div class="form-group mb-4">
                                                             <label for="control-label">Price</label>
-                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" value="{{ trade.price }}" name="price" required>
+                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" value="{{ trade.price|abs }}" name="price" required>
                                                         </div>
                                                     </div>
                                                 </div>

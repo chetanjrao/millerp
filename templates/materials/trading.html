@@ -171,7 +171,7 @@
                                                     <div class="col-md-12">
                                                         <div class="form-group mb-4">
                                                             <label for="control-label">Price</label>
-                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" value="{{ trade.price }}" name="price" required>
+                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" value="{{ trade.price|abs }}" name="price" required>
                                                         </div>
                                                     </div>
                                                 </div>
