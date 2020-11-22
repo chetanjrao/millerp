@@ -323,7 +323,7 @@ def trading(request: WSGIRequest):
             Trading.objects.create(entry=entry, price=price, source=source, created_by=request.user)
             trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
             quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum(F('price'), output_field=FloatField()))
+            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
             total_price = average_price["price"]
             total_quantity = average_price["total"]
             average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
@@ -336,7 +336,7 @@ def trading(request: WSGIRequest):
             Trading.objects.create(entry=entry, price=price, source=source, created_by=request.user)
             trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
             quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum(F('price'), output_field=FloatField()))
+            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
             total_price = average_price["price"]
             total_quantity = average_price["total"]
             average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
@@ -349,7 +349,7 @@ def trading(request: WSGIRequest):
             trade.save()
             trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
             quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum(F('price'), output_field=FloatField()))
+            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
             total_price = average_price["price"]
             total_quantity = average_price["total"]
             average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
@@ -362,7 +362,7 @@ def trading(request: WSGIRequest):
             trade.save()
             trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
             quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum(F('price'), output_field=FloatField()))
+            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
             total_price = average_price["price"]
             total_quantity = average_price["total"]
             average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
@@ -374,8 +374,7 @@ def trading(request: WSGIRequest):
             trade.save()
             trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
             quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum(F('price'), output_field=FloatField()))
-            
+            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))            
             total_price = average_price["price"]
             total_quantity = average_price["total"]
             average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
