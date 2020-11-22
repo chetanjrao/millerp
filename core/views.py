@@ -4,7 +4,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.expressions import F, Func
 from django.db.models.fields import FloatField
 from miscs.models import City, Package
-from core.models import Firm, Mill, Purchase
+from core.models import Firm, Mill, Purchase, Transporter, Truck
 from django.shortcuts import redirect, render, resolve_url
 from django.contrib.auth.decorators import login_required
 from .decorators import set_mill_session
@@ -114,3 +114,49 @@ def shortage(request):
 @set_mill_session
 def reports(request):
     return render(request, "reports.html")
+
+
+@login_required
+@set_mill_session
+def transport(request):
+    transporters = Transporter.objects.filter(is_deleted=False, mill=request.mill)
+    trucks = Truck.objects.filter(is_deleted=False, transporter__in=transporters)
+    if request.method == "POST":
+        action = int(request.POST["action"])
+        if action == 1:
+            name = request.POST["name"]
+            mobile = request.POST["mobile"]
+            Transporter.objects.create(name=name, mobile=mobile, mill=request.mill)
+            return render(request, "transport.html", { "transporters": transporters, "trucks": trucks, "success_message": "Transporter added successfully" })
+        elif action == 2:
+            name = request.POST["name"]
+            mobile = request.POST["mobile"]
+            transporter = Transporter.objects.get(pk=request.POST["transporter"])
+            transporter.name = name
+            transporter.mobile = mobile
+            transporter.save()
+            return render(request, "transport.html", { "transporters": transporters, "trucks": trucks, "success_message": "Transporter updated successfully" })
+        elif action == 3:
+            transporter = Transporter.objects.get(pk=request.POST["transporter"])
+            transporter.is_deleted = True
+            transporter.save()
+            return render(request, "transport.html", { "transporters": transporters, "trucks": trucks, "success_message": "Transporter deleted successfully" })
+        if action == 4:
+            number = request.POST["number"]
+            transporter = Transporter.objects.get(pk=request.POST["transporter"])
+            Truck.objects.create(number=number, transporter=transporter)
+            return render(request, "transport.html", { "transporters": transporters, "trucks": trucks, "success_message": "Truck added successfully" })
+        elif action == 5:
+            number = request.POST["number"]
+            transporter = Transporter.objects.get(pk=request.POST["transporter"])
+            truck = Truck.objects.get(pk=request.POST["truck"])
+            truck.number = number
+            truck.transporter = transporter
+            truck.save()
+            return render(request, "transport.html", { "transporters": transporters, "trucks": trucks, "success_message": "Truck updated successfully" })
+        elif action == 6:
+            truck = Truck.objects.get(pk=request.POST["truck"])
+            truck.is_deleted = True
+            truck.save()
+            return render(request, "transport.html", { "transporters": transporters, "trucks": trucks, "success_message": "Truck deleted successfully" })
+    return render(request, "transport.html", { "transporters": transporters, "trucks": trucks })

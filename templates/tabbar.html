@@ -35,6 +35,19 @@
                         </a>
                     </li>
                 {% endif %}
+                <li class="menu-title">Core</li>
+                <li>
+                    <a href="{% url 'transport' millcode=request.millcode %}" class="waves-effect">
+                        <i class="bx bxs-truck"></i>
+                        <span>Transport</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'firms' millcode=request.millcode %}" class="waves-effect">
+                        <i class="bx bxs-factory"></i>
+                        <span>Firms</span>
+                    </a>
+                </li>
                 <li class="menu-title">Paddy</li>
                 <li>
                     <a href="{% url 'materials-incoming' millcode=request.millcode %}" class=" waves-effect">
@@ -118,12 +131,6 @@
                 </li>
 
                 <li class="menu-title">Miscs</li>
-                <li>
-                    <a href="{% url 'firms' millcode=request.millcode %}" class="waves-effect">
-                        <i class="bx bxs-factory"></i>
-                        <span>Firms</span>
-                    </a>
-                </li>
                 <li>
                     <a href="{% url 'settings' millcode=request.millcode %}" class="waves-effect">
                         <i class="bx bx-wrench"></i>

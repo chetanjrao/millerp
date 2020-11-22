@@ -58,3 +58,18 @@ class AddOnPurhase(models.Model):
     payment_id = models.CharField(max_length=255, unique=True)
     payment_mode = models.CharField(max_length=64)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+class Transporter(models.Model):
+    name = models.CharField(max_length=256)
+    mobile = models.CharField(max_length=64)
+    mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)
+
+    def __str__(self) -> str: return self.name
+
+class Truck(models.Model):
+    number = models.CharField(max_length=256)
+    transporter = models.ForeignKey(to=Transporter, on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)
+
+    def __str__(self) -> str: return self.number
