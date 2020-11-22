@@ -29,7 +29,7 @@ def index(request):
     owner = Owner.objects.get(user=request.user)
     addons = Addon.objects.filter(is_deleted=False)
     purchase = Purchase.objects.filter(owner=owner)
-    bundles = Bundle.objects.filter(is_deleted=False).order_by('amount mills firms')
+    bundles = Bundle.objects.filter(is_deleted=False).order_by('amount', 'mills', 'firms')
     mills = Mill.objects.filter(owner=owner, is_deleted=False)
     cities = City.objects.all()
     if request.method == "POST":
