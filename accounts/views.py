@@ -184,6 +184,9 @@ def profile(request):
         last_name = request.POST.get("last_name", '')
         user.first_name = first_name
         user.last_name = last_name
+        password = request.POST.get("password")
+        if password is not None:
+            user.set_password(request.POST["password"])
         user.save()
         return render(request, "profile.html", { "user": user, "success_message": "Profile updated successfully" })    
     return render(request, "profile.html", { "user": user })
