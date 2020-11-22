@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% block corestyles %}
+<link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
+    type="text/css" />
+<link href="/static/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-timepicker/css/bootstrap-timepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/static/libs/@chenfengyuan/datepicker/datepicker.min.css">
+{% endblock %}
+{% block body %}
+<div class="card loader1 mt-4">
+    <div class="card-body text-center">
+        <div id="spinner" class="spinner-border text-dark m-1" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <div class="card-title mt-4">Please wait while we are loading the live data from site</div>
+    </div>
+</div>
+<div class="card display1">
+    <div class="card-body">
+        <div class="card-title">CMR Status Form</div>
+    </div>
+    <form action="{% url 'cmr_status_api' millcode=request.millcode %}" method="POST" id="form">
+        {% csrf_token %}
+        <div class="form-group m-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <select name="agreement" id="agreement" required>
+                        <option></option>
+                    </select>
+                </div>
+            </div>
+            <input type="submit" id="button" class="btn btn-success mt-4" value="View CMR Status" />
+        </div>
+    </form>
+</div>
+<div class="card loader2 mt-4">
+    <div class="card-body text-center">
+        <div id="spinner" class="spinner-border text-dark m-1" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <div class="card-title mt-4">Loading CMR Status</div>
+    </div>
+</div>
+<div id="live-data" class="card p-4">
+    <div class="notifications">
+        <table class="data table table-striped table-bordered" id="data" style="border-collapse: collapse; border-spacing: 0px; width: 90%;">
+            <thead>
+                <th>अभिस्विकृति क्र.</th>
+                <th>अभिस्विकृति दिनांक</th>
+                <th>सी.एम.आर. केन्द्र</th>
+                <th>चावल की मात्रा(क्विंटल मे)</th>
+                <th>बोरो की संख्या</th>
+                <th>लॉट क्रमांक</th>
+                <th>कॉमोडिटी</th>
+            </thead>
+        </table>
+    </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="summary m-4"></div>
+            <div class="details m-4">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/libs/jquery/jquery.min.js"></script>
+<script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/libs/simplebar/simplebar.min.js"></script>
+<script src="/static/libs/jszip/jszip.min.js"></script>
+<script src="/static/libs/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/static/libs/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/static/libs/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.html5.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.print.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.colVis.min.js"></script>
+<script src="/static/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/js/pages/datatables.init.js"></script>
+<script src="/static/libs/node-waves/waves.min.js"></script>
+<script src="/static/libs/select2/js/select2.min.js"></script>
+<script src="/static/libs/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
+<script src="/static/libs/bootstrap-timepicker/js/bootstrap-timepicker.min.js"></script>
+<script src="/static/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+<script src="/static/libs/tui-time-picker/tui-time-picker.min.js"></script>
+<script src="/static/libs/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
+<script src="/static/libs/tui-date-picker/tui-date-picker.min.js"></script>
+<script src="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
+<script src="/static/js/pages/form-advanced.init.js"></script>
+<script src="/static/js/app.js"></script>
+<script>
+    $('.loader2').hide()
+    $('#live-data').hide()
+    $('.display1').hide()
+    {% if request.firms|length > 0 and request.COOKIES.MERP_FIRM %}
+    $('#live-data').hide()
+        $.ajax({
+            url: '{% url "guarantee-api" millcode=request.millcode %}',
+            type: 'GET',
+            dataType: "json",
+            success: function (results) {
+                if(results.paddy_uplifted == undefined){
+                    fireError()
+                }
+                $('.loader1').hide()
+                $('.display1').show()
+                let options = []
+                let data = Object.keys(results["agreements"])
+                data.forEach((v, i) => {
+                    options.push({
+                        "id": v,
+                        "text": v
+                    })
+                })
+                setTimeout(() => {
+                    $('#agreement').select2({
+                        width: '100%',
+                        placeholder: "Type agreement no",
+                        data: options
+                    })
+                }, 100)
+            },
+            error: function (xhr, status) {
+                alert("Sorry, there was a problem!");
+            },
+            complete: function (xhr, status) {
+                $('.display1').show()
+                $('.loader1').hide()
+            }
+        })
+        $("#form").submit(function(e) {
+            $('#live-data').hide()
+            $('#button').attr("disabled", "disabled")
+            e.preventDefault(); 
+            $('.loader2').show()
+            var form = $(this);
+            var url = form.attr('action');
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: form.serialize(),
+                success: function(data){
+                    $('.link').attr("href", data) 
+                    $('.loader2').hide()
+                    $('#live-data').show()
+                    setTimeout(() => {
+                        if(data.length > 0){
+                            $('#data').DataTable({
+                                data: data,
+                                responsive: true
+                            }).columns.adjust()
+                        } else {
+                            $('.notifications').hide()
+                        }
+                    }, 100)
+                    $('#button').removeAttr("disabled")
+                }
+            });
+        });
+    {% endif %}
+</script>
+{% endblock %}

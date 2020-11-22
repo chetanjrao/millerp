@@ -1,3 +1,4 @@
+import json
 from core.models import Firm
 from datetime import datetime
 from millerp.utils import send_message
@@ -312,6 +313,109 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
     os.remove(screenshot)
     return response
 
+
+def get_cmr(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, agreement: str):
+    driver.get(start_url)
+    attempts = 10
+    response = {}
+    while True:
+        if attempts <= 0:
+            break
+        try:
+            element = driver.find_element_by_id('ImageCaptcha')
+            location = element.location
+            size = element.size
+            driver.save_screenshot(screenshot)
+            x = location['x'] * WIDTH_RATIO
+            y = location['y'] * HEIGHT_RATIO
+            w = size['width'] * WIDTH_RATIO
+            h = size['height'] * HEIGHT_RATIO
+            width = x + w
+            height = y + h
+            im = Image.open(screenshot)
+            im = im.crop((x, y, width, height))
+            im = im.convert('L')
+            ret, img = cv2.threshold(np.array(im), 127, 255, cv2.THRESH_BINARY)
+            im = Image.fromarray(img.astype(np.uint8))
+            im.save(captcha)
+            text = pytesseract.image_to_string(im, config='--psm 10', lang="eng")
+            text = re.sub('[^A-Za-z0-9]+', '', text)
+            driver.find_element_by_id('txtpwd').clear()
+            driver.find_element_by_id('txtVerificationCode').clear()
+            driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
+            driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
+            try:
+                driver.find_element_by_id('txtUser').clear()
+                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+                driver.find_element_by_name('btncon').click()
+                attempts -= 1
+                driver.switch_to.alert.accept()
+            except UnexpectedAlertPresentException:
+                pass
+            except (InvalidElementStateException):
+                attempts -= 1
+                try:
+                    driver.find_element_by_name('btnOk').click()
+                except NoSuchElementException:
+                    driver.find_element_by_name('btncon').click()
+                continue
+        except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
+            try:
+                driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify19/AgreementReconciliation.aspx')
+                agreement_element = Select(driver.find_element_by_id('DDAgreementNo'))
+                agreement_element.select_by_value(agreement)
+                driver.find_element_by_id('btnshow').click()
+                table = driver.find_elements_by_tag_name('table')[374]
+                HTML_DOCUMENT = table.get_attribute('outerHTML')
+                parser = BeautifulSoup(HTML_DOCUMENT, 'html.parser')
+                table: Tag = parser.find_all('table')[0]
+                rows = table.find_all('tr')[2:-1]
+                cmr = []
+                for row in rows:
+                    data = row.find_all('td')
+                    cmr.append([
+                        data[1].text,
+                        data[2].text,
+                        data[3].text,
+                        data[4].text,
+                        data[5].text,
+                        data[7].text,
+                        data[8].text
+                    ])
+                response = cmr
+                break
+            except NoSuchElementException:
+                continue
+    driver.close()
+    os.remove(captcha)
+    os.remove(screenshot)
+    return response
+
+@login_required
+@set_mill_session
+def get_cmr_status(request: WSGIRequest):
+    if request.method == "POST":
+        options = Options()
+        agreement = request.POST["agreement"]
+        firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
+        cached_response = cache.get("{}cmr".format(agreement.strip()))
+        if cached_response is None or cached_response == {}:
+            options.add_argument('--headless')
+            options.add_argument('--no-sandbox')
+            options.binary_location = CHROME
+            driver = webdriver.Chrome(CHROMEDRIVER, options=options)
+            data = get_cmr(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), '{}'.format(agreement))
+            cache.set("{}cmr".format(agreement.strip()), json.dumps(data), 60 * 60 * 12)
+            return JsonResponse(data, safe=False)
+        else:
+            data = json.loads(cached_response)
+            return JsonResponse(data, safe=False)
+    return JsonResponse({
+        "error": "Invalid request"
+    }, status=500)
+
+
 @login_required
 @set_mill_session
 def get_guarantee(request: WSGIRequest):
@@ -384,6 +488,11 @@ def get_print_view(request: WSGIRequest):
 @set_mill_session
 def get_do_view(request: WSGIRequest):
     return render(request, "do_stats.html")
+
+@login_required
+@set_mill_session
+def get_cmr_view(request: WSGIRequest):
+    return render(request, "cmr_status.html")
 
 @login_required
 @set_mill_session

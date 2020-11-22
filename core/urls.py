@@ -1,4 +1,4 @@
-from miscs.views import get_do_view, get_print_view
+from miscs.views import get_cmr_status, get_cmr_view, get_do_view, get_print_view
 from core.views import reports, set_firm, shortage, transport
 from django.urls import path, include
 from accounts.views import profile
@@ -18,4 +18,6 @@ urlpatterns = [
     path('reports/', reports, name='reports'),
     path('shortage/', shortage, name='shortage'),
     path('transport/', transport, name='transport'),
+    path('cmr/status/api/', get_cmr_status, name='cmr_status_api'),
+    path('cmr-status/', get_cmr_view, name='cmr_status'),
 ]
