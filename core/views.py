@@ -176,4 +176,12 @@ def trucks_api(request, transporter: int):
 @login_required
 @set_mill_session
 def truck_entry(request):
-    return render(request, "entry.html")
+    cmr_number = request.GET["cmr_no"]
+    cmr_date = request.GET["cmr_date"]
+    center = request.GET["center"]
+    rice = float(request.GET["rice"])
+    lot = int(request.GET["lot"])
+    bora = int(request.GET["bora"])
+    commodity = request.GET["commodity"]
+    transporters = Transporter.objects.filter(mill=request.mill, is_deleted=False)
+    return render(request, "entry.html", { "transporters": transporters })

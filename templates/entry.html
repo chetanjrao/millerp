@@ -1,0 +1,166 @@
+{% extends 'base.html' %} 
+{% load tz %}
+{% block corestyles %}
+<link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
+    type="text/css" />
+<link href="/static/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-timepicker/css/bootstrap-timepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/static/libs/@chenfengyuan/datepicker/datepicker.min.css">
+<style>
+    .step-app > .step-steps > li.active {
+        background-color: #556ee6;
+    }
+
+    .wizard > .content {
+        min-height: 25em;
+    }
+</style>
+{% endblock %}
+{% block body %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <div class="card-title">Add Truck Entry: {{ request.GET.cmr_no }}</div>
+            <input type="number" name="counter" readonly value="0" id="counter" hidden />
+            <div class="repeater mt-4">
+                <div class="mb-2" data-repeater-list="outgoing">
+                    <div class="row justify-between" data-repeater-item>
+                            <div class="row col-12">
+                                <div class="form-group col-md-3">
+                                    <label class="control-label" for="name">Choose Transporter</label>
+                                    <select name="transporter" class="transporters">
+                                        {% for transporter in transporters %}
+                                            <option value="{{ transporter.pk }}">{{ transporter.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div id="ferror"></div>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label class="control-label" for="name">Choose Truck</label>
+                                    <select name="truck" class="trucks">
+                                            <option value=""></option>
+                                    </select>
+                                    <div id="ferror"></div>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="" class="control-label">Number of bags</label>
+                                    <input name="bags" class="form-control bags" data-parsley-type="digits" data-parsley-trigger="change focus focusin focusout" type="text" value="0" required>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="" class="control-label">Total Price <small>(in &#x20b9;)</small></label>
+                                    <input name="price" class="price form-control" type="number" step="any" disabled readonly value="0">
+                                </div>
+                                <button style="width: auto; margin-top: 0.7em;" data-repeater-delete type="button" class="btn btn-danger align-self-center">Delete</button>
+                            </div>
+                    </div>
+                </div>
+                <button id="repeater-button" data-repeater-create type="button" class="btn btn-success mt-3">Add Truck</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/libs/jquery/jquery.min.js"></script>
+<script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/libs/simplebar/simplebar.min.js"></script>
+<script src="/static/libs/node-waves/waves.min.js"></script>
+<script src="/static/libs/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/static/libs/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/static/libs/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.html5.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.print.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.colVis.min.js"></script>
+<script src="/static/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/libs/select2/js/select2.min.js"></script>
+<script src="/static/libs/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
+<script src="/static/libs/bootstrap-timepicker/js/bootstrap-timepicker.min.js"></script>
+<script src="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
+<script src="/static/libs/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
+<script src="/static/libs/@chenfengyuan/datepicker/datepicker.min.js"></script>
+<script src="/static/libs/jquery.repeater/jquery.repeater.min.js"></script>
+<script src="/static/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+<script src="/static/js/pages/datatables.init.js"></script>
+<script src="/static/js/pages/form-advanced.init.js"></script>
+<script src="/static/libs/parsleyjs/parsley.min.js"></script>
+<script src="/static/js/pages/form-validation.init.js"></script>
+<script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/libs/jquery-steps/jquery.steps.js"></script>
+<script src="/static/js/app.js"></script>
+<script>
+    let totalQuantity = {{ request.GET.bora }}
+    let hasDestroyed = false;
+    function calculateRemaining(){
+        let bags = $('.bags')
+        let quantity = 0
+        bags.each((i, e) => {
+            quantity += Number.parseInt($(e).val() || 0)
+        })
+        return totalQuantity - quantity 
+    }
+    $('.repeater').repeater({
+        initEmpty: true,
+        show: function () {
+            counter++;
+            $(this).slideDown();
+        },
+        hide: function (e) {
+            counter--;
+            $(this).slideUp(e);
+        },
+        ready: function (e) {
+        },
+    })
+    $('#repeater-button').click(()=>{
+        setTimeout(function(){
+            if(!hasDestroyed){
+                $('.transporters').unbind('change')
+                $('.trucks').unbind('change')
+                hasDestroyed = true
+            }
+            $('.transporters').select2({
+                width: '100%',
+                placeholder: "Type transporter name"
+            })
+            $('.trucks').select2({
+                width: '100%',
+                placeholder: "Type truck name"
+            })
+            $('.transporters').change((e) => {
+                let selection = $(e.target).select2('data')[0]
+                $('.trucks').select2({
+                    width: '100%',
+                    ajax: {
+                        url: `/{{ request.millcode }}/transports/api/${selection["id"]}/`,
+                        dataType: 'json',
+                        processResults: function(data) {
+                            return {
+                                results: data
+                            }
+                        },
+                        cache: true
+                    },
+                    placeholder: "Type truck number"
+                })
+            })
+            $('.bags').change((e) => {
+                let quantity = Number.parseInt($(e.target).val() || 0)
+                let calc = calculateRemaining()
+                if(calc < 0){
+                    alert("Excess stock sent to trucks")
+                } else {
+                    
+                } 
+            })
+        })
+    })
+</script>
+{% endblock %}

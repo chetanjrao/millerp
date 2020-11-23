@@ -156,7 +156,7 @@
                     let formatted = data.reverse()
                     formatted.map((v) => {
                         v.pop()
-                        v.push('<a href="{% url "cmr_entry" millcode=request.millcode %}">Add Trucks Entry</a>')
+                        v.push(`<a href="{% url "cmr_entry" millcode=request.millcode %}?cmr_no=${v[0]}&cmr_date=${v[1]}&center=${v[2]}&rice=${v[3]}&bora=${v[4]}&lot=${v[5]}&commodity=${v[6]}">Add Trucks Entry</a>`)
                     })
                     setTimeout(() => {
                         if(data.length > 0){

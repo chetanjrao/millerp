@@ -79,7 +79,7 @@ class cmr(models.Model):
     cmr_date = models.DateField()
     center = models.CharField(max_length=256)
     rice = models.FloatField()
-    bora = models.FloatField()
+    bora = models.IntegerField()
     lot_no = models.IntegerField()
     commodity = models.CharField(max_length=512)
     mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
