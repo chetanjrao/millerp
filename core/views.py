@@ -204,5 +204,24 @@ def truck_entry(request):
 @login_required
 @set_mill_session
 def entry_logs(request):
+    transporters = Transporter.objects.filter(mill=request.mill, is_deleted=False)
+    trucks = Truck.objects.filter(pk__in=transporters, is_deleted=False)
     entries = cmr_entry.objects.filter(cmr__mill=request.mill, is_deleted=False)
-    return render(request, "log.html", { "entries": entries })
+    if request.method == "POST":
+        action = int(request.POST["action"])
+        if action == 1:
+            entry = cmr_entry.objects.get(pk=request.POST["entry"])
+            truck = Truck.objects.get(pk=request.POST["truck"])
+            bags = float(request.POST["bags"])
+            price = float(request.POST["price"])
+            entry.truck = truck
+            entry.bags = bags
+            entry.price = price
+            entry.save()
+            return render(request, "log.html", { "entries": entries, "transporters": transporters, "trucks": trucks, "success_message": "Entry updated successfully" })
+        elif action == 2:
+            entry = cmr_entry.objects.get(pk=request.POST["entry"])
+            entry.is_deleted = True
+            entry.save()
+            return render(request, "log.html", { "entries": entries, "transporters": transporters, "trucks": trucks, "success_message": "Entry deleted successfully" })
+    return render(request, "log.html", { "entries": entries, "transporters": transporters, "trucks": trucks })

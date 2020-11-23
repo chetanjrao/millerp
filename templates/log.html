@@ -129,7 +129,24 @@
                                                         <input type="hidden" value="1" name="action">
                                                         <input type="hidden" value="{{ entry.pk }}" name="entry">
                                                         <div class="row">
-                                                            
+                                                            <div class="form-group col-md-6">
+                                                                <label for="" class="control-label">Choose Truck</label>
+                                                                <select name="truck" class="select2" id="">
+                                                                    {% for truck in trucks %}
+                                                                        <option value="{{ truck.pk }}" {% if truck.pk == entry.truck.pk %}selected{% endif %}>{{ truck.number }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="form-group col-md-6">
+                                                                <label for="" class="control-label">Quantity <small>(in qtls)</small></label>
+                                                                <input name="bags" type="number" step="any" value="{{ entry.bags }}" class="form-control">
+                                                            </div>
+                                                            <div class="form-group col-md-6">
+                                                                <label for="" class="control-label">Price <small>(in &#x20b9;)</small></label>
+                                                                <input name="price" type="number" step="any" value="{{ entry.price }}" class="form-control">
+                                                            </div>
                                                         </div>
                                                         <div class=" form-group row justify-content-end">
                                                             <div class="col-sm-12">
@@ -235,6 +252,9 @@
 <script>
     $('#datatable').DataTable({
         order: [[0, 'desc']]
+    })
+    $('.select2').select2({
+        width: '100%'
     })
 </script>
 {% endblock %}
