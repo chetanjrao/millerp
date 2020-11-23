@@ -105,6 +105,7 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
+                                <th>Entry Type</th>
                                 <th>CMR Number</th>
                                 <th>Truck Number</th>
                                 <th>Transporter name</th>
@@ -123,7 +124,7 @@
                                         <div class="col-lg-12">
                                             <div class="card">
                                                 <div class="card-body">
-                                                    <h4 class="card-title mb-4">Update Stock product entry</h4>
+                                                    <h4 class="card-title mb-4">Update Truck entry log</h4>
                                                     <form action="" method="POST" autocomplete="off">
                                                         {% csrf_token %}
                                                         <input type="hidden" value="1" name="action">
@@ -135,6 +136,13 @@
                                                                     {% for truck in trucks %}
                                                                         <option value="{{ truck.pk }}" {% if truck.pk == entry.truck.pk %}selected{% endif %}>{{ truck.number }}</option>
                                                                     {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                            <div class="form-group col-md-2">
+                                                                <label class="control-label" for="name">Choose Type</label>
+                                                                <select name="type" class="select2" required>
+                                                                    <option value="1">FCI</option>
+                                                                    <option value="2">NAN</option>
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -197,6 +205,7 @@
 
                             <tr>
                                 <td>{{ entry.cmr.cmr_date|date:"d/m/Y" }}</td>
+                                <td>{{ entry.get_entry_type_display }}</td>
                                 <td>{{ entry.cmr.cmr_no }}</td>
                                 <td>{{ entry.truck.number }}</td>
                                 <td>{{ entry.truck.transporter.name }}</td>
