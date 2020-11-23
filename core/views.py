@@ -194,7 +194,11 @@ def truck_entry(request):
         except cmr.DoesNotExist:
             c_cmr = cmr.objects.create(cmr_no=cmr_number, cmr_date=datetime.strptime(cmr_date, "%d/%m/%Y"), center=center, rice=rice, lot_no=lot, bora=bora, commodity=commodity, mill=request.mill)
         for i in range(counter):
-            truck = Truck.objects.get(pk=request.POST['trucks[{}][truck]'.format(i)])
+            transporter = Transporter.objects.get(pk=request.POST['trucks[{}][transporter]'.format(i)], mill=request.mill)
+            try:
+                truck = Truck.objects.get(pk=request.POST['trucks[{}][truck]'.format(i)])
+            except:
+                truck = Truck.objects.create(number=request.POST['trucks[{}][truck]'.format(i)], transporter=transporter)
             bags = request.POST['trucks[{}][bags]'.format(i)]
             price = float(request.POST['trucks[{}][price]'.format(i)])
             cmr_entry.objects.create(cmr=c_cmr, truck=truck, price=price, bags=bags)
