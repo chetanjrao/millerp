@@ -48,7 +48,7 @@
 </div>
 <div id="live-data" class="card p-4">
     <div class="notifications">
-        <table class="data table table-striped table-bordered" id="data" style="border-collapse: collapse; border-spacing: 0px; width: 90%;">
+        <table class="data table table-striped table-bordered" id="data" style="border-collapse: collapse; border-spacing: 0px; width: 100%;">
             <thead>
                 <th>अभिस्विकृति क्र.</th>
                 <th>अभिस्विकृति दिनांक</th>
@@ -57,6 +57,7 @@
                 <th>बोरो की संख्या</th>
                 <th>लॉट क्रमांक</th>
                 <th>कॉमोडिटी</th>
+                <th>कार्रवाई</th>
             </thead>
         </table>
     </div>
@@ -152,10 +153,16 @@
                     $('.link').attr("href", data) 
                     $('.loader2').hide()
                     $('#live-data').show()
+                    let formatted = data.reverse()
+                    formatted.map((v) => {
+                        v.pop()
+                        v.push('<a href="{% url "cmr_entry" millcode=request.millcode %}">Add Trucks Entry</a>')
+                    })
                     setTimeout(() => {
                         if(data.length > 0){
                             $('#data').DataTable({
-                                data: data,
+                                data: formatted,
+                                order: [],
                                 responsive: true
                             }).columns.adjust()
                         } else {

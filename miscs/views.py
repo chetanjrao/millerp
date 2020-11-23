@@ -381,7 +381,8 @@ def get_cmr(driver: WebDriver, screenshot: str, captcha: str, username: str, pas
                         data[4].text,
                         data[5].text,
                         data[7].text,
-                        data[8].text
+                        data[8].text,
+                        ''
                     ])
                 response = cmr
                 break

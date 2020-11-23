@@ -73,3 +73,14 @@ class Truck(models.Model):
     is_deleted = models.BooleanField(default=False)
 
     def __str__(self) -> str: return self.number
+
+class cmr(models.Model):
+    cmr_no = models.CharField(max_length=36)
+    cmr_date = models.DateField()
+    center = models.CharField(max_length=256)
+    rice = models.FloatField()
+    bora = models.FloatField()
+    lot_no = models.IntegerField()
+    commodity = models.CharField(max_length=512)
+    mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)

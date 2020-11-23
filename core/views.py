@@ -3,6 +3,7 @@ from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.expressions import F, Func
 from django.db.models.fields import FloatField
+from django.http.response import JsonResponse
 from miscs.models import City, Package
 from core.models import Firm, Mill, Purchase, Transporter, Truck
 from django.shortcuts import redirect, render, resolve_url
@@ -160,3 +161,19 @@ def transport(request):
             truck.save()
             return render(request, "transport.html", { "transporters": transporters, "trucks": trucks, "success_message": "Truck deleted successfully" })
     return render(request, "transport.html", { "transporters": transporters, "trucks": trucks })
+
+@login_required
+@set_mill_session
+def trucks_api(request, transporter: int):
+    transporter = Transporter.objects.get(pk=transporter, mill=request.mill, is_deleted=False)
+    trucks = Truck.objects.filter(transporter=transporter, is_deleted=False)
+    return JsonResponse([{
+            "id": truck.pk,
+            "text": truck.number
+        } for truck in trucks], safe=False)
+
+
+@login_required
+@set_mill_session
+def truck_entry(request):
+    return render(request, "entry.html")
