@@ -187,7 +187,8 @@ def truck_entry(request):
     transporters = Transporter.objects.filter(mill=request.mill, is_deleted=False)
     entries = cmr_entry.objects.filter(cmr__cmr_no=cmr_number, is_deleted=False)
     if request.method == "POST":
-        entries.update(is_deleted=False)
+        entries = cmr_entry.objects.filter(cmr__cmr_no=cmr_number, is_deleted=False)
+        entries.update(is_deleted=True)
         counter = int(request.POST["counter"])
         try:
             c_cmr = cmr.objects.get(cmr_no=cmr_number)
@@ -199,9 +200,10 @@ def truck_entry(request):
                 truck = Truck.objects.get(pk=request.POST['trucks[{}][truck]'.format(i)])
             except:
                 truck = Truck.objects.create(number=request.POST['trucks[{}][truck]'.format(i)], transporter=transporter)
+            entry_type = request.POST['trucks[{}][type]'.format(i)]
             bags = request.POST['trucks[{}][bags]'.format(i)]
             price = float(request.POST['trucks[{}][price]'.format(i)])
-            cmr_entry.objects.create(cmr=c_cmr, truck=truck, price=price, bags=bags)
+            cmr_entry.objects.create(cmr=c_cmr, entry_type=entry_type, truck=truck, price=price, bags=bags)
         return render(request, "entry.html", { "transporters": transporters, "entries": entries, "success_message": "Entry created successfully" })
     return render(request, "entry.html", { "transporters": transporters, "entries": entries })
 
@@ -216,8 +218,10 @@ def entry_logs(request):
         if action == 1:
             entry = cmr_entry.objects.get(pk=request.POST["entry"])
             truck = Truck.objects.get(pk=request.POST["truck"])
+            entry_type = int(request.POST["type"])
             bags = float(request.POST["bags"])
             price = float(request.POST["price"])
+            entry.entry_type = entry_type
             entry.truck = truck
             entry.bags = bags
             entry.price = price

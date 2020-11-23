@@ -86,6 +86,11 @@ class cmr(models.Model):
     is_deleted = models.BooleanField(default=False)
 
 class cmr_entry(models.Model):
+    CHOICES = (
+        (1, 'FCI'),
+        (2, 'NAN')
+    )
+    entry_type = models.IntegerField(choices=CHOICES, default=1)
     cmr = models.ForeignKey(to=cmr, on_delete=models.PROTECT)
     truck = models.ForeignKey(to=Truck, on_delete=models.CASCADE)
     bags = models.FloatField()

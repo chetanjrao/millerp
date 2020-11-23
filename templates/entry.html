@@ -63,6 +63,13 @@
                     <div class="mb-2" data-repeater-list="trucks">
                         <div class="row justify-between mt-4" data-repeater-item>
                                 <div class="row col-12">
+                                    <div class="form-group col-md-2">
+                                        <label class="control-label" for="name">Choose Type</label>
+                                        <select name="type" class="types" required>
+                                            <option value="1">FCI</option>
+                                            <option value="2">NAN</option>
+                                        </select>
+                                    </div>
                                     <div class="form-group col-md-3">
                                         <label class="control-label" for="name">Choose Transporter</label>
                                         <select name="transporter" class="transporters">
@@ -87,7 +94,7 @@
                                         <label for="" class="control-label">Price per quintal<small>(in &#x20b9;)</small></label>
                                         <input class="form-control ppq listener" data-parsley-type="number" data-parsley-trigger="change focus focusin focusout" type="text" value="0" required>
                                     </div>
-                                    <div class="form-group ml-2 mr-2">
+                                    <div class="form-group ml-3 mr-2">
                                         <label for="" class="control-label">Total Price <small>(in &#x20b9;)</small></label>
                                         <input name="price" class="price form-control" type="number" step="any" value="0" required>
                                     </div>
@@ -165,8 +172,13 @@
             if(!hasDestroyed){
                 $('.transporters').unbind('change')
                 $('.trucks').unbind('change')
+                $('.types').unbind('change')
                 hasDestroyed = true
             }
+            $('.types').select2({
+                width: '100%',
+                placeholder: 'Choose type'
+            })
             $('.transporters').select2({
                 width: '100%',
                 placeholder: "Type transporter name"
