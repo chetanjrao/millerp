@@ -1,5 +1,5 @@
 from miscs.views import get_cmr_status, get_cmr_view, get_do_view, get_print_view
-from core.views import entry_logs, reports, set_firm, shortage, transport, truck_entry, trucks_api
+from core.views import entry_logs, reports, set_firm, shortage, transport, truck_bill, truck_entry, trucks_api
 from django.urls import path, include
 from accounts.views import profile
 from . import views
@@ -23,4 +23,5 @@ urlpatterns = [
     path('cmr-status/', get_cmr_view, name='cmr_status'),
     path('cmr/entry/', truck_entry, name='cmr_entry'),
     path('log/', entry_logs, name='entry_logs'),
+    path('log/print/trucks/<int:truck>/', truck_bill, name='truck_bill'),
 ]

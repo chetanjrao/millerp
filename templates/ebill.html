@@ -1,0 +1,191 @@
+{% load tz %}
+{% load template_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,600&display=swap" rel="stylesheet"> 
+    <title> Mill ERP | {{ type }} | {% now "d m Y" %}</title>
+    <style type="text/css">
+* {
+    font-family: 'Poppins', sans-serif;
+}
+
+@media print {
+    * {
+        -webkit-print-color-adjust: exact;
+    }
+}
+
+.container {
+    padding: 16px;
+}
+
+.invoice-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.heading {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.sub-heading {
+    font-size: 14px;
+    font-weight: 500;
+    color: #363636;
+}
+
+.invoice-info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.divider {
+    margin-top: 0;
+    height: 1.5px;
+    background-color: #00944569;
+}
+
+.dark-divider {
+    margin-top: 36px;
+    height: 0.3px;
+    background-color: #bfbfbf;
+}
+
+.address {
+    font-size: 14px;
+    color: #363636;
+}
+
+.contact {
+    font-size: 14px;
+    color: #363636;
+}
+
+table {
+    width: 100%;
+    margin-top: 24px;
+    border-collapse: collapse;
+}
+
+thead {
+    border-top: 1px solid #e6e6f2;
+    border-bottom: 1px solid #e6e6f2;
+}
+
+th {
+    font-weight: 500;
+    font-size: 13px;
+    color: #363636;
+    text-align: start;
+    padding: 12px;
+}
+
+td {
+    padding: 12px;
+    font-size: 14px;
+}
+
+tr {
+    font-weight: 500;
+}
+
+tr:nth-child(2n) {
+    background-color: #31ffa915;
+}
+
+
+</style>
+</head>
+<body class="container">
+    <div class="invoice-header">
+        <div class="logo">
+            <img src="/static/images/logo-dark.png" height="48" >
+        </div>
+        <div class="invoice-number">
+            <div class="sub-heading">Billing Date: <br/>{{ from|date:"d-m-Y" }} to {{ to|date:"d-m-Y" }}</div>
+        </div>
+    </div>
+    <div class="divider"></div>
+    <div class="invoice-body">
+        <div class="invoice-info">
+            <div class="to">
+                <p>To,</p>
+                <strong>जिला विप्रन अधिकारी</strong>
+                <p>Bill Type: {{ type }}</p>
+            </div>
+            <div class="from">
+                <p>From,</p>
+                <strong>{{ request.mill }}</strong>
+                <p class="address" style="margin-bottom: 0;">
+                    {{request.mill.address|linebreaksbr}}
+                </p>
+                <p class="address" style="margin-top: 4px;">
+                    {{request.mill.owner.user.mobile}}
+                </p>
+            </div>
+        </div>
+        <h4>Bill Details</h4>
+        {% for acknowledgement, details in acknowledgements.items %}
+            <h4 style="padding-top: 24px">Ackn: {{ acknowledgement }}</h4>
+            <div class="invoice-bill">
+                <table>
+                    <thead>
+                        <th>अभिस्विकृति दिनांक</th>
+                        <th>सी.एम.आर. केन्द्र</th>
+                        <th>चावल की मात्रा(क्विंटल मे)</th>
+                        <th>बोरो की संख्या</th>
+                        <th>लॉट क्रमांक</th>
+                        <th>कॉमोडिटी</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ details.cmr_date|date:"d-m-Y" }}</td>
+                            <td>{{ details.center }}</td>
+                            <td>{{ details.rice }}</td>
+                            <td>{{ details.bora }}</td>
+                            <td>{{ details.lot_no }}</td>
+                            <td>{{ details.commodity }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h4>Truck Entries</h4>
+            <div class="invoice-bill">
+                <table>
+                    <thead>
+                        <th>Sl. No</th>
+                        <th>Truck Number</th>
+                        <th>Quantity <small>(in qtls)</small></th>
+                        <th>Tax <small>(in &#x20b9;)</small></th>
+                        <th>Price <small>(in &#x20b9;)</small></th>
+                    </thead>
+                    <tbody>
+                        {% for log in logs|hash:acknowledgement|indexing:0 %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ log.truck }}</td>
+                                <td>{{ log.bags }}</td>
+                                <td>&#x20b9;0</td>
+                                <td>&#x20b9;{{ log.price|floatformat:"0" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="dark-divider"></div>
+        {% endfor %}
+        <div style="margin-top: 24px; float: right">
+            <h3>Total Amount <br/>&#x20b9;{{ total }}</h3>
+        </div>
+    </div>
+   
+</body>
+<script>
+   // window.print()
+</script>
+</html>

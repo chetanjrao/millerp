@@ -2,6 +2,7 @@ from datetime import datetime
 import re
 from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIRequest
+from django.db.models.aggregates import Count
 from django.db.models.expressions import F, Func
 from django.db.models.fields import FloatField
 from django.http.response import JsonResponse
@@ -206,6 +207,23 @@ def truck_entry(request):
             cmr_entry.objects.create(cmr=c_cmr, entry_type=entry_type, truck=truck, price=price, bags=bags)
         return render(request, "entry.html", { "transporters": transporters, "entries": entries, "success_message": "Entry created successfully" })
     return render(request, "entry.html", { "transporters": transporters, "entries": entries })
+
+@login_required
+@set_mill_session
+def truck_bill(request, truck):
+    entry_type = int(request.GET["type"])
+    from_date = request.GET.get('from', now().astimezone().strftime("%Y-%m-%d"))
+    to_date = request.GET.get('to', now().astimezone().strftime("%Y-%m-%d"))
+    entries = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, entry_type=entry_type, cmr__cmr_date__lte=to_date, is_deleted=False).values('cmr', name=F('cmr__cmr_no')).annotate(Count('cmr')).values('name', 'cmr')
+    total = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, entry_type=entry_type, cmr__cmr_date__lte=to_date, is_deleted=False).aggregate(total=Sum('price'))["total"]
+    logs = {}
+    acknowledgements = {}
+    for entry in entries:
+        acknowledgements['{}'.format(entry["name"])] = cmr.objects.get(pk=entry["cmr"], mill=request.mill, is_deleted=False)
+        logs.setdefault('{}'.format(entry["name"]), []).append(cmr_entry.objects.filter(cmr__pk=entry["cmr"], entry_type=entry_type, cmr__cmr_date__gte=from_date, cmr__cmr_date__lte=to_date, is_deleted=False))
+    entry_type = "FCI" if entry_type == 1 else "NAN"
+    return render(request, "ebill.html", { "logs": logs, "type": entry_type, "total": total, "from": datetime.strptime(from_date, "%Y-%m-%d"), "to": datetime.strptime(to_date, "%Y-%m-%d"), "truck": Truck.objects.get(pk=truck), "acknowledgements": acknowledgements })
+
 
 @login_required
 @set_mill_session
