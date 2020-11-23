@@ -23,46 +23,84 @@
 {% endblock %}
 {% block body %}
 <div class="container-fluid">
-    <div class="card">
-        <div class="card-body">
-            <div class="card-title">Add Truck Entry: {{ request.GET.cmr_no }}</div>
-            <input type="number" name="counter" readonly value="0" id="counter" hidden />
-            <div class="repeater mt-4">
-                <div class="mb-2" data-repeater-list="outgoing">
-                    <div class="row justify-between mt-4" data-repeater-item>
-                            <div class="row col-12">
-                                <div class="form-group col-md-3">
-                                    <label class="control-label" for="name">Choose Transporter</label>
-                                    <select name="transporter" class="transporters">
-                                        {% for transporter in transporters %}
-                                            <option value="{{ transporter.pk }}">{{ transporter.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <div id="ferror"></div>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <label class="control-label" for="name">Choose Truck</label>
-                                    <select name="truck" class="trucks">
-                                            <option value=""></option>
-                                    </select>
-                                    <div id="ferror"></div>
-                                </div>
-                                <div class="form-group col-md-2">
-                                    <label for="" class="control-label">Number of bags</label>
-                                    <input name="bags" class="form-control bags" data-parsley-type="digits" data-parsley-trigger="change focus focusin focusout" type="text" value="0" required>
-                                </div>
-                                <div class="form-group col-md-2">
-                                    <label for="" class="control-label">Total Price <small>(in &#x20b9;)</small></label>
-                                    <input name="price" class="price form-control" type="number" step="any" disabled readonly value="0">
-                                </div>
-                                <button style="width: auto; margin-top: 0.7em;" data-repeater-delete type="button" class="btn btn-danger align-self-center">Delete</button>
-                            </div>
+    <form class="custom-validation" action="" method="POST">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-body">
+                <div class="col-12 pl-0">
+                    {% if entries|length > 0 %}
+                        <div class="alert alert-danger">
+                           <i class="mdi mdi-information"></i> There are already entries present in our system. All will be deleted and cannot be retained
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        {% if success_message %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="mdi mdi-check-all mr-2"></i>
+                            {{ success_message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+                        {% endif %}
+                        {% if error_message %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bx bx-x
+                             mr-2"></i>
+                            {{ error_message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-                <button id="repeater-button" data-repeater-create type="button" class="btn btn-success mt-3">Add Truck</button>
+                <div class="card-title">Add Truck Entry: {{ request.GET.cmr_no }}</div>
+                <input type="number" name="counter" readonly value="0" id="counter" hidden />
+                <div class="repeater mt-4">
+                    <div class="mb-2" data-repeater-list="trucks">
+                        <div class="row justify-between mt-4" data-repeater-item>
+                                <div class="row col-12">
+                                    <div class="form-group col-md-3">
+                                        <label class="control-label" for="name">Choose Transporter</label>
+                                        <select name="transporter" class="transporters">
+                                            {% for transporter in transporters %}
+                                                <option value="{{ transporter.pk }}">{{ transporter.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div id="ferror"></div>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label class="control-label" for="name">Choose Truck</label>
+                                        <select name="truck" class="trucks">
+                                                <option value=""></option>
+                                        </select>
+                                        <div id="terror"></div>
+                                    </div>
+                                    <div class="form-group mr-2">
+                                        <label for="" class="control-label">Quantity <small>(in quintals)</small></label>
+                                        <input name="bags" class="form-control bags listener" data-parsley-type="number" data-parsley-trigger="change focus focusin focusout" type="text" value="0" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="" class="control-label">Price per quintal<small>(in &#x20b9;)</small></label>
+                                        <input class="form-control ppq listener" data-parsley-type="number" data-parsley-trigger="change focus focusin focusout" type="text" value="0" required>
+                                    </div>
+                                    <div class="form-group ml-2 mr-2">
+                                        <label for="" class="control-label">Total Price <small>(in &#x20b9;)</small></label>
+                                        <input name="price" class="price form-control" type="number" step="any" value="0" required>
+                                    </div>
+                                    <button style="width: auto; margin-top: 0.7em;" data-repeater-delete type="button" class="btn btn-danger btn-sm align-self-center ml-3">Delete</button>
+                                </div>
+                        </div>
+                    </div>
+                    <button id="repeater-button" data-repeater-create type="button" class="btn btn-success mt-3">Add Truck</button>
+                </div>
+                <button class="btn btn-primary mt-4 float-right">Submit Entry</button>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 {% endblock %}
 {% block scripts %}
@@ -98,6 +136,7 @@
 <script>
     let totalQuantity = {{ request.GET.bora }}
     let hasDestroyed = false;
+    let counter = 0
     function calculateRemaining(){
         let bags = $('.bags')
         let quantity = 0
@@ -110,10 +149,12 @@
         initEmpty: true,
         show: function () {
             counter++;
+            $('#counter').val(counter)
             $(this).slideDown();
         },
         hide: function (e) {
             counter--;
+            $('#counter').val(counter)
             $(this).slideUp(e);
         },
         ready: function (e) {
@@ -132,7 +173,15 @@
             })
             $('.trucks').select2({
                 width: '100%',
-                placeholder: "Type truck name"
+                placeholder: "Type truck number"
+            })
+            $('.listener').on("change", () => {
+                let length = $('.listener').length / 2
+                for(let i=0; i < length; i++){
+                    let bags = Number.parseFloat($($('.bags')[i]).val() || 0)
+                    let ppq = Number.parseFloat($($('.ppq')[i]).val() || 0)
+                    let price = $($('.price')[i]).val((bags * ppq).toFixed(2))
+                }
             })
             $('.transporters').change((e) => {
                 let selection = $(e.target).select2('data')[0]

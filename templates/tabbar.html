@@ -49,6 +49,12 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{% url 'entry_logs' millcode=request.millcode %}" class="waves-effect">
+                        <i class="bx bx-book"></i>
+                        <span>Transport Log</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{% url 'firms' millcode=request.millcode %}" class="waves-effect">
                         <i class="bx bxs-factory"></i>
                         <span>Firms</span>

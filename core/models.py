@@ -79,8 +79,15 @@ class cmr(models.Model):
     cmr_date = models.DateField()
     center = models.CharField(max_length=256)
     rice = models.FloatField()
-    bora = models.IntegerField()
+    bora = models.FloatField()
     lot_no = models.IntegerField()
     commodity = models.CharField(max_length=512)
     mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)
+
+class cmr_entry(models.Model):
+    cmr = models.ForeignKey(to=cmr, on_delete=models.PROTECT)
+    truck = models.ForeignKey(to=Truck, on_delete=models.CASCADE)
+    bags = models.FloatField()
+    price = models.FloatField()
     is_deleted = models.BooleanField(default=False)

@@ -1,3 +1,4 @@
+from datetime import datetime
 import re
 from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIRequest
@@ -5,7 +6,7 @@ from django.db.models.expressions import F, Func
 from django.db.models.fields import FloatField
 from django.http.response import JsonResponse
 from miscs.models import City, Package
-from core.models import Firm, Mill, Purchase, Transporter, Truck
+from core.models import Firm, Mill, Purchase, Transporter, Truck, cmr, cmr_entry
 from django.shortcuts import redirect, render, resolve_url
 from django.contrib.auth.decorators import login_required
 from .decorators import set_mill_session
@@ -181,7 +182,27 @@ def truck_entry(request):
     center = request.GET["center"]
     rice = float(request.GET["rice"])
     lot = int(request.GET["lot"])
-    bora = int(request.GET["bora"])
+    bora = request.GET["bora"]
     commodity = request.GET["commodity"]
     transporters = Transporter.objects.filter(mill=request.mill, is_deleted=False)
-    return render(request, "entry.html", { "transporters": transporters })
+    entries = cmr_entry.objects.filter(cmr__cmr_no=cmr_number, is_deleted=False)
+    if request.method == "POST":
+        entries.update(is_deleted=False)
+        counter = int(request.POST["counter"])
+        try:
+            c_cmr = cmr.objects.get(cmr_no=cmr_number)
+        except cmr.DoesNotExist:
+            c_cmr = cmr.objects.create(cmr_no=cmr_number, cmr_date=datetime.strptime(cmr_date, "%d/%m/%Y"), center=center, rice=rice, lot_no=lot, bora=bora, commodity=commodity, mill=request.mill)
+        for i in range(counter):
+            truck = Truck.objects.get(pk=request.POST['trucks[{}][truck]'.format(i)])
+            bags = request.POST['trucks[{}][bags]'.format(i)]
+            price = float(request.POST['trucks[{}][price]'.format(i)])
+            cmr_entry.objects.create(cmr=c_cmr, truck=truck, price=price, bags=bags)
+        return render(request, "entry.html", { "transporters": transporters, "entries": entries, "success_message": "Entry created successfully" })
+    return render(request, "entry.html", { "transporters": transporters, "entries": entries })
+
+@login_required
+@set_mill_session
+def entry_logs(request):
+    entries = cmr_entry.objects.filter(cmr__mill=request.mill, is_deleted=False)
+    return render(request, "log.html", { "entries": entries })
