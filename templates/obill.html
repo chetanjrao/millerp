@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,600&display=swap" rel="stylesheet"> 
-    <title> Mill ERP | {{ type }} | {% now "d m Y" %}</title>
+    <title> Mill ERP | {{ transporter.name }} | {% now "d m Y" %}</title>
     <link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
     <link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
     <link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
@@ -78,7 +78,7 @@ table {
 
 th {
     font-weight: 500;
-    font-size: 11px;
+    font-size: 8px;
     color: #363636;
     text-align: start;
     padding: 6px;
@@ -86,7 +86,7 @@ th {
 
 td {
     padding: 6px;
-    font-size: 9px;
+    font-size: 8px;
 }
 
 tr {
@@ -114,8 +114,8 @@ tr:nth-child(2n) {
         <div class="invoice-info">
             <div class="to">
                 <p>To,</p>
-                <strong>जिला विप्रन अधिकारी</strong>
-                <p>Bill Type: {{ type }}</p>
+                <strong>{{ transporter.name }}</strong>
+                <p>{{ transporter.mobile }}</p>
             </div>
             <div class="from">
                 <p>From,</p>
@@ -162,7 +162,7 @@ tr:nth-child(2n) {
             </tbody>
         </table>
         <div style="margin-top: 24px; float: right">
-            <h4>Total Amount <br/>&#x20b9;{{ total }}</h4>
+            <h6>Total Amount <br/>&#x20b9;{{ total }}</h6>
         </div>
     </div>
     <script src="/static/libs/jquery/jquery.min.js"></script>

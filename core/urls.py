@@ -1,5 +1,5 @@
 from miscs.views import get_cmr_status, get_cmr_view, get_do_view, get_print_view
-from core.views import entry_logs, reports, set_firm, shortage, transport, truck_bill, truck_entry, trucks_api
+from core.views import entry_logs, reports, set_firm, set_rice, shortage, transport, transporter_bill, truck_bill, truck_entry, trucks_api
 from django.urls import path, include
 from accounts.views import profile
 from . import views
@@ -12,6 +12,7 @@ urlpatterns = [
     path('settings/', views.settings, name='settings'),
     path('profile/', profile, name='profile'),
     path('set-firm/', set_firm, name='set-firm'),
+    path('switch-rice/', set_rice, name='switch-rice'),
     path('reload/', views.load_live, name='reload-data'),
     path('print-do/', get_print_view, name='print-do'),
     path('do-status/', get_do_view, name='do-status'),
@@ -24,4 +25,5 @@ urlpatterns = [
     path('cmr/entry/', truck_entry, name='cmr_entry'),
     path('log/', entry_logs, name='entry_logs'),
     path('log/print/trucks/<int:truck>/', truck_bill, name='truck_bill'),
+    path('log/print/transporters/<int:transporter>/', transporter_bill, name='transporter_bill'),
 ]

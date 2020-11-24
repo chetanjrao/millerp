@@ -321,12 +321,12 @@
                                                     class="btn btn-danger waves-effect waves-light">Yes,
                                                     delete</button>
                                             </div>
-                                        </div><!-- /.modal-content -->
+                                        </div>
                                     </div>
                                 </form>
                             </div>
                                 <tr>
-                                    <td><span style="display:none;">{{ trade.entry.date|date:"U" }}</span>{{trade.entry.date}}</td>
+                                    <td><span style="display:none;">{{ trade.entry.date|date:"U" }}</span>{{trade.entry.date|date:"d-m-Y"}}</td>
                                     <td>{{trade.source.name}}</td>
                                     {% if trade.entry.bags > 0 %}
                                         <td class="text-success"><strong>{{trade.total|floatformat:2}}</strong></td>

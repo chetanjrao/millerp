@@ -370,7 +370,7 @@
                             </div>
 
                             <tr>
-                                <td><span style="display:none;">{{ stock.entry.date|date:"U" }}</span>{{stock.entry.date}}</td>
+                                <td><span style="display:none;">{{ stock.entry.date|date:"U" }}</span>{{stock.entry.date|date:"d-m-Y"}}</td>
                                 <td>{{stock.category.name}}</td>
                                 <td>{{stock.product.name}}</td>
                                 <td>{{stock.entry.bags|abs}}</td>

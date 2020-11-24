@@ -37,6 +37,12 @@ class Firm(models.Model):
     is_deleted = models.BooleanField(default=False)
 
 
+class Rice(models.Model):
+    name = models.CharField(max_length=256)
+    is_deleted = models.BooleanField(default=False)
+
+    def __str__(self) -> str: return self.name
+
 class Purchase(models.Model):
     amount = models.FloatField(default=0.0)
     bundle = models.ForeignKey(to=Bundle, on_delete=models.CASCADE)

@@ -109,6 +109,12 @@
                 </li>
                 <li class="menu-title">Rice</li>
                 <li>
+                    <a href="{% url 'switch-rice' millcode=request.millcode%}" data-toggle="modal" data-target="#riceModal" class=" waves-effect">
+                        <i class="bx bx-brightness"></i>
+                        <span>Switch Rice {% if request.rice %}<small>({{request.rice}})</small>{% endif %}</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{% url 'products-incoming' millcode=request.millcode%}" class=" waves-effect">
                         <i class="bx bx-downvote"></i>
                         <span>Incoming</span>

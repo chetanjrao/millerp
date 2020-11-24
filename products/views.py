@@ -19,8 +19,8 @@ from core.models import Mill
 @set_mill_session
 def incoming(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False)
-    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False,  category__rice=request.rice)
+    categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
 
@@ -29,7 +29,7 @@ def incoming(request):
 @set_mill_session
 def incomingAdd(request):
     mill = Mill.objects.get(code=request.millcode)
-    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     if request.method == "POST":
         try:
             date = request.POST.get('date')
@@ -56,8 +56,8 @@ def incomingAdd(request):
 @set_mill_session
 def incomingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False)
-    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False, category__rice=request.rice)
+    categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         action = int(request.POST.get('action', '0'))
@@ -86,8 +86,8 @@ def incomingAction(request, id):
 @set_mill_session
 def outgoing(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = OutgoingProductEntry.objects.filter(entry__is_deleted=False, product__mill=mill, entry__bags__lte=0)
-    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    stocks = OutgoingProductEntry.objects.filter(entry__is_deleted=False, category__rice=request.rice, product__mill=mill, entry__bags__lte=0)
+    categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
 
@@ -96,8 +96,8 @@ def outgoing(request):
 def outgoing_data(request):
     if request.method == "POST":
         mill = Mill.objects.get(code=request.millcode)
-        stocks = OutgoingProductEntry.objects.filter(entry__is_deleted=False)
-        categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+        stocks = OutgoingProductEntry.objects.filter(entry__is_deleted=False,  category__rice=request.rice)
+        categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
         production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
         return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
     return redirect('materials-outgoing', millcode=request.millcode)
@@ -106,7 +106,7 @@ def outgoing_data(request):
 @login_required
 @set_mill_session
 def max_stock(request, category: int):
-    stocks = ProductStock.objects.filter(category__pk=category, entry__is_deleted=False).values(name=F('product__pk')).annotate(max=Sum('entry__bags'))
+    stocks = ProductStock.objects.filter(category__pk=category, category__rice=request.rice, entry__is_deleted=False).values(name=F('product__pk')).annotate(max=Sum('entry__bags'))
     stocks = [{
         "id": stock["name"],
         "text": ProductionType.objects.get(pk=stock["name"]).name,
@@ -140,14 +140,14 @@ def outgoingAction(request, id):
 @set_mill_session
 def configuration(request):
     mill = Mill.objects.get(code=request.millcode)
-    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
-    trading_sources = TradingSource.objects.filter(is_deleted=False, category__mill=mill)
+    trading_sources = TradingSource.objects.filter(is_deleted=False, category__rice=request.rice, category__mill=mill)
     if request.method == 'POST':
         action = int(request.POST.get('action', '0'))
         if action == 1:
             name = request.POST.get('name')
-            ProductCategory.objects.create(name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            ProductCategory.objects.create(name=name, mill=mill, rice=request.rice, created_by=request.user, created_at=datetime.now())
             return redirect("products-configuration", millcode=request.millcode)
         elif action == 2:
             try:
@@ -185,9 +185,9 @@ def get_production_types(request, category: int):
 @set_mill_session
 def configurationAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
-    trading_sources = TradingSource.objects.filter(is_deleted=False, category__mill=mill)
+    trading_sources = TradingSource.objects.filter(is_deleted=False, category__rice=request.rice, category__mill=mill)
     if request.method == "POST":
         id = int(id)
         action = int(request.POST.get('action', '0'))
@@ -238,10 +238,10 @@ def configurationAction(request, id):
 @login_required
 @set_mill_session
 def stocks(request):
-    stocks = ProductStock.objects.filter(entry__is_deleted=False, entry__bags__lte=0, category__mill__code=request.millcode)
-    categories = ProductCategory.objects.filter(mill__code=request.millcode, is_deleted=False)
+    stocks = ProductStock.objects.filter(entry__is_deleted=False, category__rice=request.rice, entry__bags__lte=0, category__mill__code=request.millcode)
+    categories = ProductCategory.objects.filter(mill__code=request.millcode, rice=request.rice, is_deleted=False)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=request.mill)
-    entries = ProductStock.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).values('product', 'category__name', name=F('product__name')).annotate(total=Sum('entry__bags'))
+    entries = ProductStock.objects.filter(entry__is_deleted=False, category__rice=request.rice, category__mill__code=request.millcode).values('product', 'category__name', name=F('product__name')).annotate(total=Sum('entry__bags'))
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
@@ -277,14 +277,14 @@ def stocks(request):
 def analysis(request):
     mill = Mill.objects.get(code=request.millcode)
     entries = Stock.objects.filter(is_deleted=False, category__mill__code=request.millcode).order_by('-date')
-    categories = ProductCategory.objects.filter(is_deleted=False, mill=mill)
+    categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
     return render(request, "products/reports.html", { "entries": entries, "categories": categories, "production_types": production_types })
 
 @login_required
 @set_mill_session
 def max_trading_stock(request, category):
-    entries = Trading.objects.filter(entry__is_deleted=False, source__category=category, source__is_deleted=False).values(name=F('source__id')).annotate(max=Sum("entry__bags"))
+    entries = Trading.objects.filter(entry__is_deleted=False, source__category__rice=request.rice, source__category=category, source__is_deleted=False).values(name=F('source__id')).annotate(max=Sum("entry__bags"))
     entries = [{
         "id": entry["name"],
         "text": TradingSource.objects.get(pk=entry["name"]).name,
@@ -306,10 +306,10 @@ def sources(request, category):
 @login_required
 @set_mill_session
 def trading(request: WSGIRequest):
-    categories = ProductCategory.objects.filter(mill__code=request.millcode, is_deleted=False)
-    trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
+    categories = ProductCategory.objects.filter(mill__code=request.millcode, rice=request.rice, is_deleted=False)
+    trading = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False)
     quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-    average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
+    average_price = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
     total_price = average_price["price"]
     total_quantity = average_price["total"]
     average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
@@ -321,9 +321,9 @@ def trading(request: WSGIRequest):
             bags = int(request.POST["bags"])
             entry = Stock.objects.create(bags=bags, date=datetime.now().astimezone().date(), remarks='Added {} - {} bags for \u20b9{}/-'.format(source.name, bags, price))
             Trading.objects.create(entry=entry, price=price, source=source, created_by=request.user)
-            trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
+            trading = Trading.objects.filter(source__category__mill__code=request.millcode,  source__category__rice=request.rice, entry__is_deleted=False)
             quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
+            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
             total_price = average_price["price"]
             total_quantity = average_price["total"]
             average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
@@ -334,9 +334,9 @@ def trading(request: WSGIRequest):
             bags = 0 - int(request.POST["bags"])
             entry = Stock.objects.create(bags=bags, date=datetime.now().astimezone().date(), remarks='Added {} - {} bags for \u20b9{}/-'.format(source.name, bags, price))
             Trading.objects.create(entry=entry, price=price, source=source, created_by=request.user)
-            trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
+            trading = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False)
             quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
+            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
             total_price = average_price["price"]
             total_quantity = average_price["total"]
             average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
@@ -347,9 +347,9 @@ def trading(request: WSGIRequest):
             trade.price = price
             trade.entry.save()
             trade.save()
-            trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
+            trading = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False)
             quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
+            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
             total_price = average_price["price"]
             total_quantity = average_price["total"]
             average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
@@ -360,9 +360,9 @@ def trading(request: WSGIRequest):
             trade.price = 0 - price
             trade.entry.save()
             trade.save()
-            trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
+            trading = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False)
             quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
+            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
             total_price = average_price["price"]
             total_quantity = average_price["total"]
             average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
@@ -372,9 +372,9 @@ def trading(request: WSGIRequest):
             trade.entry.is_deleted = True
             trade.entry.save()
             trade.save()
-            trading = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False)
+            trading = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False)
             quantity = trading.values('source__name').annotate(bags=Sum('entry__bags'))
-            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))            
+            average_price = Trading.objects.filter(source__category__mill__code=request.millcode, source__category__rice=request.rice, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))            
             total_price = average_price["price"]
             total_quantity = average_price["total"]
             average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
@@ -395,7 +395,7 @@ def export_to_excel(request):
     end = datetime.strptime(request.GET["to"], "%Y-%m-%d")
     day = (end - start).days + 1
     wb = xlsxwriter.Workbook(output)
-    categories = ProductCategory.objects.filter(mill__code=request.millcode, is_deleted=False)
+    categories = ProductCategory.objects.filter(mill__code=request.millcode, rice=request.rice, is_deleted=False)
     title_format = wb.add_format({ "font_size": 16, "underline": True, "bold": True, "align": 'center' })
     source_format = wb.add_format({ "bg_color": '#FFFF00', "bold": True, "font_size": 10, "align": 'center' })
     source_format.set_bold()
@@ -425,11 +425,11 @@ def export_to_excel(request):
             ws.write(3, 2 * len(types) + i + 1, '(In Bags)', color_format)
             for j, date in zip(range(day), daterange(start, end)):
                 ws.write(j+4, 0, '{}'.format(date.strftime("%d/%m/%Y")))
-                incoming = IncomingProductEntry.objects.filter(entry__is_deleted=False, category=category, product=types[i], entry__date=date).values('product').annotate(bags=Coalesce(Sum('entry__bags'), 0)).values('bags')
+                incoming = IncomingProductEntry.objects.filter(entry__is_deleted=False, category__rice=request.rice, category=category, product=types[i], entry__date=date).values('product').annotate(bags=Coalesce(Sum('entry__bags'), 0)).values('bags')
                 ws.write(j+4, i + 1, incoming[0]["bags"] if len(incoming) > 0 else '', normal_format)
                 outgoing = OutgoingProductEntry.objects.filter(entry__is_deleted=False, category=category, product=types[i], entry__date=date).values('product').annotate(bags=Coalesce(Sum('entry__bags'), 0)).values('bags')
                 ws.write(j+4, len(types) + i + 1, abs(outgoing[0]["bags"]) if len(outgoing) > 0 else '')
-                stock = ProductStock.objects.filter(entry__is_deleted=False, category=category, product=types[i], entry__date=date).values('product').annotate(bags=Coalesce(Sum('entry__bags'), 0)).values('bags')
+                stock = ProductStock.objects.filter(entry__is_deleted=False,  category__rice=request.rice, category=category, product=types[i], entry__date=date).values('product').annotate(bags=Coalesce(Sum('entry__bags'), 0)).values('bags')
                 ws.write(j+4, 2 * len(types) + i + 1, abs(stock[0]["bags"]) if len(stock) > 0 else '')
         wb.close()
     output.seek(0)

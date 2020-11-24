@@ -1,5 +1,6 @@
 from datetime import datetime
 import re
+from re import sub
 from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.aggregates import Count
@@ -7,7 +8,7 @@ from django.db.models.expressions import F, Func
 from django.db.models.fields import FloatField
 from django.http.response import JsonResponse
 from miscs.models import City, Package
-from core.models import Firm, Mill, Purchase, Transporter, Truck, cmr, cmr_entry
+from core.models import Firm, Mill, Purchase, Rice, Transporter, Truck, cmr, cmr_entry
 from django.shortcuts import redirect, render, resolve_url
 from django.contrib.auth.decorators import login_required
 from .decorators import set_mill_session
@@ -101,6 +102,15 @@ def set_firm(request: WSGIRequest):
 
 @login_required
 @set_mill_session
+def set_rice(request: WSGIRequest):
+    if request.method == "POST":
+        rice = Rice.objects.get(pk=request.POST["rice"], is_deleted=False)
+        response = redirect(resolve_url('dashboard_home', millcode=request.millcode))
+        response.set_cookie("rice", rice.pk)
+        return response
+
+@login_required
+@set_mill_session
 def load_live(request):
     firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
     cache.delete('{}'.format(firm.username))
@@ -117,6 +127,7 @@ def shortage(request):
 @set_mill_session
 def reports(request):
     return render(request, "reports.html")
+
 
 
 @login_required
@@ -216,13 +227,41 @@ def truck_bill(request, truck):
     to_date = request.GET.get('to', now().astimezone().strftime("%Y-%m-%d"))
     entries = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, entry_type=entry_type, cmr__cmr_date__lte=to_date, is_deleted=False).values('cmr', name=F('cmr__cmr_no')).annotate(Count('cmr')).values('name', 'cmr')
     total = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, entry_type=entry_type, cmr__cmr_date__lte=to_date, is_deleted=False).aggregate(total=Sum('price'))["total"]
-    logs = {}
-    acknowledgements = {}
+    logs = []
+    max_trucks = 0
     for entry in entries:
-        acknowledgements['{}'.format(entry["name"])] = cmr.objects.get(pk=entry["cmr"], mill=request.mill, is_deleted=False)
-        logs.setdefault('{}'.format(entry["name"]), []).append(cmr_entry.objects.filter(cmr__pk=entry["cmr"], entry_type=entry_type, cmr__cmr_date__gte=from_date, cmr__cmr_date__lte=to_date, is_deleted=False))
+        current = {}
+        current["info"] = cmr.objects.get(pk=entry["cmr"], mill=request.mill, is_deleted=False)
+        subs = cmr_entry.objects.filter(cmr__pk=entry["cmr"], entry_type=entry_type, cmr__cmr_date__gte=from_date, cmr__cmr_date__lte=to_date, is_deleted=False)
+        current.setdefault("trucks", []).append(subs)
+        if len(subs) > max_trucks:
+            max_trucks = len(subs)
+        current["total"] = subs.aggregate(total=Sum('price'))["total"]
+        logs.append(current)
     entry_type = "FCI" if entry_type == 1 else "NAN"
-    return render(request, "ebill.html", { "logs": logs, "type": entry_type, "total": total, "from": datetime.strptime(from_date, "%Y-%m-%d"), "to": datetime.strptime(to_date, "%Y-%m-%d"), "truck": Truck.objects.get(pk=truck), "acknowledgements": acknowledgements })
+    return render(request, "ebill.html", { "logs": logs, "max_trucks": range(max_trucks), "type": entry_type, "total": total, "from": datetime.strptime(from_date, "%Y-%m-%d"), "to": datetime.strptime(to_date, "%Y-%m-%d"), "truck": Truck.objects.get(pk=truck) })
+
+
+@login_required
+@set_mill_session
+def transporter_bill(request, transporter):
+    from_date = request.GET.get('from', now().astimezone().strftime("%Y-%m-%d"))
+    to_date = request.GET.get('to', now().astimezone().strftime("%Y-%m-%d"))
+    transporter = Transporter.objects.get(pk=transporter, mill=request.mill)
+    entries = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, truck__transporter=transporter, cmr__cmr_date__lte=to_date, is_deleted=False).values('cmr', name=F('cmr__cmr_no')).annotate(Count('cmr')).values('name', 'cmr')
+    total = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, cmr__cmr_date__lte=to_date, is_deleted=False).aggregate(total=Sum('price'))["total"]
+    logs = []
+    max_trucks = 0
+    for entry in entries:
+        current = {}
+        current["info"] = cmr.objects.get(pk=entry["cmr"], mill=request.mill, is_deleted=False)
+        subs = cmr_entry.objects.filter(cmr__pk=entry["cmr"], cmr__cmr_date__gte=from_date, cmr__cmr_date__lte=to_date, is_deleted=False)
+        current.setdefault("trucks", []).append(subs)
+        if len(subs) > max_trucks:
+            max_trucks = len(subs)
+        current["total"] = subs.aggregate(total=Sum('price'))["total"]
+        logs.append(current)
+    return render(request, "obill.html", { "logs": logs, "transporter": transporter, "max_trucks": range(max_trucks), "total": total, "from": datetime.strptime(from_date, "%Y-%m-%d"), "to": datetime.strptime(to_date, "%Y-%m-%d") })
 
 
 @login_required
