@@ -19,6 +19,7 @@ class ProductionType(models.Model):
     is_deleted = models.BooleanField(default=False)
     quantity = models.FloatField(default=0.0)
     is_mixture = models.BooleanField(default=False)
+    is_external = models.BooleanField(default=False)
     mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)

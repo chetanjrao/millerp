@@ -39,7 +39,7 @@
                     <div class="media">
                         <div class="media-body">
                             <p class="text-muted font-weight-medium">Total stock <small>(in quintals)</small></p>
-                            <h4 id="bg_remaining" class="mb-0">{{ total_quantity }}</h4>
+                            <h4 id="bg_remaining" class="mb-0">{{ total_quantity|default:0 }}</h4>
                         </div>
                     </div>
                 </div>
@@ -51,7 +51,7 @@
                     <div class="media">
                         <div class="media-body">
                             <p class="text-muted font-weight-medium">Total Price</p>
-                            <h4 id="bg_remaining" class="mb-0">&#x20b9;{{ total_price }}</h4>
+                            <h4 id="bg_remaining" class="mb-0">&#x20b9;{{ total_price|default:0 }}</h4>
                         </div>
                     </div>
                 </div>

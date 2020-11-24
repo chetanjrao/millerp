@@ -292,7 +292,15 @@
                             <div class="row mb-2 ml-2">
                                 <div class="form-group col-md-10">
                                     <div class="custom-control custom-checkbox">
-                                        <input name="mix" type="checkbox" class="custom-control-input" id="mix">
+                                        <input name="mix" type="checkbox" value="1" class="custom-control-input" id="external">
+                                        <label class="custom-control-label" for="external" >Is this external rice ? <small>(Ex. PDS Rice)</small></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2 ml-2">
+                                <div class="form-group col-md-10">
+                                    <div class="custom-control custom-checkbox">
+                                        <input name="mix" type="checkbox"value="1" class="custom-control-input" id="mix">
                                         <label class="custom-control-label" for="mix">Is this a mixture of rice ? <small>(Ex. Kanki Mix)</small></label>
                                     </div>
                                 </div>
@@ -329,6 +337,7 @@
                                 <th>Category</th>
                                 <th>Quantity <small> (in kgs)</small></th>
                                 <th>Considered as mixture</th>
+                                <th>Is External Rice</th>
                                 <th>Created by</th>
                                 <th>Actions</th>
                             </tr>
@@ -401,11 +410,19 @@
 
                                                     </div>
                                                 </div>
-                                                <div class="row">
+                                                <div class="row mt-4">
                                                     <div class="col-md-10">
                                                         <div class="custom-control custom-checkbox">
-                                                            <input name="trade" type="checkbox" class="custom-control-input" id="trade">
-                                                            <label class="custom-control-label" for="trade">Include source in trading</label>
+                                                            <input name="mix" type="checkbox" value="1" class="custom-control-input" {% if type.is_mixture %}checked{% endif %} id="mix{{type.pk}}">
+                                                            <label class="custom-control-label"  for="mix{{type.pk}}">Is this a mixture ?</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-4">
+                                                    <div class="col-md-10">
+                                                        <div class="custom-control custom-checkbox">
+                                                            <input name="external" type="checkbox" value="1" class="custom-control-input" {% if type.is_external %}checked{% endif %} id="external{{type.pk}}">
+                                                            <label class="custom-control-label" for="external{{type.pk}}">Is this an external rice ?</label>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -459,6 +476,7 @@
                                 <td>{{ type.category.name }}</td>
                                 <td>{{ type.quantity }} </td>
                                 <td>{{ type.is_mixture }}</td>
+                                <td>{{ type.is_external }}</td>
                                 <td>{{ type.created_by.first_name}}</td>
                                 <td>
                                     <a href="#" class="btn btn-primary btn-sm" data-toggle="modal"

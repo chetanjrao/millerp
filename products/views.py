@@ -21,7 +21,7 @@ def incoming(request):
     mill = Mill.objects.get(code=request.millcode)
     stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False,  category__rice=request.rice)
     categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
-    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice, mill=mill)
     return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
 
 
@@ -58,7 +58,7 @@ def incomingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
     stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False, category__rice=request.rice)
     categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
-    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice,  mill=mill)
     if request.method == "POST":
         action = int(request.POST.get('action', '0'))
         id = int(id)
@@ -98,7 +98,7 @@ def outgoing_data(request):
         mill = Mill.objects.get(code=request.millcode)
         stocks = OutgoingProductEntry.objects.filter(entry__is_deleted=False,  category__rice=request.rice)
         categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
-        production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
+        production_types = ProductionType.objects.filter(is_deleted=False,  category__rice=request.rice, mill=mill)
         return render(request, "products/outgoing.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
     return redirect('materials-outgoing', millcode=request.millcode)
 
@@ -141,7 +141,7 @@ def outgoingAction(request, id):
 def configuration(request):
     mill = Mill.objects.get(code=request.millcode)
     categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
-    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice, mill=mill)
     trading_sources = TradingSource.objects.filter(is_deleted=False, category__rice=request.rice, category__mill=mill)
     if request.method == 'POST':
         action = int(request.POST.get('action', '0'))
@@ -154,8 +154,9 @@ def configuration(request):
                 name = request.POST.get('name')
                 category = ProductCategory.objects.get(id=int(request.POST.get('category')))
                 quantity = float(request.POST.get('quantity'))
-                mix = bool(request.POST.get("mix", 0))
-                ProductionType.objects.create(name=name, category=category, is_mixture=mix, quantity=quantity, mill=mill, created_by=request.user, created_at=datetime.now())
+                is_mixture = request.POST.get("mix", False)
+                is_external = request.POST.get("external", False)
+                ProductionType.objects.create(name=name, category=category, is_mixture=is_mixture, is_external=is_external, quantity=quantity, mill=mill, created_by=request.user, created_at=datetime.now())
                 return redirect("products-configuration", millcode=request.millcode)
             except ValueError:
                 return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "error_message": "Please enter valid entries"})
@@ -186,7 +187,7 @@ def get_production_types(request, category: int):
 def configurationAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
     categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
-    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice, mill=mill)
     trading_sources = TradingSource.objects.filter(is_deleted=False, category__rice=request.rice, category__mill=mill)
     if request.method == "POST":
         id = int(id)
@@ -212,6 +213,8 @@ def configurationAction(request, id):
                     obj.quantity = float(request.POST.get('quantity'))
                     obj.category = ProductCategory.objects.get(
                         id=int(request.POST.get('category')))
+                    obj.is_mixture = request.POST.get("mix", False)
+                    obj.is_external = request.POST.get("external", False)
                     obj.save()
                     return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "success_message": "Production type updated successfully"})
                 except ValueError:
@@ -240,7 +243,7 @@ def configurationAction(request, id):
 def stocks(request):
     stocks = ProductStock.objects.filter(entry__is_deleted=False, category__rice=request.rice, entry__bags__lte=0, category__mill__code=request.millcode)
     categories = ProductCategory.objects.filter(mill__code=request.millcode, rice=request.rice, is_deleted=False)
-    production_types = ProductionType.objects.filter(is_deleted=False, mill=request.mill)
+    production_types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice, mill=request.mill)
     entries = ProductStock.objects.filter(entry__is_deleted=False, category__rice=request.rice, category__mill__code=request.millcode).values('product', 'category__name', name=F('product__name')).annotate(total=Sum('entry__bags'))
     if request.method == "POST":
         action = int(request.POST["action"])
@@ -278,7 +281,7 @@ def analysis(request):
     mill = Mill.objects.get(code=request.millcode)
     entries = Stock.objects.filter(is_deleted=False, category__mill__code=request.millcode).order_by('-date')
     categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
-    production_types = ProductionType.objects.filter(is_deleted=False, mill=mill)
+    production_types = ProductionType.objects.filter(is_deleted=False,  category__rice=request.rice, mill=mill)
     return render(request, "products/reports.html", { "entries": entries, "categories": categories, "production_types": production_types })
 
 @login_required
@@ -407,7 +410,7 @@ def export_to_excel(request):
     normal_format = wb.add_format({ "align": 'center' })
     for category in categories:
         ws = wb.add_worksheet(category.name)
-        types = ProductionType.objects.filter(is_deleted=False, category=category)
+        types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice, category=category)
         ws.set_row(1, height=48)
         ws.set_row(2, height=36)
         ws.merge_range(0, 1, 0, len(types), "INCOMING + PRODUCTION", title_format)
