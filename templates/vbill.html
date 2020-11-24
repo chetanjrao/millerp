@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,600&display=swap" rel="stylesheet"> 
-    <title> Mill ERP | {{ transporter.name }} | {% now "d m Y" %}</title>
+    <title> Mill ERP({{ truck.number }}) | {{ from|date:"d-m-Y" }} - {{ to|date:"d-m-Y" }}</title>
     <link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
     <link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
     <link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
@@ -78,7 +78,7 @@ table {
 
 th {
     font-weight: 500;
-    font-size: 8px;
+    font-size: 11px;
     color: #363636;
     text-align: start;
     padding: 6px;
@@ -86,7 +86,7 @@ th {
 
 td {
     padding: 6px;
-    font-size: 8px;
+    font-size: 9px;
 }
 
 tr {
@@ -114,8 +114,9 @@ tr:nth-child(2n) {
         <div class="invoice-info">
             <div class="to">
                 <p>To,</p>
-                <strong>{{ transporter.name }}</strong>
-                <p>{{ transporter.mobile }}</p>
+                <strong>{{ truck.number }}</strong>
+                <p style="font-size: 14px;">{{ truck.transporter.name }}</p>
+                <p style="font-size: 14px;">{{ truck.transporter.mobile }}</p>
             </div>
             <div class="from">
                 <p>From,</p>
@@ -133,42 +134,39 @@ tr:nth-child(2n) {
             <thead>
                 <tr>
                     <th>Date</th>
+                    <th>Ackn. No</th>
                     <th>Place</th>
                     <th>Quantity</th>
                     <th>Bags</th>
                     <th>Lot No</th>
-                    {% for truck in max_trucks %}
-                        <th style="text-align: center;" colspan="3">Truck {{ forloop.counter }}</th>
-                    {% endfor %}
-                    <th>Total Amount</th>
+                    <th>Commodity</th>
+                    <th>Quantity Loaded <br /><small>(in bags)</small></th>
+                    <th>Total Price</th>
                 </tr>
             </thead>
             <tbody>
                 {% for log in logs %}
                     <tr>
-                        <td>{{ log.info.cmr_date|date:"d-m-Y" }}</td>
-                        <td>{{ log.info.center }}</td>
-                        <td>{{ log.info.rice }}</td>
-                        <td>{{ log.info.bora }}</td>
-                        <td>{{ log.info.lot_no }}</td>
-                        {% for entry in log.trucks|indexing:0 %}
-                            <td>{{ entry.truck.number }}</td>
-                            <td>{{ entry.bags }}</td>
-                            <td>&#x20b9;{{ entry.price }}</td>
-                        {% endfor %}
-                        {% for diff in log.diff %}
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        {% endfor %}
-                        <td>&#x20b9;{{ log.total }}</td>
+                        <td>{{ log.cmr.cmr_date|date:"d-m-Y" }}</td>
+                        <td>{{ log.cmr.cmr_no }}</td>
+                        <td>{{ log.cmr.center }}</td>
+                        <td>{{ log.cmr.rice }}</td>
+                        <td>{{ log.cmr.bora }}</td>
+                        <td>{{ log.cmr.lot_no }}</td>
+                        <td>{{ log.cmr.commodity }}</td>
+                        <td>{{ log.bags }}</td>
+                        <td>&#x20b9;{{ log.price }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <div style="margin-top: 24px; float: right">
-            <h6>Total Amount <br/>&#x20b9;{{ total }}</h6>
+        <div style="margin-top: 24px; text-align: right">
+            <h5 style="margin-bottom: 4px;">Total Amount <br/>&#x20b9;{{ total }}</h5>
+            <h6 style="margin-top: 0; font-weight: normal;">{{ request.user.first_name }}</h6>
         </div>
+    </div>
+    <div style="font-size: 8px; text-align: center; margin-top: 20px;">
+        Generated at {% now "d/m/Y h:i A" %}<br/>
     </div>
     <script src="/static/libs/jquery/jquery.min.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -187,6 +185,6 @@ tr:nth-child(2n) {
     <script src="/static/js/pages/datatables.init.js"></script>
 </body>
 <script>
-   window.print()
+    window.print()
 </script>
 </html>

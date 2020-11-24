@@ -156,6 +156,11 @@ tr:nth-child(2n) {
                             <td>{{ entry.bags }}</td>
                             <td>&#x20b9;{{ entry.price }}</td>
                         {% endfor %}
+                        {% for diff in log.diff %}
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        {% endfor %}
                         <td>&#x20b9;{{ log.total }}</td>
                     </tr>
                 {% endfor %}
@@ -182,7 +187,6 @@ tr:nth-child(2n) {
     <script src="/static/js/pages/datatables.init.js"></script>
 </body>
 <script>
-    
-   // window.print()
+    window.print()
 </script>
 </html>

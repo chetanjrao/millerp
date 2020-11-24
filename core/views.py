@@ -221,7 +221,18 @@ def truck_entry(request):
 
 @login_required
 @set_mill_session
-def truck_bill(request, truck):
+def truck_bill(request):
+    truck = Truck.objects.get(pk=request.GET["truck"], transporter__mill=request.mill)
+    from_date = request.GET.get('from', now().astimezone().strftime("%Y-%m-%d"))
+    to_date = request.GET.get('to', now().astimezone().strftime("%Y-%m-%d"))
+    logs = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, truck=truck, cmr__cmr_date__lte=to_date, is_deleted=False)
+    total = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, truck=truck, cmr__cmr_date__lte=to_date, is_deleted=False).aggregate(total=Sum('price'))["total"]
+    return render(request, "vbill.html", { "logs": logs, "total": total, "from": datetime.strptime(from_date, "%Y-%m-%d"), "to": datetime.strptime(to_date, "%Y-%m-%d"), "truck": truck })
+
+
+@login_required
+@set_mill_session
+def type_bill(request):
     entry_type = int(request.GET["type"])
     from_date = request.GET.get('from', now().astimezone().strftime("%Y-%m-%d"))
     to_date = request.GET.get('to', now().astimezone().strftime("%Y-%m-%d"))
@@ -236,18 +247,25 @@ def truck_bill(request, truck):
         current.setdefault("trucks", []).append(subs)
         if len(subs) > max_trucks:
             max_trucks = len(subs)
+        current['diff'] = range(max_trucks - len(subs))
         current["total"] = subs.aggregate(total=Sum('price'))["total"]
         logs.append(current)
     entry_type = "FCI" if entry_type == 1 else "NAN"
-    return render(request, "ebill.html", { "logs": logs, "max_trucks": range(max_trucks), "type": entry_type, "total": total, "from": datetime.strptime(from_date, "%Y-%m-%d"), "to": datetime.strptime(to_date, "%Y-%m-%d"), "truck": Truck.objects.get(pk=truck) })
-
+    return render(request, "ebill.html", { "logs": logs, "max_trucks": range(max_trucks), "type": entry_type, "total": total, "from": datetime.strptime(from_date, "%Y-%m-%d"), "to": datetime.strptime(to_date, "%Y-%m-%d") })
 
 @login_required
 @set_mill_session
-def transporter_bill(request, transporter):
+def bills(request):
+    transporters = Transporter.objects.filter(mill=request.mill, is_deleted=False)
+    trucks = Truck.objects.filter(transporter__in=transporters, is_deleted=False)
+    return render(request, "bills.html", { "transporters": transporters, "trucks": trucks })
+
+@login_required
+@set_mill_session
+def transporter_bill(request):
     from_date = request.GET.get('from', now().astimezone().strftime("%Y-%m-%d"))
     to_date = request.GET.get('to', now().astimezone().strftime("%Y-%m-%d"))
-    transporter = Transporter.objects.get(pk=transporter, mill=request.mill)
+    transporter = Transporter.objects.get(pk=request.GET["transporter"], mill=request.mill)
     entries = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, truck__transporter=transporter, cmr__cmr_date__lte=to_date, is_deleted=False).values('cmr', name=F('cmr__cmr_no')).annotate(Count('cmr')).values('name', 'cmr')
     total = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, cmr__cmr_date__lte=to_date, is_deleted=False).aggregate(total=Sum('price'))["total"]
     logs = []
@@ -259,6 +277,7 @@ def transporter_bill(request, transporter):
         current.setdefault("trucks", []).append(subs)
         if len(subs) > max_trucks:
             max_trucks = len(subs)
+        current['diff'] = range(max_trucks - len(subs))
         current["total"] = subs.aggregate(total=Sum('price'))["total"]
         logs.append(current)
     return render(request, "obill.html", { "logs": logs, "transporter": transporter, "max_trucks": range(max_trucks), "total": total, "from": datetime.strptime(from_date, "%Y-%m-%d"), "to": datetime.strptime(to_date, "%Y-%m-%d") })
