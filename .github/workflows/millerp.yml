@@ -1,0 +1,70 @@
+name: Mill ERP GitHub CI
+
+on:
+  push:
+    branches: [ master, dev, stable ]
+  pull_request:
+    branches: [ master, dev, stable ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+        - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3  
+    
+
+    strategy:
+      max-parallel: 2
+      matrix:
+        python-version: [3.6, 3.7]
+
+    env:
+        DEBUG: True
+        SECRET_KEY: 'SECRET_KEY'
+        DB_NAME: 'millerp'
+        DB_USER: 'root'
+        DB_PASS: 'root'
+        DB_HOST: '127.0.0.1'
+        DB_PORT: 3306
+        ALLOWED_HOSTS: localhost
+        CHROME: 'chrome'
+        CHROMEDRIVER: 'chromdriver'
+        HEIGHT_RATIO: 1
+        WIDTH_RATIO: 1
+        RZP_DEV_KEY: 'RZP_DEV'
+        RZP_DEV_SECRET: 'RZP_SECRET'
+        RZP_KEY: 'RZP_DEV'
+        RZP_SECRET: 'RZP_DEV'
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Verify MySQL connection from host
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mysql-client libmysqlclient-dev
+        mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports[3306] }} -uroot -proot -e "CREATE DATABASE fuelcharge COLLATE utf8_general_ci CHARACTER SET utf8;"
+        mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports[3306] }} -uroot -proot mysql
+    
+    - name: Setup Environment
+      run: |
+        cd millerp/settings/
+        env >> .env
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Run Tests
+      run: |
+        python manage.py test

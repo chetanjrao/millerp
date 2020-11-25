@@ -465,15 +465,11 @@ def export_to_excel(request):
     wb = xlsxwriter.Workbook(output)
     categories = Category.objects.filter(mill__code=request.millcode, is_deleted=False)
     title_format = wb.add_format({ "font_size": 24, "underline": True, "bold": True, "align": 'center' })
-    source_format = wb.add_format({ "bg_color": '#FFFF00', "bold": True, "font_size": 11, "align": 'center' })
+    source_format = wb.add_format({ "bg_color": '#FFFF00', "bold": True,  "font_size": 11, "align": 'center' })
     source_format.set_bold()
     source_format.set_text_v_align('vcenter')
     source_format.set_text_h_align('center')
     source_format.set_text_wrap()
-    color_format = wb.add_format({ "bg_color": '#FF7F00', "bold": True })
-    color_format.set_text_v_align('vcenter')
-    color_format.set_text_h_align('center')
-    color_format.set_text_wrap()
     normal_format = wb.add_format({ "align": 'center' })
     for category in categories:
         ws = wb.add_worksheet(category.name)
@@ -483,8 +479,8 @@ def export_to_excel(request):
         ws.merge_range(0, 0, 0, 2 * len(incoming_sources), "INCOMING", title_format)
         for i in range(0, len(incoming_sources), 1):
             ws.merge_range(1, 2 * i + 1, 1, 2 * i + 2, incoming_sources[i].name, source_format)
-            ws.write(2, 2 * i + 1, '(In Bags)', color_format)
-            ws.write(2, 2 * i + 2, '(In Qtl)', color_format)
+            ws.write(2, 2 * i + 1, '(In Bags)')
+            ws.write(2, 2 * i + 2, '(In Qtl)')
             for j, date in zip(range(day), daterange(start, end)):
                 ws.write(j+3, 0, '{}'.format(date.strftime("%d/%m/%Y")))
                 incoming = IncomingStockEntry.objects.filter(entry__is_deleted=False, category=category, source=incoming_sources[i], entry__date=date).values('source').annotate(bags=Coalesce(Sum('entry__bags'), 0), quantity=Coalesce(Sum('entry__quantity'), 0)).values('bags', 'quantity')
