@@ -38,8 +38,8 @@
                 <div class="card-body">
                     <div class="media">
                         <div class="media-body">
-                            <p class="text-muted font-weight-medium">Average Price <small>(per quintal)</small></p>
-                            <h4 id="bg_remaining" class="mb-0">&#x20b9;{{ average_price }}</h4>
+                            <p class="text-muted font-weight-medium">Total Stock <small>(in quintals)</small></p>
+                            <h4 id="bg_remaining" class="mb-0">{{ total.total }}</h4>
                         </div>
                     </div>
                 </div>
@@ -50,8 +50,8 @@
                 <div class="card-body">
                     <div class="media">
                         <div class="media-body">
-                            <p class="text-muted font-weight-medium">Average Price <small>(per quintal)</small></p>
-                            <h4 id="bg_remaining" class="mb-0">&#x20b9;{{ average_price }}</h4>
+                            <p class="text-muted font-weight-medium">Total Price <small>(per &#x20b9;)</small></p>
+                            <h4 id="bg_remaining" class="mb-0">&#x20b9;{{ total.price }}</h4>
                         </div>
                     </div>
                 </div>
@@ -140,8 +140,9 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Bags</th>
-                                <th>Total Weight</th>
-                                <th>Price</th>
+                                <th>Total Weight <small>(in qtls)</small></th>
+                                <th>Price per quintal</th>
+                                <th>Total Price</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -221,7 +222,7 @@
                                 </form>
                             </div>
                                 <tr>
-                                    <td><span style="display:none;">{{ trade.entry.date|date:"U" }}</span>{{trade.entry.date}}</td>
+                                    <td><span style="display:none;">{{ trade.entry.date|date:"U" }}</span>{{trade.entry.date|date:"d-m-Y"}}</td>
                                     {% if trade.entry.bags > 0 %}
                                         <td class="text-success"><strong>{{trade.entry.bags|floatformat:0}}</strong></td>
                                     {% else %}
@@ -232,7 +233,8 @@
                                     {% else %}
                                         <td>{{trade.entry.quantity|abs}}</td>
                                     {% endif %}
-                                    <td>&#x20b9;{{ trade.price }}</td>
+                                    <td>&#x20b9;{{ trade.price|abs }}</td>
+                                    <td>&#x20b9;{{ trade.total|abs }}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                             data-target="#editModal{{trade.pk}}">

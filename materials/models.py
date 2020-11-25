@@ -74,3 +74,7 @@ class Trading(models.Model):
     mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='materials')
     created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total(self):
+        return round(self.price * self.entry.quantity, 2)

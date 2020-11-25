@@ -396,7 +396,8 @@ def trading(request: WSGIRequest):
     trading = Trading.objects.filter(mill__code=request.millcode, entry__is_deleted=False)
     quantity = trading.values().aggregate(quantity=Sum('entry__quantity'), bags=Sum('entry__bags'))
     average_weight = 0 if quantity['quantity'] is None else quantity['quantity'] * 100 / quantity['bags'] if quantity['bags'] is not None and quantity['bags'] > 0 else 1
-    average_price = Trading.objects.filter(mill=request.mill, entry__is_deleted=False).aggregate(total=Sum('entry__quantity'), price=Sum(F('price') * F('entry__quantity') / Func(F('entry__quantity'), function='ABS')))
+    average_price = Trading.objects.filter(mill=request.mill, entry__is_deleted=False).aggregate(total=Sum('entry__quantity'), price=Sum(F('price') * F('entry__quantity')))
+    total = average_price
     average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
     if request.method == "POST":
         action = int(request.POST["action"])
@@ -406,20 +407,38 @@ def trading(request: WSGIRequest):
             bags = int(quantity * 100 / average_weight)
             entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, date=datetime.now().astimezone().date(), remarks='Sold {} - {} quintal for \u20b9{}/- per/qtl'.format(bags, quantity, price))
             Trading.objects.create(entry=entry, price=price, mill=mill, created_by=request.user)
-            return render(request, "materials/trading.html", { "average_price": average_price, "trading": trading, "categories": categories, "success_message": "Trading record created successfully" })
+            trading = Trading.objects.filter(mill__code=request.millcode, entry__is_deleted=False)
+            quantity = trading.values().aggregate(quantity=Sum('entry__quantity'), bags=Sum('entry__bags'))
+            average_weight = 0 if quantity['quantity'] is None else quantity['quantity'] * 100 / quantity['bags'] if quantity['bags'] is not None and quantity['bags'] > 0 else 1
+            average_price = Trading.objects.filter(mill=request.mill, entry__is_deleted=False).aggregate(total=Sum('entry__quantity'), price=Sum(F('price') * Func(F('entry__quantity'), function='ABS')))
+            total = average_price
+            average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
+            return render(request, "materials/trading.html", { "total": total, "average_price": average_price, "trading": trading, "categories": categories, "success_message": "Trading record created successfully" })
         elif action == 2:
             price = float(request.POST["price"])
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
             trade.price = price
             trade.save()
-            return render(request, "materials/trading.html", { "average_price": average_price, "trading": trading, "categories": categories, "success_message": "Trading record updated successfully" })
+            trading = Trading.objects.filter(mill__code=request.millcode, entry__is_deleted=False)
+            quantity = trading.values().aggregate(quantity=Sum('entry__quantity'), bags=Sum('entry__bags'))
+            average_weight = 0 if quantity['quantity'] is None else quantity['quantity'] * 100 / quantity['bags'] if quantity['bags'] is not None and quantity['bags'] > 0 else 1
+            average_price = Trading.objects.filter(mill=request.mill, entry__is_deleted=False).aggregate(total=Sum('entry__quantity'), price=Sum(F('price') * Func(F('entry__quantity'), function='ABS')))
+            total = average_price
+            average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
+            return render(request, "materials/trading.html", { "total": total, "average_price": average_price, "trading": trading, "categories": categories, "success_message": "Trading record updated successfully" })
         elif action == 3:
             trade = Trading.objects.get(pk=request.POST["trade"], entry__is_deleted=False)
             trade.entry.is_deleted = True
             trade.entry.save()
             trade.save()
-            return render(request, "materials/trading.html", { "average_price": average_price, "trading": trading, "categories": categories, "success_message": "Trading record deleted successfully", "quantity": quantity })
-    return render(request, "materials/trading.html", { "average_price": average_price, "trading": trading, "categories": categories, "quantity": quantity })
+            trading = Trading.objects.filter(mill__code=request.millcode, entry__is_deleted=False)
+            quantity = trading.values().aggregate(quantity=Sum('entry__quantity'), bags=Sum('entry__bags'))
+            average_weight = 0 if quantity['quantity'] is None else quantity['quantity'] * 100 / quantity['bags'] if quantity['bags'] is not None and quantity['bags'] > 0 else 1
+            average_price = Trading.objects.filter(mill=request.mill, entry__is_deleted=False).aggregate(total=Sum('entry__quantity'), price=Sum(F('price') * Func(F('entry__quantity'), function='ABS')))
+            total = average_price
+            average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
+            return render(request, "materials/trading.html", { "total": total, "average_price": average_price, "trading": trading, "categories": categories, "success_message": "Trading record deleted successfully", "quantity": quantity })
+    return render(request, "materials/trading.html", { "total": total, "average_price": average_price, "trading": trading, "categories": categories, "quantity": quantity })
 
 @login_required
 @set_mill_session
