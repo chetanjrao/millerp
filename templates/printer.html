@@ -158,6 +158,9 @@
             url: url,
             data: form.serialize(),
             success: function(data){
+                if(data.length == 0){
+                    fireError()
+                }
                 $('.link').attr("href", data) 
                 $('.loader2').hide()
                 $('#button').removeAttr("disabled")
