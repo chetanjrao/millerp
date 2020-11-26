@@ -282,7 +282,6 @@ def transporter_bill(request):
         logs.append(current)
     return render(request, "obill.html", { "logs": logs, "transporter": transporter, "max_trucks": range(max_trucks), "total": total, "from": datetime.strptime(from_date, "%Y-%m-%d"), "to": datetime.strptime(to_date, "%Y-%m-%d") })
 
-
 @login_required
 @set_mill_session
 def entry_logs(request):

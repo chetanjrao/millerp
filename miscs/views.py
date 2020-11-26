@@ -141,10 +141,24 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 table: Tag = parser.find_all('table')[-1]
                 rows = table.find_all('tr')[1:-1]
                 agreements = {}
+                today = now().date().strftime("%d/%m/%Y")
+                total_dos = 0
+                dos = {
+                    "m": 0,
+                    "mm": 0,
+                    "sr": 0,
+                }
                 for row in rows:
                     element = row.find_all('td')
                     agreements.setdefault('{}'.format(element[4].text), []).append(element[1].text)
+                    if element[3].text == today:
+                        total_dos += 1
+                        dos["m"] += float(element[5].text)
+                        dos["mm"] += float(element[6].text)
+                        dos["sr"] += float(element[10].text)
                 response["agreements"] = agreements
+                response["dos"] = dos
+                response["total_dos"] = total_dos
                 break
             except NoSuchElementException:
                 continue
@@ -423,6 +437,7 @@ def get_guarantee(request: WSGIRequest):
     options = Options()
     firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
     cached_response = cache.get("{}".format(firm.username))
+    cached_response = None
     if cached_response is None or cached_response is {}:
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')

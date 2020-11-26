@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from datetime import datetime, timedelta
 from core.decorators import set_mill_session
 from .models import IncomingProductEntry, ProductCategory, ProductStock, ProductionType, OutgoingProductEntry, Stock, Trading, TradingSource
-from core.models import Mill
+from core.models import Mill, Rice
 
 
 @login_required
@@ -473,5 +473,27 @@ def export_to_excel(request):
     wb.close()
     output.seek(0)
     response = HttpResponse(output ,content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="Rice Stock Details - {}.xlsx"'.format(datetime.now().date())
+    response['Content-Disposition'] = 'attachment; filename="Rice Stock Details - {} - {}.xlsx"'.format(start.date(), end.date())
+    return response
+
+
+
+@login_required
+@set_mill_session
+def analysis(request):
+    output = io.BytesIO()
+    start = datetime.strptime(request.GET["from"], "%Y-%m-%d")
+    end = datetime.strptime(request.GET["to"], "%Y-%m-%d")
+    gross = 0
+    rice = request.GET["rice"]
+    rice = Rice.objects.get(pk=rice)
+    paddy_categories = Category.objects.filter(mill=request.mill, is_deleted=False)
+    rice_categories = ProductCategory.objects.filter(rice=rice, mill=request.mill, is_deleted=False)
+    for paddy in paddy_categories:
+        pass
+    wb = xlsxwriter.Workbook(output)
+    wb.close()
+    output.seek(0)
+    response = HttpResponse(output ,content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="Rice Stock Details - {} - {}.xlsx"'.format(start.date(), end.date())
     return response
