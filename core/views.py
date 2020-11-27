@@ -236,8 +236,8 @@ def type_bill(request):
     entry_type = int(request.GET["type"])
     from_date = request.GET.get('from', now().astimezone().strftime("%Y-%m-%d"))
     to_date = request.GET.get('to', now().astimezone().strftime("%Y-%m-%d"))
-    entries = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, entry_type=entry_type, cmr__cmr_date__lte=to_date, is_deleted=False).values('cmr', name=F('cmr__cmr_no')).annotate(Count('cmr')).values('name', 'cmr')
-    total = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, entry_type=entry_type, cmr__cmr_date__lte=to_date, is_deleted=False).aggregate(total=Sum('price'))["total"]
+    entries = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, cmr__mill=request.mill, entry_type=entry_type, cmr__cmr_date__lte=to_date, is_deleted=False).values('cmr', name=F('cmr__cmr_no')).annotate(Count('cmr')).values('name', 'cmr')
+    total = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, cmr__mill=request.mill, entry_type=entry_type, cmr__cmr_date__lte=to_date, is_deleted=False).aggregate(total=Sum('price'))["total"]
     logs = []
     max_trucks = 0
     for entry in entries:
