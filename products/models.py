@@ -9,6 +9,7 @@ class ProductCategory(models.Model):
     name = models.CharField(max_length=64)
     rice = models.ForeignKey(to=Rice, on_delete=models.PROTECT)
     is_deleted = models.BooleanField(default=False)
+    is_biproduct = models.BooleanField(default=False)
     mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)

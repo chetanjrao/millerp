@@ -1,5 +1,5 @@
 from accounts.models import User
-from core.models import Mill
+from core.models import Mill, Rice
 from django.db import models
 
 
@@ -31,6 +31,7 @@ class OutgoingSource(models.Model):
 class ProcessingSide(models.Model):
     name = models.CharField(max_length=64)
     mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    rice = models.ForeignKey(to=Rice, on_delete=models.CASCADE)
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)

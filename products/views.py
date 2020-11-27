@@ -1,9 +1,10 @@
 import io
+import re
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.fields import FloatField, IntegerField
 from django.db.models.functions.comparison import Coalesce
 import xlsxwriter
-from materials.models import Category
+from materials.models import Category, ProcessingSide, ProcessingSideEntry
 from django.db.models.aggregates import Sum
 from django.db.models.expressions import F, Func
 from django.http.response import HttpResponse, JsonResponse
@@ -488,12 +489,90 @@ def analysis(request):
     rice = request.GET["rice"]
     rice = Rice.objects.get(pk=rice)
     paddy_categories = Category.objects.filter(mill=request.mill, is_deleted=False)
-    rice_categories = ProductCategory.objects.filter(rice=rice, mill=request.mill, is_deleted=False)
-    for paddy in paddy_categories:
-        pass
+    paddy_gross = []
     wb = xlsxwriter.Workbook(output)
+    ws = wb.add_worksheet("{} Analysis".format(rice.name))
+    source_format = wb.add_format({ "bold": True,  "font_size": 11, "align": 'center' })
+    source_format.set_bold()
+    source_format.set_border()
+    source_format.set_text_wrap()
+    normal_format = wb.add_format({ "align": 'center' })
+    bold_format = wb.add_format({ "align": 'center' })
+    bold_format.set_bold()
+    ws.set_column(0, 0, width=len('Purchased from outside'))
+    ws.write(1, 0, 'Particulars', source_format)
+    ws.write(4, 0, 'Total Production', bold_format)
+    ws.write(5, 0, 'Closing Stock', bold_format)
+    ws.write(6, 0, 'Opening Stock', bold_format)
+    ws.write(7, 0, 'Purchased from outside', bold_format)
+    ws.write(9, 0, 'Net Production', bold_format)
+    ws.write(10, 0, 'Gross Total', bold_format)
+    for i, paddy in enumerate(paddy_categories):
+        ws.set_column(i+1, i+1, width=len('{} processed'.format(paddy.name)))
+        ws.write(1, i + 1, '{} processed'.format(paddy.name), source_format)
+        ws.write(2, i + 1, '(in Qtls)', bold_format)
+        stock = ProcessingSideEntry.objects.filter(source__rice=rice, category=paddy, entry__is_deleted=False, entry__date__gte=start, entry__date__lte=end).aggregate(bags=Func(Coalesce(Sum('entry__quantity'), 0), function='ABS'))["bags"]
+        closing_stock = float(request.GET.get("paddy{}".format(paddy.pk), 0))
+        ws.write(4, i + 1, round(stock, 2), normal_format)
+        ws.write(5, i + 1, round(closing_stock, 2), normal_format)
+        ws.write(6, i + 1, '-', normal_format)
+        ws.write(7, i + 1, '-', normal_format)
+        ws.write(9, i + 1, round(stock - closing_stock, 2), source_format)
+        paddy_gross.append(round(stock - closing_stock, 2))
+    ws.merge_range(10, 1, 10, len(paddy_categories), round(sum(paddy_gross), 2), source_format)
+    avgs = []
+    rice_categories = ProductCategory.objects.filter(rice=rice, is_biproduct=False, mill=request.mill, is_deleted=False)
+    gross = round(sum(paddy_gross), 2)
+    for i, _rice in enumerate(rice_categories):
+        ws.set_column(len(paddy_categories) + i + 2, len(paddy_categories) + i + 3, width=len('{}'.format(_rice.name)))
+        ws.write(1, len(paddy_categories) + i + 2, '{}'.format(_rice.name), source_format)
+        ws.write(2, len(paddy_categories) + i + 2, '(in Qtls)', bold_format)
+        ws.write(1, len(paddy_categories) + i + 3, 'PDS', source_format)
+        ws.write(2, len(paddy_categories) + i + 3, '(in Qtls)', bold_format)
+        stock = IncomingProductEntry.objects.filter(category__rice=rice, category=_rice, entry__date__gte=start, entry__is_deleted=False, entry__date__lte=end).aggregate(bags=Func(Coalesce(Sum(Coalesce(F('entry__bags'), 0) * Coalesce(F('product__quantity'), 0) / 100, output_field=FloatField()), 0), function='ABS'))["bags"]
+        opening_stock = IncomingProductEntry.objects.filter(category__rice=rice, category=_rice, entry__is_deleted=False, entry__date__lt=start).aggregate(bags=Func(Coalesce(Sum(Coalesce(F('entry__bags'), 0) * Coalesce(F('product__quantity'), 0) / 100, output_field=FloatField()), 0), function='ABS'))["bags"]
+        outside_stock = Trading.objects.filter(source__category__rice=rice, source__category=_rice, entry__is_deleted=False, entry__bags__gt=0).aggregate(bags=Func(Coalesce(Sum(Coalesce(F('entry__bags'), 0) * Coalesce(F('source__quantity'), 0) / 100, output_field=FloatField()), 0), function='ABS'))["bags"]
+        closing_stock = float(request.GET.get("product{}".format(_rice.pk), 0))
+        ws.write(4, len(paddy_categories) + i + 2, round(stock, 2), normal_format)
+        ws.write(5, len(paddy_categories) + i + 2, round(closing_stock, 2), normal_format)
+        ws.write(6, len(paddy_categories) + i + 2, round(opening_stock, 2), normal_format)
+        ws.write(7, len(paddy_categories) + i + 2, round(outside_stock, 2), normal_format)
+        calc = stock + closing_stock - opening_stock - outside_stock
+        ws.write(9, len(paddy_categories) + i + 2, round(calc, 2), source_format)
+        pds_stock = IncomingProductEntry.objects.filter(category__rice=rice, category__is_biproduct=False, product__is_external=True, category=_rice, entry__is_deleted=False, entry__date__gte=start, entry__date__lte=end).aggregate(bags=Func(Coalesce(Sum(Coalesce(F('entry__bags'), 0) * Coalesce(F('product__quantity'), 0) / 100, output_field=FloatField()), 0), function='ABS'))["bags"]
+        proper_stock = IncomingProductEntry.objects.filter(category__rice=rice, category__is_biproduct=False, category=_rice, entry__date__gte=start, entry__is_deleted=False, entry__date__lte=end).aggregate(bags=Func(Coalesce(Sum(Coalesce(F('entry__bags'), 0) * Coalesce(F('product__quantity'), 0) / 100, output_field=FloatField()), 0), function='ABS'))["bags"]
+        pds_opening_stock = IncomingProductEntry.objects.filter(category__rice=rice, category=_rice, entry__is_deleted=False, entry__date__lt=start).aggregate(bags=Func(Coalesce(Sum(Coalesce(F('entry__bags'), 0) * Coalesce(F('product__quantity'), 0) / 100, output_field=FloatField()), 0), function='ABS'))["bags"]
+        pds_closing_stock = float(request.GET.get("pds{}".format(_rice.pk), 0))
+        ws.write(5, len(paddy_categories) + i + 3, round(pds_closing_stock, 2), normal_format)
+        ws.write(6, len(paddy_categories) + i + 3, round(pds_opening_stock, 2), normal_format)
+        ws.write(7, len(paddy_categories) + i + 3, round(0, 2), normal_format)
+        ws.write(4, len(paddy_categories) + i + 3, round(pds_stock, 2), normal_format)
+        average = round((proper_stock - pds_stock) * 100 / (gross if gross > 0 else 1), 2)
+        avgs.append(average)
+        pds_calc = pds_stock + pds_closing_stock - pds_opening_stock
+        ws.write(9, len(paddy_categories) + i + 3, round(pds_calc, 2), source_format)
+        ws.write(11, len(paddy_categories) + i + 2, '{}%'.format(average), source_format)
+    biproducts = ProductCategory.objects.filter(rice=rice, is_biproduct=True, mill=request.mill, is_deleted=False)
+    for i, _rice in enumerate(biproducts):
+        ws.set_column(len(paddy_categories) + len(rice_categories) + i + 2, len(paddy_categories) + len(rice_categories) + i + 3, width=len('{}'.format(_rice.name)))
+        ws.write(1, len(paddy_categories) + len(rice_categories) + i + 2, '{}'.format(_rice.name), source_format)
+        ws.write(2, len(paddy_categories) + len(rice_categories) + i + 2, '(in Qtls)', bold_format)
+        stock = IncomingProductEntry.objects.filter(category__rice=rice, category=_rice, entry__date__gte=start, entry__is_deleted=False, entry__date__lte=end).aggregate(bags=Func(Coalesce(Sum(Coalesce(F('entry__bags'), 0) * Coalesce(F('product__quantity'), 0) / 100, output_field=FloatField()), 0), function='ABS'))["bags"]
+        opening_stock = IncomingProductEntry.objects.filter(category__rice=rice, category=_rice, entry__is_deleted=False, entry__date__lt=start).aggregate(bags=Func(Coalesce(Sum(Coalesce(F('entry__bags'), 0) * Coalesce(F('product__quantity'), 0) / 100, output_field=FloatField()), 0), function='ABS'))["bags"]
+        outside_stock = Trading.objects.filter(source__category__rice=rice, source__category=_rice, entry__is_deleted=False, entry__bags__gt=0).aggregate(bags=Func(Coalesce(Sum(Coalesce(F('entry__bags'), 0) * Coalesce(F('source__quantity'), 0) / 100, output_field=FloatField()), 0), function='ABS'))["bags"]
+        closing_stock = float(request.GET.get("product{}".format(_rice.pk), 0))
+        ws.write(4, len(paddy_categories) + len(rice_categories) + i + 2, round(stock, 2), normal_format)
+        ws.write(5, len(paddy_categories) + len(rice_categories) + i + 2, round(closing_stock, 2), normal_format)
+        ws.write(6, len(paddy_categories) + len(rice_categories) + i + 2, round(opening_stock, 2), normal_format)
+        ws.write(7, len(paddy_categories) + len(rice_categories) + i + 2, round(outside_stock, 2), normal_format)
+        calc = stock + closing_stock - opening_stock - outside_stock
+        average = round(calc * 100 / gross, 2)
+        avgs.append(average)
+        ws.write(9, len(paddy_categories) + len(rice_categories) + i + 2, round(calc, 2), source_format)
+        ws.write(11, len(paddy_categories) + len(rice_categories) + i + 2, '{}%'.format(avgs), source_format)
+    ws.write(13, len(paddy_categories) + len(rice_categories), '{}%'.format(sum(avgs)))
     wb.close()
     output.seek(0)
     response = HttpResponse(output ,content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="Rice Stock Details - {} - {}.xlsx"'.format(start.date(), end.date())
+    response['Content-Disposition'] = 'attachment; filename="Analysis - {} - {}.xlsx"'.format(start.strftime("%d-%m-%Y"), end.strftime("%d-%m-%Y"))
     return response

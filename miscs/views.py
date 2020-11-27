@@ -437,7 +437,6 @@ def get_guarantee(request: WSGIRequest):
     options = Options()
     firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
     cached_response = cache.get("{}".format(firm.username))
-    cached_response = None
     if cached_response is None or cached_response is {}:
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
