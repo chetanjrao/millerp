@@ -240,6 +240,8 @@ def type_bill(request):
     total = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, cmr__mill=request.mill, entry_type=entry_type, cmr__cmr_date__lte=to_date, is_deleted=False).aggregate(total=Sum('price'))["total"]
     logs = []
     max_trucks = 0
+    diff = cmr_entry.objects.filter(entry_type=entry_type, cmr__cmr_date__gte=from_date, cmr__cmr_date__lte=to_date, is_deleted=False).values('cmr__pk').annotate(count=Count('cmr__pk')).values('count').order_by('-count')
+    diff = diff[0]["count"] if len(diff) > 0 else 0
     for entry in entries:
         current = {}
         current["info"] = cmr.objects.get(pk=entry["cmr"], mill=request.mill, is_deleted=False)
@@ -247,7 +249,7 @@ def type_bill(request):
         current.setdefault("trucks", []).append(subs)
         if len(subs) > max_trucks:
             max_trucks = len(subs)
-        current['diff'] = range(max_trucks - len(subs))
+        current['diff'] = range(diff - len(subs))
         current["total"] = subs.aggregate(total=Sum('price'))["total"]
         logs.append(current)
     entry_type = "FCI" if entry_type == 1 else "NAN"
@@ -266,18 +268,20 @@ def transporter_bill(request):
     from_date = request.GET.get('from', now().astimezone().strftime("%Y-%m-%d"))
     to_date = request.GET.get('to', now().astimezone().strftime("%Y-%m-%d"))
     transporter = Transporter.objects.get(pk=request.GET["transporter"], mill=request.mill)
-    entries = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, truck__transporter=transporter, cmr__cmr_date__lte=to_date, is_deleted=False).values('cmr', name=F('cmr__cmr_no')).annotate(Count('cmr')).values('name', 'cmr')
-    total = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, cmr__cmr_date__lte=to_date, is_deleted=False).aggregate(total=Sum('price'))["total"]
+    entries = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, truck__transporter=transporter, cmr__mill=request.mill, cmr__cmr_date__lte=to_date, is_deleted=False).values('cmr', name=F('cmr__cmr_no')).annotate(Count('cmr')).values('name', 'cmr')
+    total = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, cmr__mill=request.mill, cmr__cmr_date__lte=to_date, is_deleted=False).aggregate(total=Sum('price'))["total"]
     logs = []
     max_trucks = 0
+    diff = cmr_entry.objects.filter(cmr__cmr_date__gte=from_date, cmr__mill=request.mill, cmr__cmr_date__lte=to_date, is_deleted=False).values('cmr__pk').annotate(count=Count('cmr__pk')).values('count').order_by('-count')
+    diff = diff[0]["count"] if len(diff) > 0 else 0
     for entry in entries:
         current = {}
         current["info"] = cmr.objects.get(pk=entry["cmr"], mill=request.mill, is_deleted=False)
-        subs = cmr_entry.objects.filter(cmr__pk=entry["cmr"], cmr__cmr_date__gte=from_date, cmr__cmr_date__lte=to_date, is_deleted=False)
+        subs = cmr_entry.objects.filter(cmr__pk=entry["cmr"], cmr__mill=request.mill, cmr__cmr_date__gte=from_date, cmr__cmr_date__lte=to_date, is_deleted=False)
         current.setdefault("trucks", []).append(subs)
         if len(subs) > max_trucks:
             max_trucks = len(subs)
-        current['diff'] = range(max_trucks - len(subs))
+        current['diff'] = range(diff - len(subs))
         current["total"] = subs.aggregate(total=Sum('price'))["total"]
         logs.append(current)
     return render(request, "obill.html", { "logs": logs, "transporter": transporter, "max_trucks": range(max_trucks), "total": total, "from": datetime.strptime(from_date, "%Y-%m-%d"), "to": datetime.strptime(to_date, "%Y-%m-%d") })
