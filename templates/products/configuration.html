@@ -79,6 +79,12 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="form-group col-md-10">
+                                        <div class="custom-control custom-checkbox">
+                                            <input name="biproduct" type="checkbox" value="1" class="custom-control-input" id="biproduct">
+                                            <label class="custom-control-label" for="biproduct" >Is this a biproduct of rice ? <small>(Ex. Broken Rice, Kanda)</small></label>
+                                        </div>
+                                    </div>
 
                                 </div>
                             </div>
@@ -147,7 +153,12 @@
                                                             </div>
                                                         </div>
                                                     </div>
-
+                                                    <div class="col-md-10">
+                                                        <div class="custom-control custom-checkbox">
+                                                            <input name="biproduct" type="checkbox" value="1" class="custom-control-input" {% if cat.biproduct %}checked{% endif %} id="biproduct{{type.pk}}">
+                                                            <label class="custom-control-label" for="biproduct{{type.pk}}">Is this a biproduct of rice ? <small>(Ex. Broken Rice, Kanda)</small></label>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
