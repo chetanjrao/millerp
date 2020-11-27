@@ -9,7 +9,7 @@ from rest_framework.views import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from xlsxwriter import workbook
 from core.decorators import set_mill_session
-from core.models import Mill
+from core.models import Mill, Rice
 from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry, Stock, Trading
 from datetime import datetime, timedelta
 from django.utils.timezone import datetime
@@ -329,7 +329,8 @@ def configuration(request):
             return redirect("materials-configuration", millcode=request.millcode)
         elif action == 3:
             name = request.POST.get('name')
-            ProcessingSide.objects.create(name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            rice = Rice.objects.get(pk=request.POST["rice"])
+            ProcessingSide.objects.create(name=name, mill=mill, rice=rice, created_by=request.user, created_at=datetime.now())
             return redirect("materials-configuration", millcode=request.millcode)
     return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides})
 
@@ -379,6 +380,7 @@ def configurationAction(request, id):
             name = request.POST.get('name')
             if len(name) > 0:
                 obj = ProcessingSide.objects.get(id=id)
+                obj.rice = Rice.objects.get(pk=request.POST["rice"])
                 obj.name = name
                 obj.save()
                 return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Processing side updated successfully"})

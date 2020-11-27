@@ -1,4 +1,7 @@
 {% extends 'base.html' %}
+{% block corestyles %}
+<link href="/static/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+{% endblock %}
 {% block extralinks %}
 <link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
 <link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
@@ -453,6 +456,14 @@
                                                 processing side name is invalid
                                             </div>
                                         </div>
+                                        <div class="form-group">
+                                            <label for="#">Choose Rice Type</label>
+                                            <select name="rice" class="select2">
+                                                {% for rice in request.rices %}
+                                                    <option value="{{ rice.pk }}">{{ rice.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
                                     </div>
 
                                 </div>
@@ -486,6 +497,7 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
+                                <th>Rice Type</th>
                                 <th>Created by</th>
                                 <th>Actions</th>
                             </tr>
@@ -520,6 +532,14 @@
                                                             <div class="invalid-feedback">
                                                                 processing side name is invalid
                                                             </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="#">Choose Rice Type</label>
+                                                            <select name="rice" class="select2">
+                                                                {% for rice in request.rices %}
+                                                                    <option value="{{ rice.pk }}" {% if rice.pk == side.rice.pk %}selected{% endif %}>{{ rice.name }}</option>
+                                                                {% endfor %}
+                                                            </select>
                                                         </div>
                                                     </div>
 
@@ -572,6 +592,7 @@
                             </div>
                             <tr>
                                 <td>{{ side.name }}</td>
+                                <td>{{ side.rice.name }}</td>
                                 <td>{{ side.created_by.first_name }}</td>
                                 <td>
                                     <a href="#" class="btn btn-primary btn-sm" data-toggle="modal"
@@ -615,6 +636,7 @@
 <script src="/static/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
 <script src="/static/libs/node-waves/waves.min.js"></script>
 <script src="/static/libs/parsleyjs/parsley.min.js"></script>
+<script src="/static/libs/select2/js/select2.min.js"></script>
 
 <!-- apexcharts -->
 <script src="/static/libs/apexcharts/apexcharts.min.js"></script>
@@ -633,6 +655,9 @@
     })
     $('#bdatatable').DataTable({
 
+    })
+    $('.select2').select2({
+        width: '100%'
     })
 </script>
 {% endblock %}
