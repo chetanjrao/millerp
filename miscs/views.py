@@ -415,7 +415,7 @@ def get_cmr_status(request: WSGIRequest):
         agreement = request.POST["agreement"]
         firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
         cached_response = cache.get("{}cmr".format(agreement.strip()))
-        if cached_response is None or cached_response == {}:
+        if cached_response is None or json.loads(cached_response) == {}:
             options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             options.binary_location = CHROME
