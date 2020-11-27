@@ -117,6 +117,7 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
+                                <th>Is a Biproduct of Rice?</th>
                                 <th>Created by</th>
                                 <th>Actions</th>
                             </tr>
@@ -155,8 +156,8 @@
                                                     </div>
                                                     <div class="col-md-10">
                                                         <div class="custom-control custom-checkbox">
-                                                            <input name="biproduct" type="checkbox" value="1" class="custom-control-input" {% if cat.biproduct %}checked{% endif %} id="biproduct{{type.pk}}">
-                                                            <label class="custom-control-label" for="biproduct{{type.pk}}">Is this a biproduct of rice ? <small>(Ex. Broken Rice, Kanda)</small></label>
+                                                            <input name="biproduct" type="checkbox" value="1" class="custom-control-input" {% if cat.is_biproduct %}checked{% endif %} id="biproduct{{cat.pk}}">
+                                                            <label class="custom-control-label" for="biproduct{{cat.pk}}">Is this a biproduct of rice ? <small>(Ex. Broken Rice, Kanda)</small></label>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -207,6 +208,7 @@
                             </div>
                             <tr>
                                 <td>{{ cat.name }}</td>
+                                <td>{{ cat.is_biproduct }}</td>
                                 <td>{{ cat.created_by.first_name }}</td>
                                 <td>
                                     <a href="#" class="btn btn-primary btn-sm" data-toggle="modal"

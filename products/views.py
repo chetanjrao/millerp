@@ -148,7 +148,9 @@ def configuration(request):
         action = int(request.POST.get('action', '0'))
         if action == 1:
             name = request.POST.get('name')
-            ProductCategory.objects.create(name=name, mill=mill, rice=request.rice, created_by=request.user, created_at=datetime.now())
+            biproduct = request.POST.get("biproduct", False)
+            print(biproduct)
+            ProductCategory.objects.create(name=name, is_biproduct=biproduct, mill=mill, rice=request.rice, created_by=request.user, created_at=datetime.now())
             return redirect("products-configuration", millcode=request.millcode)
         elif action == 2:
             try:
@@ -197,6 +199,8 @@ def configurationAction(request, id):
             name = request.POST.get('name')
             if len(name) > 0:
                 obj = ProductCategory.objects.get(id=id)
+                biproduct = request.POST.get("biproduct", False)
+                obj.is_biproduct = biproduct
                 obj.name = name
                 obj.save()
                 return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "success_message": "Category updated successfully"})
