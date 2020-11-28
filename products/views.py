@@ -528,7 +528,7 @@ def analysis(request):
     rice_categories = ProductCategory.objects.filter(rice=rice, is_biproduct=False, mill=request.mill, is_deleted=False)
     gross = round(sum(paddy_gross), 2)
     for i, _rice in enumerate(rice_categories):
-        ws.set_column(len(paddy_categories) + i + 2, len(paddy_categories) + i + 3, width=len('{}'.format(_rice.name)))
+        ws.set_column(len(paddy_categories) + i + 2, len(paddy_categories) + i + 3, width=36)
         ws.write(1, len(paddy_categories) + i + 2, '{}'.format(_rice.name), source_format)
         ws.write(2, len(paddy_categories) + i + 2, '(in Qtls)', bold_format)
         ws.write(1, len(paddy_categories) + i + 3, 'PDS', source_format)
@@ -558,7 +558,7 @@ def analysis(request):
         ws.write(11, len(paddy_categories) + i + 2, '{}%'.format(average), source_format)
     biproducts = ProductCategory.objects.filter(rice=rice, is_biproduct=True, mill=request.mill, is_deleted=False)
     for i, _rice in enumerate(biproducts):
-        ws.set_column(len(paddy_categories) + len(rice_categories) + i + 2, len(paddy_categories) + len(rice_categories) + i + 3, width=len('{}'.format(_rice.name)))
+        ws.set_column(len(paddy_categories) + len(rice_categories) + i + 2, len(paddy_categories) + len(rice_categories) + i + 3, width=36)
         ws.write(1, len(paddy_categories) + len(rice_categories) + i + 2, '{}'.format(_rice.name), source_format)
         ws.write(2, len(paddy_categories) + len(rice_categories) + i + 2, '(in Qtls)', bold_format)
         stock = IncomingProductEntry.objects.filter(category__rice=rice, category=_rice, entry__date__gte=start, entry__is_deleted=False, entry__date__lte=end).aggregate(bags=Func(Coalesce(Sum(Coalesce(F('entry__bags'), 0) * Coalesce(F('product__quantity'), 0) / 100, output_field=FloatField()), 0), function='ABS'))["bags"]

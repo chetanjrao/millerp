@@ -44,6 +44,46 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title">Analysis Report</div>
+                    <form method="GET" class="mt-4" action="{% url 'analysis' millcode=request.millcode %}">
+                        <div class="row col-md-12">
+                            <div class="form-group col-md-6">
+                                <label for="" class="control-label">Choose date range</label>
+                                <div class="col-md-12">
+                                    <div class="input-daterange input-group" data-date-format="yyyy-mm-dd" data-date-autoclose="true" data-provide="datepicker">
+                                        <input autocomplete="off" type="text" class="form-control" name="from">
+                                        <input type="text" autocomplete="off" class="form-control" name="to">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="" class="control-label">Choose Rice Type</label>
+                                <div class="col-md-12">
+                                    <select name="rice" class="rices">
+                                        {% for rice in rices %}
+                                            <option value="{{ rice.pk }}">{{ rice.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-title mt-4 pt-2">Paddy Closing Stock <small>(Paddy in Dheri + Handi + Truck)</small></div>
+                        <div class="row">
+                            {% for material in materials %}
+                                <div class="form-group col-md-3 mt-2">
+                                    <label for="">{{ material.name }}</label>
+                                    <input class="form-control" type="number" step="any" name="paddy{{ material.pk }}" class="Ex" class="form-group">
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button class="btn btn-primary mt-4" type="submit"><i class="mdi mdi-download"></i> Download</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -74,4 +114,9 @@
 <script src="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
 <script src="/static/js/pages/form-advanced.init.js"></script>
 <script src="/static/js/app.js"></script>
+<script>
+    $('.rices').select2({
+        width: '100%'
+    })
+</script>
 {% endblock %}

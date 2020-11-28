@@ -14,8 +14,8 @@ from django.contrib.auth.decorators import login_required
 from .decorators import set_mill_session
 from django.db.models import Sum
 from django.utils.timezone import now
-from materials.models import IncomingStockEntry, OutgoingStockEntry, ProcessingSideEntry, Trading
-from products.models import IncomingProductEntry, OutgoingProductEntry, ProductStock, Trading as ProductTrading
+from materials.models import Category, IncomingStockEntry, OutgoingStockEntry, ProcessingSideEntry, Trading
+from products.models import IncomingProductEntry, OutgoingProductEntry, ProductCategory, ProductStock, Trading as ProductTrading
 # Create your views here.
 @login_required
 @set_mill_session
@@ -126,7 +126,10 @@ def shortage(request):
 @login_required
 @set_mill_session
 def reports(request):
-    return render(request, "reports.html")
+    rices = Rice.objects.filter(is_deleted=False)
+    materials = Category.objects.filter(mill=request.mill, is_deleted=False)
+    products = ProductCategory.objects.filter(is_biproduct=False, mill=request.mill, is_deleted=False)
+    return render(request, "reports.html", { "rices": rices, "materials": materials, "products": products })
 
 
 
