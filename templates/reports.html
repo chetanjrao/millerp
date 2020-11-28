@@ -49,10 +49,10 @@
                 <div class="card-body">
                     <div class="card-title">Analysis Report</div>
                     <form method="GET" class="mt-4" action="{% url 'analysis' millcode=request.millcode %}">
-                        <div class="row col-md-12">
-                            <div class="form-group col-md-6">
+                        <div class="row col-md-12 pl-0">
+                            <div class="form-group col-md-6 ml-0">
                                 <label for="" class="control-label">Choose date range</label>
-                                <div class="col-md-12">
+                                <div class="ml-0">
                                     <div class="input-daterange input-group" data-date-format="yyyy-mm-dd" data-date-autoclose="true" data-provide="datepicker">
                                         <input autocomplete="off" type="text" class="form-control" name="from">
                                         <input type="text" autocomplete="off" class="form-control" name="to">
@@ -61,7 +61,7 @@
                             </div>
                             <div class="form-group col-md-4">
                                 <label for="" class="control-label">Choose Rice Type</label>
-                                <div class="col-md-12">
+                                <div>
                                     <select name="rice" class="rices">
                                         {% for rice in rices %}
                                             <option value="{{ rice.pk }}">{{ rice.name }}</option>
@@ -70,7 +70,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card-title mt-4 pt-2">Paddy Closing Stock <small>(Paddy in Dheri + Handi + Truck)</small></div>
+                        <div class="card-title pt-2">Paddy Closing Stock <small>(Paddy in Dheri + Handi + Truck)</small></div>
                         <div class="row">
                             {% for material in materials %}
                                 <div class="form-group col-md-3 mt-2">
