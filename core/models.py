@@ -47,8 +47,8 @@ class Purchase(models.Model):
     amount = models.FloatField(default=0.0)
     bundle = models.ForeignKey(to=Bundle, on_delete=models.CASCADE)
     owner = models.ForeignKey(to=Owner, on_delete=models.CASCADE)
-    order_id = models.CharField(max_length=255, unique=True)
-    payment_id = models.CharField(max_length=255, unique=True)
+    order_id = models.CharField(max_length=255)
+    payment_id = models.CharField(max_length=255)
     payment_mode = models.CharField(max_length=64, null=True, blank=True)
     created_at = models.DateTimeField(auto_now=True, null=True)
 
