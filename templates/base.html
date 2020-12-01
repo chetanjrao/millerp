@@ -3,7 +3,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="utf-8" />
     <title>{% block title %} Dashboard | Mill ERP Administration | Mill ERP | Tecidexa Services Pvt. Ltd. {% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +18,7 @@
     <!-- App Css -->
     <link href="/static/css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
     {% block extralinks %}
+    {% endblock %}
     <style>
         .goog-te-banner-frame.skiptranslate {
             display: none !important;
@@ -27,7 +27,6 @@
             top: 0px !important; 
         }
     </style>
-    {% endblock %}
 </head>
 <body data-sidebar="dark">
     <div id="layout-wrapper">
@@ -92,7 +91,7 @@
         </div>
     </div>
     <script src="/static/libs/jquery/jquery.min.js"></script>
-    <script src="/static/libs/sweetalert2/sweetalert2.min.js"></script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script>
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({
@@ -102,17 +101,6 @@
                 layout: google.translate.TranslateElement.InlineLayout.SIMPLE
             }, 'google_translate_element');
         }
-        function fireError(){
-            Swal.fire({
-                title: "Error!",
-                html: "Oops! We couldn't get live data from website.<br/><small>Use reload button or check firm credentials</small>",
-                type: "error",
-                confirmButtonColor: "#556ee6"
-            })
-        }
-    </script>
-    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-     <script>
         $(document).ready(function () {
             $('#google_translate_element').bind('DOMNodeInserted', function (event) {
                 $('.goog-te-menu-value span:first').html('Language');
@@ -124,7 +112,20 @@
             });
         });
     </script>
+    <script src="/static/libs/sweetalert2/sweetalert2.min.js"></script>
     {% block scripts %}
     {% endblock %}
+    
+    <script>
+        function fireError(){
+            Swal.fire({
+                title: "Error!",
+                html: "Oops! We couldn't get live data from website.<br/><small>Use reload button or check firm credentials</small>",
+                type: "error",
+                confirmButtonColor: "#556ee6"
+            })
+        }
+    </script>
+    
 </body>
 </html>

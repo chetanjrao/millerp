@@ -131,8 +131,6 @@ def reports(request):
     products = ProductCategory.objects.filter(is_biproduct=False, mill=request.mill, is_deleted=False)
     return render(request, "reports.html", { "rices": rices, "materials": materials, "products": products })
 
-
-
 @login_required
 @set_mill_session
 def transport(request):

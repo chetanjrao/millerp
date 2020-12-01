@@ -20,7 +20,7 @@ from core.models import Mill, Rice
 @set_mill_session
 def incoming(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False,  category__rice=request.rice)
+    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False, category_mill=request.mill, category__rice=request.rice)
     categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice, mill=mill)
     return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
@@ -57,7 +57,7 @@ def incomingAdd(request):
 @set_mill_session
 def incomingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False, category__rice=request.rice)
+    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False, category_mill=request.mill, category__rice=request.rice)
     categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice,  mill=mill)
     if request.method == "POST":
@@ -442,7 +442,7 @@ def export_to_excel(request):
             ws.write(2, 2 * length + i + 7, types[i].quantity, color_format)
             ws.write(3, 2 * length + i + 7, '(In Bags)', color_format)
             incoming_overall = IncomingProductEntry.objects.filter(entry__is_deleted=False, category=category, entry__date__gte=start, entry__date__lte=end).aggregate(bags=Coalesce(Sum('entry__bags'), 0), quantity=Coalesce(Sum(F('entry__bags') * F('product__quantity'), output_field=FloatField()), 0))
-            outgoing_overall = OutgoingProductEntry.objects.filter(entry__is_deleted=False, category=category, entry__bags__lte=0, entry__date__gte=start, entry__date__lte=end).aggregate(bags=Coalesce(Sum('entry__bags'), 0), quantity=Coalesce(Sum(F('entry__bags') * F('product__quantity'), output_field=FloatField()), 0))
+            outgoing_overall = OutgoingProductEntry.objects.filter(entry__is_deleted=False,  category=category, entry__bags__lte=0, entry__date__gte=start, entry__date__lte=end).aggregate(bags=Coalesce(Sum('entry__bags'), 0), quantity=Coalesce(Sum(F('entry__bags') * F('product__quantity'), output_field=FloatField()), 0))
             stock_overall = ProductStock.objects.filter(entry__is_deleted=False, category=category, entry__date__gte=start,entry__bags__lte=0, entry__date__lte=end).aggregate(bags=Coalesce(Sum('entry__bags'), 0), quantity=Coalesce(Sum(F('entry__bags') * F('product__quantity'), output_field=FloatField()), 0))
             for j, date in zip(range(day), daterange(start, end)):
                 ws.set_column(0, 0, len(date.strftime("%d/%m/%Y")))
