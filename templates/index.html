@@ -45,35 +45,6 @@
                 </div>
             </div>
         </div>
-        <div class="row live-data">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-title text-center pt-4 pb-2">DO Summary</div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3 border-right text-center">
-                                <h4 class="do_lifted">234</h4>
-                                <div>Do Lifted</div>
-                            </div>
-                            <div class="col-md-3 border-right text-center">
-                                <h4 class="do_accepted">234</h4>
-                                <div>Do Accepted</div>
-                            </div>
-                            <div class="col-md-3 border-right text-center">
-                                <h4 class="do_pending">234</h4>
-                                <div>Do Pending</div>
-                            </div>
-                            <div class="col-md-3 text-center">
-                                <h4 class="do_cancelled">234</h4>
-                                <div>Do Rejected</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
         <div class="row">
             <div class="col-md-6">
                 <div class="card mini-stats-wid">
@@ -126,6 +97,58 @@
             </div>
         </div>
     </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-title text-center pt-4 pb-2">Daily Statistics</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 pt-4 border-right text-center">
+                        <h4 class="tdo_accepted">0</h4>
+                        <div>Total DO Accepted</div>
+                    </div>
+                    <div class="col-md-6 pt-4 border-right text-center">
+                        <h4 class="tm">0</h4>
+                        <div>Mota Paddy</div>
+                    </div>
+                    <div class="col-md-6 pt-4 border-right text-center">
+                        <h4 class="tmm">0</h4>
+                        <div>Mahamaya Paddy</div>
+                    </div>
+                    <div class="col-md-6 pt-4 border-right text-center">
+                        <h4 class="sr">0</h4>
+                        <div>Sarna Paddy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row live-data">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-title text-center pt-4 pb-2">DO Summary</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 border-right text-center">
+                                <h4 class="do_lifted">234</h4>
+                                <div>Do Lifted</div>
+                            </div>
+                            <div class="col-md-3 border-right text-center">
+                                <h4 class="do_accepted">234</h4>
+                                <div>Do Accepted</div>
+                            </div>
+                            <div class="col-md-3 border-right text-center">
+                                <h4 class="do_pending">234</h4>
+                                <div>Do Pending</div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h4 class="do_cancelled">234</h4>
+                                <div>Do Rejected</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <div class="row">
     <div class="col-md-6">
@@ -155,29 +178,7 @@
                     <div class="noti text-center mt-4"></div>
                 </div>
             </div>
-            <div class="card">
-                <div class="card-title text-center pt-4 pb-2">Daily Statistics</div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 pt-4 border-right text-center">
-                            <h4 class="tdo_accepted">0</h4>
-                            <div>Total DO Accepted</div>
-                        </div>
-                        <div class="col-md-6 pt-4 border-right text-center">
-                            <h4 class="tm">0</h4>
-                            <div>Mota Paddy</div>
-                        </div>
-                        <div class="col-md-6 pt-4 border-right text-center">
-                            <h4 class="tmm">0</h4>
-                            <div>Mahamaya Paddy</div>
-                        </div>
-                        <div class="col-md-6 pt-4 border-right text-center">
-                            <h4 class="sr">0</h4>
-                            <div>Sarna Paddy</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
         </div>
 </div>
 <div class="text-center mt-4"><a href="{% url 'reload-data' millcode=request.millcode %}"><button type="submit" class="btn btn-secondary btn-sm mb-3"><i class="bx bx-rotate-left"></i>Reload Live Data</button></a></div>

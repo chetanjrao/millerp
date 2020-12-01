@@ -69,7 +69,6 @@
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -101,6 +100,7 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
+                                <th>Stock Available <small>(in qtl)</small></th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -110,7 +110,7 @@
                             <div id="editModal{{ godown.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myModalLabel" aria-hidden="true">
                                 <form class="custom-validation"
-                                    action="{% url 'materials-godowns-action' id=godown.id millcode=request.millcode%}"
+                                    action="{% url 'materials-godowns-action' id=godown.godown.id millcode=request.millcode%}"
                                     method="POST">
                                     {% csrf_token %}
                                     <div class="modal-dialog">
@@ -150,12 +150,10 @@
                                     </div>
                                 </form>
                             </div>
-
-                            <!-- Modal content for delete -->
                             <div id="deleteModal{{ godown.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myModalLabel" aria-hidden="true">
                                 <form class="needs-validation"
-                                    action="{% url 'materials-godowns-action' id=godown.id millcode=request.millcode%}"
+                                    action="{% url 'materials-godowns-action' id=godown.godown.id millcode=request.millcode%}"
                                     method="POST">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="2" readonly>
@@ -184,7 +182,8 @@
                                 </form>
                             </div>
                             <tr>
-                                <td>{{ godown.name }}</td>
+                                <td>{{ godown.godown.name }}</td>
+                                <td>{{ godown.stock|floatformat:-2 }}</td>
                                 <td>
                                     <a href="#" class="btn btn-primary btn-sm" data-toggle="modal"
                                         data-target="#editModal{{ godown.pk }}">

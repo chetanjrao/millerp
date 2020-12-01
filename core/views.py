@@ -16,11 +16,13 @@ from django.db.models import Sum
 from django.utils.timezone import now
 from materials.models import Category, IncomingStockEntry, OutgoingStockEntry, ProcessingSideEntry, Trading
 from products.models import IncomingProductEntry, OutgoingProductEntry, ProductCategory, ProductStock, Trading as ProductTrading
-# Create your views here.
+
 @login_required
 @set_mill_session
 def index(req):
     entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=req.millcode).values(godown=F('source__name')).annotate(quantity=Func(Sum('entry__quantity'), function='ABS'))
+    stocks = ProductStock.objects.filter(entry__is_deleted=False, category__mill__code=req.millcode).values(name=F('category__name')).annotate(quantity=Func(Sum(F('entry__bags') * F('product__quantity'), output_field=FloatField()), function='ABS'))
+    print(stocks)
     paddy_incoming = IncomingStockEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__quantity'))["total"]
     paddy_outgoing = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__quantity'))["total"]
     paddy_processing = ProcessingSideEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__quantity'))["total"]
@@ -29,11 +31,7 @@ def index(req):
     rice_stock = ProductStock.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__bags', field="entry__bags*product__quantity"))["total"]
     paddy_average_price = Trading.objects.filter(mill=req.mill, entry__is_deleted=False).aggregate(total=Sum('entry__quantity'), price=Sum(F('price') * F('entry__quantity')))
     paddy_average_price = round((0 if paddy_average_price["price"] is None else paddy_average_price["price"]) / (1 if paddy_average_price["total"] is None or paddy_average_price["total"] == 0 else paddy_average_price["total"]), 2)
-    rice_trading = ProductTrading.objects.filter(source__category__mill__code=req.millcode, source__category__rice=req.rice, entry__is_deleted=False)
-    rice_quantity = rice_trading.values('source__name').annotate(bags=Sum('entry__bags'))
     rice_average_price = ProductTrading.objects.filter(source__category__mill__code=req.millcode, source__category__rice=req.rice, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
-    rice_total_price = rice_average_price["price"]
-    rice_total_quantity = rice_average_price["total"]
     raverage_price = round((0 if rice_average_price["price"] is None else rice_average_price["price"]) / (1 if rice_average_price["total"] is None or rice_average_price["total"] == 0 else rice_average_price["total"]), 2)
     return render(req, "index.html", { "paddy_incoming": paddy_incoming, "paddy_outgoing": paddy_outgoing, "paddy_processing": paddy_processing, "paddy_trading": paddy_average_price, "entries": entries, "rice_incoming": rice_incoming, "rice_outgoing": rice_outgoing, "rice_stock": rice_stock, "average_price": paddy_average_price, "raverage_price": raverage_price } )
 
@@ -105,8 +103,9 @@ def set_firm(request: WSGIRequest):
 @set_mill_session
 def set_rice(request: WSGIRequest):
     if request.method == "POST":
+        next_url = request.POST["next"]
         rice = Rice.objects.get(pk=request.POST["rice"], is_deleted=False)
-        response = redirect(resolve_url('dashboard_home', millcode=request.millcode))
+        response = redirect(next_url)
         response.set_cookie("rice", rice.pk)
         return response
 

@@ -69,6 +69,7 @@
                                         {% for rice in request.rices %}
                                             <form class="row justify-content-between align-items-center mt-4" action="{% url 'switch-rice' millcode=request.millcode %}" method="POST">
                                                 {% csrf_token %}
+                                                <input type="hidden" name="next" value="{{ request.path }}" />
                                                 <div>
                                                     <h6>{{ rice.name }}</h6>
                                                     <input type="hidden" name="rice" value="{{ rice.pk }}" readonly>

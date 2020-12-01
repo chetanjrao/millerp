@@ -282,11 +282,18 @@ def processing(request):
 def godowns(request):
     mill = Mill.objects.get(code=request.millcode)
     godowns = OutgoingSource.objects.filter(mill=mill, is_deleted=False)
+    stocks = []
+    for godown in godowns:
+        stock = OutgoingStockEntry.objects.filter(entry__is_deleted=False, source=godown, category__mill__code=request.millcode).annotate(quantity=Func(Sum('entry__quantity'), function='ABS')).aggregate(stock=Coalesce(Sum('quantity'), 0))['stock']
+        stocks.append({
+            "stock": stock,
+            "godown": godown
+        })
     if request.method == "POST":
         name = request.POST.get('name')
         OutgoingSource.objects.create(name=name, mill=mill, created_by=request.user, created_at=datetime.now)
         return redirect("materials-godowns", millcode=request.millcode)
-    return render(request, "materials/godowns.html", {"godowns": godowns})
+    return render(request, "materials/godowns.html", {"godowns": stocks})
 
 
 @login_required

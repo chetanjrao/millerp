@@ -224,7 +224,7 @@
                             </div>
 
                             <tr>
-                                <td><span style="display:none;">{{ stock.entry.date|date:"U" }}</span>{{stock.entry.date}}</td>
+                                <td><span style="display:none;">{{ stock.entry.created_at|date:"U" }}</span>{{stock.entry.date|date:"d-m-Y"}}</td>
                                 <td>{{stock.source.name}}</td>
                                 <td>{{stock.entry.bags|abs}}</td>
                                 <td>{{stock.entry.quantity|abs|floatformat:2}}</td>
@@ -298,8 +298,8 @@
     $('.mside').select2({
         width: "100%",
     })
-    $('#table').DataTable({
-
+    $('#datatable').DataTable({
+        order: [[ 0, 'desc' ]]
     })
 
 </script>
