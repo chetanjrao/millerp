@@ -20,21 +20,22 @@ from products.models import IncomingProductEntry, OutgoingProductEntry, ProductC
 @login_required
 @set_mill_session
 def index(req):
-    month = now().astimezone().date().month
     entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=req.millcode).values(godown=F('source__name')).annotate(quantity=Func(Sum('entry__quantity'), function='ABS'))
-    paddy_incoming = IncomingStockEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill, entry__date__month=month).aggregate(total=Sum('entry__quantity'))["total"]
-    paddy_outgoing = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill, entry__date__month=month).aggregate(total=Sum('entry__quantity'))["total"]
-    paddy_processing = ProcessingSideEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill, entry__date__month=month).aggregate(total=Sum('entry__quantity'))["total"]
-    paddy_trading = Trading.objects.filter(entry__is_deleted=False, entry__bags__lte=0, mill=req.mill, entry__date__month=month).aggregate(total=Sum('entry__quantity'))["total"]
-    rice_incoming = IncomingProductEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill, entry__date__month=month).aggregate(total=Sum('entry__bags', field="entry__bags*product__quantity"))["total"]
-    rice_outgoing = OutgoingProductEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill, entry__date__month=month).aggregate(total=Sum('entry__bags', field="entry__bags*product__quantity"))["total"]
-    rice_stock = ProductStock.objects.filter(entry__is_deleted=False, category__mill=req.mill, entry__date__month=month).aggregate(total=Sum('entry__bags', field="entry__bags*product__quantity"))["total"]
-    rice_trading = ProductTrading.objects.filter(entry__is_deleted=False, source__category__mill=req.mill, entry__bags__lte=0, entry__date__month=month).aggregate(total=Sum('entry__bags', field="entry__bags*source__quantity"))["total"]
-    average_price = Trading.objects.filter(mill=req.mill, entry__is_deleted=False).aggregate(total=Sum('entry__quantity'), price=Sum(F('price') * F('entry__quantity') / Func(F('entry__quantity'), function='ABS')))
-    average_price = round((0 if average_price["price"] is None else average_price["price"]) / (1 if average_price["total"] is None or average_price["total"] == 0 else average_price["total"]), 2)
-    raverage_price = ProductTrading.objects.filter(source__category__mill__code=req.millcode, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum(F('price'), output_field=FloatField()))
-    raverage_price = round((0 if raverage_price["price"] is None else raverage_price["price"]) / (1 if raverage_price["total"] is None or raverage_price["total"] == 0 else raverage_price["total"]), 2)
-    return render(req, "index.html", { "paddy_incoming": paddy_incoming, "paddy_outgoing": paddy_outgoing, "paddy_processing": paddy_processing, "paddy_trading": paddy_trading, "entries": entries, "rice_incoming": rice_incoming, "rice_outgoing": rice_outgoing, "rice_stock": rice_stock, "rice_trading": rice_trading, "average_price": average_price, "raverage_price": raverage_price } )
+    paddy_incoming = IncomingStockEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__quantity'))["total"]
+    paddy_outgoing = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__quantity'))["total"]
+    paddy_processing = ProcessingSideEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__quantity'))["total"]
+    rice_incoming = IncomingProductEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__bags', field="entry__bags*product__quantity"))["total"]
+    rice_outgoing = OutgoingProductEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__bags', field="entry__bags*product__quantity"))["total"]
+    rice_stock = ProductStock.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__bags', field="entry__bags*product__quantity"))["total"]
+    paddy_average_price = Trading.objects.filter(mill=req.mill, entry__is_deleted=False).aggregate(total=Sum('entry__quantity'), price=Sum(F('price') * F('entry__quantity')))
+    paddy_average_price = round((0 if paddy_average_price["price"] is None else paddy_average_price["price"]) / (1 if paddy_average_price["total"] is None or paddy_average_price["total"] == 0 else paddy_average_price["total"]), 2)
+    rice_trading = ProductTrading.objects.filter(source__category__mill__code=req.millcode, source__category__rice=req.rice, entry__is_deleted=False)
+    rice_quantity = rice_trading.values('source__name').annotate(bags=Sum('entry__bags'))
+    rice_average_price = ProductTrading.objects.filter(source__category__mill__code=req.millcode, source__category__rice=req.rice, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
+    rice_total_price = rice_average_price["price"]
+    rice_total_quantity = rice_average_price["total"]
+    raverage_price = round((0 if rice_average_price["price"] is None else rice_average_price["price"]) / (1 if rice_average_price["total"] is None or rice_average_price["total"] == 0 else rice_average_price["total"]), 2)
+    return render(req, "index.html", { "paddy_incoming": paddy_incoming, "paddy_outgoing": paddy_outgoing, "paddy_processing": paddy_processing, "paddy_trading": paddy_average_price, "entries": entries, "rice_incoming": rice_incoming, "rice_outgoing": rice_outgoing, "rice_stock": rice_stock, "average_price": paddy_average_price, "raverage_price": raverage_price } )
 
 @login_required
 @set_mill_session
