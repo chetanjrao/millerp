@@ -20,7 +20,7 @@ from core.models import Mill, Rice
 @set_mill_session
 def incoming(request):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False, category_mill=request.mill, category__rice=request.rice)
+    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False, category__mill=request.mill, category__rice=request.rice)
     categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice, mill=mill)
     return render(request, "products/incoming.html", {'stocks': stocks, 'categories': categories, 'production_types': production_types})
@@ -57,7 +57,7 @@ def incomingAdd(request):
 @set_mill_session
 def incomingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
-    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False, category_mill=request.mill, category__rice=request.rice)
+    stocks = IncomingProductEntry.objects.filter(entry__is_deleted=False, category__mill=request.mill, category__rice=request.rice)
     categories = ProductCategory.objects.filter(is_deleted=False, rice=request.rice, mill=mill)
     production_types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice,  mill=mill)
     if request.method == "POST":
@@ -107,7 +107,7 @@ def outgoing_data(request):
 @login_required
 @set_mill_session
 def max_stock(request, category: int):
-    stocks = ProductStock.objects.filter(category__pk=category, category__rice=request.rice, entry__is_deleted=False).values(name=F('product__pk')).annotate(max=Sum('entry__bags'))
+    stocks = ProductStock.objects.filter(category__pk=category, category__mill=request.mill, category__rice=request.rice, entry__is_deleted=False).values(name=F('product__pk')).annotate(max=Sum('entry__bags'))
     stocks = [{
         "id": stock["name"],
         "text": ProductionType.objects.get(pk=stock["name"]).name,
