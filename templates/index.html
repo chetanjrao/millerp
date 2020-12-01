@@ -161,6 +161,16 @@
             </div>
         </div>
     </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-title">Rice Stock Status</div>
+                <div class="apex-charts" id="pie_chart2">
+
+                </div>
+            </div>
+        </div>
+    </div>
         <div class="col-md-6">
             <div class="card">
                 <div class="card-title text-center pt-4 pb-2">Paddy shortage <small>(approx)</small></div>
@@ -248,9 +258,11 @@
             $('.loader').hide()
         }
     })
+    {% endif %}
+
     options = {
         chart: {
-            height: 480,
+            height: 360,
             type: "pie"
         },
         {% autoescape off %}
@@ -282,6 +294,39 @@
         }]
     };
     (chart = new ApexCharts(document.querySelector("#pie_chart"),options)).render();
-    {% endif %}
+    options = {
+        chart: {
+            height: 360,
+            type: "pie"
+        },
+        {% autoescape off %}
+        series: [{% for stock in stocks %} {{ stock.quantity|floatformat:-2 }}, {% endfor %}],
+        {% endautoescape %}
+        {% autoescape off %}
+        labels: [{% for stock in stocks %} '{{ stock.name }}', {% endfor %}],
+        {% endautoescape %}
+        legend: {
+            show: !0,
+            position: "bottom",
+            horizontalAlign: "center",
+            verticalAlign: "middle",
+            floating: !1,
+            fontSize: "14px",
+            offsetX: 0,
+            offsetY: -10
+        },
+        responsive: [{
+            breakpoint: 600,
+            options: {
+                chart: {
+                    height: 240
+                },
+                legend: {
+                    show: 1
+                }
+            }
+        }]
+    };
+    (chart = new ApexCharts(document.querySelector("#pie_chart2"),options)).render();
 </script>
 {% endblock %}

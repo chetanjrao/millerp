@@ -21,8 +21,7 @@ from products.models import IncomingProductEntry, OutgoingProductEntry, ProductC
 @set_mill_session
 def index(req):
     entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=req.millcode).values(godown=F('source__name')).annotate(quantity=Func(Sum('entry__quantity'), function='ABS'))
-    stocks = ProductStock.objects.filter(entry__is_deleted=False, category__mill__code=req.millcode).values(name=F('category__name')).annotate(quantity=Func(Sum(F('entry__bags') * F('product__quantity'), output_field=FloatField()), function='ABS'))
-    print(stocks)
+    stocks = ProductStock.objects.filter(entry__is_deleted=False, category__mill__code=req.millcode).values(name=F('category__name')).annotate(quantity=Func(Sum(F('entry__bags') * F('product__quantity') / 100, output_field=FloatField()), function='ABS'))
     paddy_incoming = IncomingStockEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__quantity'))["total"]
     paddy_outgoing = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__quantity'))["total"]
     paddy_processing = ProcessingSideEntry.objects.filter(entry__is_deleted=False, category__mill=req.mill).aggregate(total=Sum('entry__quantity'))["total"]
@@ -33,7 +32,7 @@ def index(req):
     paddy_average_price = round((0 if paddy_average_price["price"] is None else paddy_average_price["price"]) / (1 if paddy_average_price["total"] is None or paddy_average_price["total"] == 0 else paddy_average_price["total"]), 2)
     rice_average_price = ProductTrading.objects.filter(source__category__mill__code=req.millcode, source__category__rice=req.rice, entry__is_deleted=False).aggregate(total=Sum(F('entry__bags') * F('source__quantity') / 100, output_field=FloatField()), price=Sum((Func('entry__bags', function='ABS') * F('source__quantity') / 100) * F('price'), output_field=FloatField()))
     raverage_price = round((0 if rice_average_price["price"] is None else rice_average_price["price"]) / (1 if rice_average_price["total"] is None or rice_average_price["total"] == 0 else rice_average_price["total"]), 2)
-    return render(req, "index.html", { "paddy_incoming": paddy_incoming, "paddy_outgoing": paddy_outgoing, "paddy_processing": paddy_processing, "paddy_trading": paddy_average_price, "entries": entries, "rice_incoming": rice_incoming, "rice_outgoing": rice_outgoing, "rice_stock": rice_stock, "average_price": paddy_average_price, "raverage_price": raverage_price } )
+    return render(req, "index.html", { "paddy_incoming": paddy_incoming, "paddy_outgoing": paddy_outgoing, "paddy_processing": paddy_processing, "paddy_trading": paddy_average_price, "entries": entries, "rice_incoming": rice_incoming, "rice_outgoing": rice_outgoing, "rice_stock": rice_stock, "average_price": paddy_average_price, "raverage_price": raverage_price, "stocks": stocks } )
 
 @login_required
 @set_mill_session
