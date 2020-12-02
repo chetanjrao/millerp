@@ -118,7 +118,7 @@
                                                         data-dismiss="modal">Close</button>
                                                     <button type="submit"
                                                         class="btn btn-primary waves-effect waves-light">Yes,
-                                                        send to processing</button>
+                                                        Sell to customer</button>
                                                 </div>
                                             </div><!-- /.modal-content -->
                                         </div>
@@ -190,7 +190,7 @@
                                                         <div class="col-md-12">
                                                             <div class="form-group mb-2">
                                                                 <label for="staff" class="control-label">Choose Customer</label>
-                                                                <select class="mside" name="processing_side" required>
+                                                                <select class="mside" name="customer" required>
                                                                     {% for customer in customers %}
                                                                     <option value="{{ customer.pk }}">{{ customer.name }}</option>
                                                                     {% endfor %}
@@ -214,12 +214,12 @@
                                     <td>{{ entry.type }}</td>
                                     <td>{{ entry.godown }}</td>
                                     {% if entry.max|abs > 0 %}
-                                    <td>{{ entry.max_quantity|div:entry.max|mul:100|floatformat:2 }}</td>
+                                    <td>{{ entry.max_quantity|div:entry.max|mul:100|floatformat:-2 }}</td>
                                     {% else %}
                                     <td>0</td>
                                     {% endif %}
-                                    <td>{{ entry.max|abs }}</td>
-                                    <td>{{ entry.max_quantity|abs }}</td>
+                                    <td>{{ entry.max|floatformat:-2|abs }}</td>
+                                    <td>{{ entry.max_quantity|floatformat:-2|abs }}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                         data-target="#sendModal{{ forloop.counter }}">

@@ -145,6 +145,8 @@ def outgoing(request):
             OutgoingStockEntry.objects.create(entry=entry, category=category, source=source, created_by=request.user)
             entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
             ProcessingSideEntry.objects.create(entry=entry, category=category, source=side, created_by=request.user)
+            entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).values(type=F('category__name'), godown=F('source__name'),type_pk=F('category__pk'), godown_pk=F('source__pk')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
+            return render(request, "materials/outgoing.html", {"stocks": stocks, "customers": customers, "sides": sides, "sources": sources, "categories": categories, "entries": entries, "success_message": "Stock sold succesfully"})
         elif action == 2:
             bags = int(request.POST["bags"])
             average_weight = float(request.POST["average_weight"])
@@ -161,6 +163,8 @@ def outgoing(request):
             OutgoingStockEntry.objects.create(entry=entry, category=category, source=source, created_by=request.user)
             entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, remarks='{} Bags sold to {}'.format(bags, customer.name), date=date)
             Sale.objects.create(entry=entry, customer=customer, category=category, source=source, ppq=ppq, gst=gst, price=price, created_by=request.user)
+            entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).values(type=F('category__name'), godown=F('source__name'),type_pk=F('category__pk'), godown_pk=F('source__pk')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
+            return render(request, "materials/outgoing.html", {"stocks": stocks, "customers": customers, "sides": sides, "sources": sources, "categories": categories, "entries": entries, "success_message": "Stock sold successfully"})
     return render(request, "materials/outgoing.html", {"stocks": stocks, "customers": customers, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
 
 @login_required
@@ -607,4 +611,4 @@ def export_to_excel(request):
 @set_mill_session
 def sales(request: WSGIRequest):
     sales = Sale.objects.filter(category__mill=request.mill, category__is_deleted=False, entry__is_deleted=False)
-    return render(request, "materials/sales.html")
+    return render(request, "materials/sales.html", { 'sales': sales })
