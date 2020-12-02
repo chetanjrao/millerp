@@ -49,7 +49,7 @@
                             <tr>
                                 <th>Godown Name</th>
                                 <th>Category</th>
-                                <th>Average Weight</th>
+                                <th>Average Weight <small>(in kgs)</small></th>
                                 <th>Total Bags</th>
                                 <th>Total Quantity <small>(in quintals)</small></th>
                                 <th>Action</th>
@@ -124,6 +124,90 @@
                                         </div>
                                     </form>
                                 </div>
+                                <div id="sellModal{{ forloop.counter }}" class="modal fade" tabindex="-1" role="dialog"
+                                    aria-labelledby="myModalLabel" aria-hidden="true">
+                                    <form class="needs-validation" method="POST"
+                                        action="">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="2" readonly>
+                                        <input type="hidden" name="category" value="{{ entry.type_pk }}" readonly>
+                                        <input type="hidden" name="source" value="{{ entry.godown_pk }}" readonly>
+                                        <input type="hidden" name="average_weight" {% if entry.max|abs > 0 %}
+                                        value="{{ entry.max_quantity|div:entry.max|mul:100|floatformat:2 }}"
+                                        {% else %}
+                                       value="0"
+                                        {% endif %}  readonly>
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title mt-0" id="myModalLabel">Send 
+                                                        {{entry.category}} -
+                                                        {{entry.name}} to processing
+                                                    </h5>
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="form-group mb-4">
+                                                                <label for="control-label">Number of bags</label>
+                                                                <input type="number" step="1" class="form-control" id="horizontal-number-input" max="{{ entry.max|abs }}" name="bags" required>
+                                                                <div><small>(Average Weight: {% if entry.max|abs > 0 %}
+                                                                    {{ entry.max_quantity|div:entry.max|mul:100|floatformat:2 }}
+                                                                    {% else %}
+                                                                   0
+                                                                    {% endif %} kgs)</small></div>
+                                                            </div>
+                                                            <div class="form-group mb-4">
+                                                                <label for="control-label">Price per quintal</label>
+                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" name="ppq" required>
+                                                            </div>
+                                                            <div class="form-group mb-4">
+                                                                <label for="control-label">GST</label>
+                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" name="gst" required>
+                                                            </div>
+                                                            <div class="form-group mb-4">
+                                                                <label for="control-label">Total Price</label>
+                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" name="price" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="form-group mb-4">
+                                                                <label>Select Date</label>
+                                                                <div class="input-group">
+                                                                    <input type="text" class="form-control" placeholder="dd-mm-yyyy" autocomplete="off" data-date-orientation="bottom left" data-date-autoclose="true" value="{% now 'd-m-Y' %}" data-date-format="dd-mm-yyyy" data-provide="datepicker" name="date" required>
+                                                                    <div class="input-group-append">
+                                                                        <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="form-group mb-2">
+                                                                <label for="staff" class="control-label">Choose Customer</label>
+                                                                <select class="mside" name="processing_side" required>
+                                                                    {% for customer in customers %}
+                                                                    <option value="{{ customer.pk }}">{{ customer.name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary waves-effect"
+                                                        data-dismiss="modal">Close</button>
+                                                    <button type="submit"
+                                                        class="btn btn-primary waves-effect waves-light">Yes,
+                                                        send to processing</button>
+                                                </div>
+                                            </div><!-- /.modal-content -->
+                                        </div>
+                                    </form>
+                                </div>
                                 <tr>
                                     <td>{{ entry.type }}</td>
                                     <td>{{ entry.godown }}</td>
@@ -139,6 +223,10 @@
                                         data-target="#sendModal{{ forloop.counter }}">
                                         <i style="vertical-align: middle;" class="mdi mdi-progress-upload font-size-12"></i><span
                                             class="ml-1">Send to processing</span>
+                                            <button type="button" class="btn btn-success btn-sm ml-2" data-toggle="modal"
+                                        data-target="#sellModal{{ forloop.counter }}">
+                                        <i style="vertical-align: middle;" class="mdi mdi-progress-upload font-size-12"></i><span
+                                            class="ml-1">Sell to customer</span>
                                     </button>
                                     </td>
                                 </tr>

@@ -149,7 +149,6 @@ def configuration(request):
         if action == 1:
             name = request.POST.get('name')
             biproduct = request.POST.get("biproduct", False)
-            print(biproduct)
             ProductCategory.objects.create(name=name, is_biproduct=biproduct, mill=mill, rice=request.rice, created_by=request.user, created_at=datetime.now())
             return redirect("products-configuration", millcode=request.millcode)
         elif action == 2:
@@ -172,10 +171,6 @@ def configuration(request):
                 return redirect("products-configuration", millcode=request.millcode)
             except ValueError:
                 return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "error_message": "Please enter valid entries"})
-        elif action == 4:
-            name = request.POST["name"]
-            Customer.objects.create(name=name, mill=request.mill)
-            return redirect("products-configuration", millcode=request.millcode)
     return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources })
 
 @login_required

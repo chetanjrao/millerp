@@ -129,6 +129,7 @@ def outgoing(request):
     entries = OutgoingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode).values(type=F('category__name'), godown=F('source__name'),type_pk=F('category__pk'), godown_pk=F('source__pk')).annotate(max=Sum('entry__bags'), max_quantity=Sum('entry__quantity'))
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
+    customers = Customer.objects.filter(is_deleted=False, mill=request.mill)
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
@@ -160,7 +161,7 @@ def outgoing(request):
             OutgoingStockEntry.objects.create(entry=entry, category=category, source=source, created_by=request.user)
             entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, remarks='{} Bags sold to {}'.format(bags, customer.name), date=date)
             Sale.objects.create(entry=entry, customer=customer, category=category, source=source, ppq=ppq, gst=gst, price=price, created_by=request.user)
-    return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
+    return render(request, "materials/outgoing.html", {"stocks": stocks, "customers": customers, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
 
 @login_required
 @set_mill_session
