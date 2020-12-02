@@ -132,11 +132,6 @@
                                         <input type="hidden" name="action" value="2" readonly>
                                         <input type="hidden" name="category" value="{{ entry.type_pk }}" readonly>
                                         <input type="hidden" name="source" value="{{ entry.godown_pk }}" readonly>
-                                        <input type="hidden" name="average_weight" {% if entry.max|abs > 0 %}
-                                        value="{{ entry.max_quantity|div:entry.max|mul:100|floatformat:2 }}"
-                                        {% else %}
-                                       value="0"
-                                        {% endif %}  readonly>
                                         <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
                                                 <div class="modal-header">
@@ -153,8 +148,15 @@
                                                     <div class="row">
                                                         <div class="col-md-12">
                                                             <div class="form-group mb-4">
+                                                                <label for="control-label">Average Weight</label>
+                                                                <input class="avg form-control" type="number" name="average_weight" {% if entry.max|abs > 0 %} value="{{ entry.max_quantity|div:entry.max|mul:100|floatformat:2 }}"
+                                                                {% else %}
+                                                               value="0"
+                                                                {% endif %}  readonly>
+                                                            </div>
+                                                            <div class="form-group mb-4">
                                                                 <label for="control-label">Number of bags</label>
-                                                                <input type="number" step="1" class="form-control" id="horizontal-number-input" max="{{ entry.max|abs }}" name="bags" required>
+                                                                <input type="number" step="1" class="form-control bags listener" id="horizontal-number-input" max="{{ entry.max|abs }}" name="bags" required>
                                                                 <div><small>(Average Weight: {% if entry.max|abs > 0 %}
                                                                     {{ entry.max_quantity|div:entry.max|mul:100|floatformat:2 }}
                                                                     {% else %}
@@ -163,15 +165,15 @@
                                                             </div>
                                                             <div class="form-group mb-4">
                                                                 <label for="control-label">Price per quintal</label>
-                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" name="ppq" required>
+                                                                <input type="number" step="any" class="form-control ppq listener" id="horizontal-number-input" name="ppq" required>
                                                             </div>
                                                             <div class="form-group mb-4">
                                                                 <label for="control-label">GST</label>
-                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" name="gst" required>
+                                                                <input type="number" step="any" class="form-control gst listener" id="horizontal-number-input" name="gst" required>
                                                             </div>
                                                             <div class="form-group mb-4">
                                                                 <label for="control-label">Total Price</label>
-                                                                <input type="number" step="any" class="form-control" id="horizontal-number-input" name="price" required>
+                                                                <input type="number" step="any" class="form-control price" id="horizontal-number-input" name="price" required>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-12">
@@ -202,7 +204,7 @@
                                                         data-dismiss="modal">Close</button>
                                                     <button type="submit"
                                                         class="btn btn-primary waves-effect waves-light">Yes,
-                                                        send to processing</button>
+                                                        sell to customer</button>
                                                 </div>
                                             </div><!-- /.modal-content -->
                                         </div>
@@ -289,6 +291,14 @@
     $('#table').DataTable({
 
     })
-
+    $('.listener').change((e) => {
+        let bags = Number.parseFloat($('.bags:visible').val() || 0)
+        let avg = Number.parseFloat($('.avg:visible').val() || 0) / 100
+        let ppq = Number.parseFloat($('.ppq:visible').val() || 0)
+        let gst = Number.parseFloat($('.gst:visible').val() || 0)
+        let taxable_price = avg * bags * ppq
+        let price = taxable_price + gst
+        $('.price:visible').val(price.toFixed(2))
+    })
 </script>
 {% endblock %}
