@@ -14,6 +14,7 @@ urlpatterns = [
     path('outgoing/data/',  views.outgoing_data, name="materials-outgoing-data"),
     path('outgoing/add/',  views.outgoingAdd, name="materials-outgoing-add"),
     path('outgoing/action/<int:id>/',  views.outgoingAction, name="materials-outgoing-action"),
+    path('sales/',  views.sales, name="materials-sales"),
     path('processing/',  views.processing, name="materials-processing"),
     path('processing/add/',  views.processingAdd, name="materials-processing-add"),
     path('godowns/',  views.godowns, name="materials-godowns"),

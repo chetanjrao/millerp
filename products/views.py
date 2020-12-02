@@ -172,6 +172,10 @@ def configuration(request):
                 return redirect("products-configuration", millcode=request.millcode)
             except ValueError:
                 return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources, "error_message": "Please enter valid entries"})
+        elif action == 4:
+            name = request.POST["name"]
+            Customer.objects.create(name=name, mill=request.mill)
+            return redirect("products-configuration", millcode=request.millcode)
     return render(request, "products/configuration.html", {'categories': categories, 'production_types': production_types, "trading_sources": trading_sources })
 
 @login_required
@@ -245,11 +249,11 @@ def configurationAction(request, id):
 
 @login_required
 @set_mill_session
-def stocks(request):
-    stocks = ProductStock.objects.filter(entry__is_deleted=False, category__rice=request.rice, entry__bags__lte=0, category__mill__code=request.millcode)
+def stocks(request):    
     categories = ProductCategory.objects.filter(mill__code=request.millcode, rice=request.rice, is_deleted=False)
-    production_types = ProductionType.objects.filter(is_deleted=False, category__rice=request.rice, mill=request.mill)
-    entries = ProductStock.objects.filter(entry__is_deleted=False, category__rice=request.rice, category__mill__code=request.millcode).values('product', 'category__name', name=F('product__name')).annotate(total=Sum('entry__bags'))
+    stocks = ProductStock.objects.filter(entry__is_deleted=False, product__category__in=categories, category__rice=request.rice, entry__bags__lte=0, category__mill__code=request.millcode)
+    production_types = ProductionType.objects.filter(is_deleted=False, category__in=categories, category__rice=request.rice, mill=request.mill)
+    entries = ProductStock.objects.filter(entry__is_deleted=False, product__category__in=categories, category__in=categories, category__rice=request.rice, category__mill__code=request.millcode).values('product', 'category__name', name=F('product__name')).annotate(total=Sum('entry__bags'))
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
@@ -304,7 +308,6 @@ def max_trading_stock(request, category):
 @set_mill_session
 def sources(request, category):
     sources = TradingSource.objects.filter(category=category, is_deleted=False)
-    print(sources)
     sources = [{
         "id": source.pk,
         "text": source.name

@@ -14,6 +14,8 @@ class ProductCategory(models.Model):
     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self) -> str: return self.name
+
 class ProductionType(models.Model):
     name = models.CharField(max_length=64)
     category = models.ForeignKey(to=ProductCategory, on_delete=models.CASCADE, related_name='productiontypes')
@@ -24,6 +26,8 @@ class ProductionType(models.Model):
     mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str: return self.name
 
 class Stock(models.Model):
     bags = models.IntegerField()
@@ -73,6 +77,8 @@ class TradingSource(models.Model):
     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self) -> str: return self.name
+
 class Trading(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
     source = models.ForeignKey(to=TradingSource, on_delete=models.CASCADE)
@@ -83,3 +89,11 @@ class Trading(models.Model):
     @property
     def total(self):
         return round(self.entry.bags * self.source.quantity / 100, 2)
+
+
+# class Sale(models.Model):
+#     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
+#     category = models.ForeignKey(to=ProductCategory, on_delete=models.CASCADE)
+#     product = models.ForeignKey(to=ProductionType, on_delete=models.CASCADE, related_name='sales')
+#     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
+#     created_at = models.DateTimeField(auto_now=True)

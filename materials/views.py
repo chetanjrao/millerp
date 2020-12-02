@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from xlsxwriter import workbook
 from core.decorators import set_mill_session
 from core.models import Mill, Rice
-from .models import IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry, Stock, Trading
+from .models import Customer, IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry, Sale, Stock, Trading
 from datetime import datetime, timedelta
 from django.utils.timezone import datetime
 from django.db.models import Sum
@@ -130,18 +130,36 @@ def outgoing(request):
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
-        bags = int(request.POST["bags"])
-        average_weight = float(request.POST["average_weight"])
-        quantity = round(bags * average_weight / 100, 2)
-        category = Category.objects.get(pk=request.POST["category"])
-        source = OutgoingSource.objects.get(pk=request.POST["source"])
-        date = request.POST["date"]
-        date = datetime.strptime(date, "%d-%m-%Y")
-        side = ProcessingSide.objects.get(pk=request.POST["processing_side"])
-        entry = Stock.objects.create(bags=bags, quantity=quantity, remarks='{} Bags removed from godown {}'.format(bags, source.name), date=date)
-        OutgoingStockEntry.objects.create(entry=entry, category=category, source=source, created_by=request.user)
-        entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
-        ProcessingSideEntry.objects.create(entry=entry, category=category, source=side, created_by=request.user)
+        action = int(request.POST["action"])
+        if action == 1:
+            bags = int(request.POST["bags"])
+            average_weight = float(request.POST["average_weight"])
+            quantity = round(bags * average_weight / 100, 2)
+            category = Category.objects.get(pk=request.POST["category"])
+            source = OutgoingSource.objects.get(pk=request.POST["source"])
+            date = request.POST["date"]
+            date = datetime.strptime(date, "%d-%m-%Y")
+            side = ProcessingSide.objects.get(pk=request.POST["processing_side"])
+            entry = Stock.objects.create(bags=bags, quantity=quantity, remarks='{} Bags removed from godown {}'.format(bags, source.name), date=date)
+            OutgoingStockEntry.objects.create(entry=entry, category=category, source=source, created_by=request.user)
+            entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, remarks='{} Bags sent to processing into {}'.format(bags, side.name), date=date)
+            ProcessingSideEntry.objects.create(entry=entry, category=category, source=side, created_by=request.user)
+        elif action == 2:
+            bags = int(request.POST["bags"])
+            average_weight = float(request.POST["average_weight"])
+            quantity = round(bags * average_weight / 100, 2)
+            category = Category.objects.get(pk=request.POST["category"])
+            source = OutgoingSource.objects.get(pk=request.POST["source"])
+            date = request.POST["date"]
+            ppq = float(request.POST["ppq"])
+            gst = float(request.POST.get("gst", 0))
+            price = float(request.POST["price"])
+            date = datetime.strptime(date, "%d-%m-%Y")
+            customer = Customer.objects.get(pk=request.POST["customer"])
+            entry = Stock.objects.create(bags=bags, quantity=quantity, remarks='{} Bags removed from godown {}'.format(bags, source.name), date=date)
+            OutgoingStockEntry.objects.create(entry=entry, category=category, source=source, created_by=request.user)
+            entry = Stock.objects.create(bags=0 - bags, quantity=0 - quantity, remarks='{} Bags sold to {}'.format(bags, customer.name), date=date)
+            Sale.objects.create(entry=entry, customer=customer, category=category, source=source, ppq=ppq, gst=gst, price=price, created_by=request.user)
     return render(request, "materials/outgoing.html", {"stocks": stocks, "sides": sides, "sources": sources, "categories": categories, "entries": entries})
 
 @login_required
@@ -323,6 +341,7 @@ def configuration(request):
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     incoming_sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     processing_sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
+    customers = Customer.objects.filter(is_deleted=False, mill=mill)
     if request.method == 'POST':
         action = int(request.POST.get('action', '0'))
         if action == 1:
@@ -339,7 +358,7 @@ def configuration(request):
             rice = Rice.objects.get(pk=request.POST["rice"])
             ProcessingSide.objects.create(name=name, mill=mill, rice=rice, created_by=request.user, created_at=datetime.now())
             return redirect("materials-configuration", millcode=request.millcode)
-    return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides})
+    return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'customers': customers, 'sides': processing_sides})
 
 @login_required
 @set_mill_session
@@ -355,6 +374,7 @@ def configurationAction(request, id):
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     incoming_sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     processing_sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
+    customers = Customer.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         id = int(id)
         action = int(request.POST.get('action', '0'))
@@ -364,12 +384,12 @@ def configurationAction(request, id):
                 obj = Category.objects.get(id=id)
                 obj.name = name
                 obj.save()
-                return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Category updated successfully"})
+                return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Category updated successfully"})
         elif action == 2:
             obj = Category.objects.get(id=id)
             obj.is_deleted = True
             obj.save()
-            return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Category deleted successfully"})
+            return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Category deleted successfully"})
         elif action == 3:
             name = request.POST.get('name')
             if len(name) > 0:
@@ -377,12 +397,12 @@ def configurationAction(request, id):
                 obj.name = name
                 obj.include_trading = bool(request.POST.get("trade", 0))
                 obj.save()
-                return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Incoming source updated successfully"})
+                return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Incoming source updated successfully"})
         elif action == 4:
             obj = IncomingSource.objects.get(id=id)
             obj.is_deleted = True
             obj.save()
-            return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Incoming source deleted successfully"})
+            return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Incoming source deleted successfully"})
         elif action == 5:
             name = request.POST.get('name')
             if len(name) > 0:
@@ -390,13 +410,14 @@ def configurationAction(request, id):
                 obj.rice = Rice.objects.get(pk=request.POST["rice"])
                 obj.name = name
                 obj.save()
-                return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Processing side updated successfully"})
+                return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Processing side updated successfully"})
         elif action == 6:
             obj = ProcessingSide.objects.get(id=id)
             obj.is_deleted = True
             obj.save()
-            return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Processing side deleted successfully"})
+            return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Processing side deleted successfully"})
     return redirect("materials-configuration", millcode=request.millcode)
+
 
 @login_required
 @set_mill_session
@@ -580,3 +601,9 @@ def export_to_excel(request):
     response = HttpResponse(output ,content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename="Paddy Stock Details - {} - {}.xlsx"'.format(start.date(), end.date())
     return response
+
+@login_required
+@set_mill_session
+def sales(request: WSGIRequest):
+    sales = Sale.objects.filter(category__mill=request.mill, category__is_deleted=False, entry__is_deleted=False)
+    return render(request, "materials/sales.html")

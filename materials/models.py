@@ -36,6 +36,12 @@ class ProcessingSide(models.Model):
     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
+class Customer(models.Model):
+    name = models.CharField(max_length=64)
+    mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now=True)
 
 class Stock(models.Model):
     bags = models.IntegerField()
@@ -79,3 +85,22 @@ class Trading(models.Model):
     @property
     def total(self):
         return round(self.price * self.entry.quantity, 2)
+
+class Sale(models.Model):
+    entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
+    customer = models.ForeignKey(to=Customer, on_delete=models.CASCADE)
+    category = models.ForeignKey(to=Category, on_delete=models.CASCADE)
+    source = models.ForeignKey(to=OutgoingSource, on_delete=models.CASCADE)
+    price = models.FloatField()
+    ppq = models.FloatField()
+    gst = models.FloatField(default=0)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def taxable_amount(self):
+        return round(self.ppq * self.entry.quantity, 2)
+
+    @property
+    def total(self):
+        return self.taxable_amount + self.gst

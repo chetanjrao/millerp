@@ -66,6 +66,12 @@
                         <span>Firms</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{% url 'customers' millcode=request.millcode%}" class=" waves-effect">
+                        <i class="bx bx-cog"></i>
+                        <span>Customers</span>
+                    </a>
+                </li>
                 <li class="menu-title">Paddy</li>
                 <li>
                     <a href="{% url 'materials-incoming' millcode=request.millcode %}" class=" waves-effect">
@@ -80,7 +86,6 @@
                         <span>Outgoing</span>
                     </a>
                 </li>
-
                 <li>
                     <a href="{% url 'materials-processing' millcode=request.millcode%}" class=" waves-effect">
                         <i class="bx bx-loader"></i>
@@ -91,6 +96,12 @@
                     <a href="{% url 'materials-godowns' millcode=request.millcode%}" class=" waves-effect">
                         <i class="bx bx-store-alt"></i>
                         <span>Godowns</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'materials-sales' millcode=request.millcode%}" class=" waves-effect">
+                        <i class="bx bx-store-alt"></i>
+                        <span>Sales</span>
                     </a>
                 </li>
                 {% if request.firms|length > 0 and request.COOKIES.MERP_FIRM %}

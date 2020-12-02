@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from .decorators import set_mill_session
 from django.db.models import Sum
 from django.utils.timezone import now
-from materials.models import Category, IncomingStockEntry, OutgoingStockEntry, ProcessingSideEntry, Trading
+from materials.models import Category, Customer, IncomingStockEntry, OutgoingStockEntry, ProcessingSideEntry, Trading
 from products.models import IncomingProductEntry, OutgoingProductEntry, ProductCategory, ProductStock, Trading as ProductTrading
 
 @login_required
@@ -312,3 +312,30 @@ def entry_logs(request):
             entry.save()
             return render(request, "log.html", { "entries": entries, "transporters": transporters, "trucks": trucks, "success_message": "Entry deleted successfully" })
     return render(request, "log.html", { "entries": entries, "transporters": transporters, "trucks": trucks })
+
+
+@login_required
+@set_mill_session
+def customers(request):
+    customers = Customer.objects.filter(is_deleted=False, mill=request.mill)
+    if request.method == "POST":
+        action = int(request.POST["action"])
+        if action == 1:
+            name = request.POST["name"]
+            Customer.objects.create(name=name, mill=request.mill, created_by=request.user)
+            customers = Customer.objects.filter(is_deleted=False, mill=request.mill)
+            return render(request, "customers.html", {'customers': customers, "success_message": "Customer created successfully"})
+        elif action == 2:
+            obj = Customer.objects.get(id=request.POST["customer"])
+            name = request.POST["name"]
+            obj.name = name
+            obj.save()
+            customers = Customer.objects.filter(is_deleted=False, mill=request.mill)
+            return render(request, "customers.html", {'customers': customers, "success_message": "Customer updated successfully"})
+        elif action == 3:
+            obj = Customer.objects.get(id=request.POST["customer"])
+            obj.is_deleted = True
+            obj.save()
+            customers = Customer.objects.filter(is_deleted=False, mill=request.mill)
+            return render(request, "customers.html", { 'customers': customers, "error_message": "Customer deleted successfully"})
+    return render(request, "customers.html", { "customers": customers })

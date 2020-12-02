@@ -68,7 +68,6 @@
                         </thead>
                         <tbody>
                             {% for stock in stocks %}
-                            <!-- Modal content for update -->
                             <div id="editModal{{ stock.pk }}" class="modal fade" tabindex="-1" role="dialog"
                                 aria-labelledby="myLargeModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
@@ -167,7 +166,6 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-
                                                         <div class=" form-group row justify-content-end">
                                                             <div class="col-sm-12">
                                                                 <div>
@@ -219,7 +217,7 @@
                             </div>
 
                             <tr>
-                                <td><span style="display:none;">{{ stock.entry.date|date:"U" }}</span>{{stock.entry.date}}</td>
+                                <td><span style="display:none;">{{ stock.created_at|date:"U" }}{{ stock.entry.date|date:"U" }}</span>{{stock.entry.date|date:"d-m-Y"}}</td>
                                 <td>{{stock.category.name}}</td>
                                 <td>{{stock.source.name}}</td>
                                 <td>{{stock.entry.bags}}</td>
@@ -247,7 +245,6 @@
     </div>
 </div>
 {% endblock %}
-
 {% block scripts %}
 <script src="/static/libs/jquery/jquery.min.js"></script>
 <script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -274,7 +271,6 @@
 <script src="/static/libs/select2/js/select2.min.js"></script>
 <script src="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
 <script src="/static/js/app.js"></script>
-<script src="/static/js/pages/form-advanced.init.js"></script>
 
 <script>
     $('.category').select2({
@@ -285,6 +281,9 @@
     })
     $('.date-input').datepicker({
         autoclose: true
+    })
+    $('#datatable').DataTable({
+        order: [[0, 'desc']]
     })
 </script>
 <style>
