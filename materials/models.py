@@ -102,5 +102,9 @@ class Sale(models.Model):
         return round(self.ppq * self.entry.quantity, 2)
 
     @property
+    def tax(self):
+        return self.taxable_amount * self.gst / 100
+
+    @property
     def total(self):
-        return self.taxable_amount + self.gst
+        return self.taxable_amount + self.tax

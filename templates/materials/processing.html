@@ -188,7 +188,7 @@
                                     </form>
                                 </div>
                                 <tr>
-                                    <td><span style="display:none;">{{ stock.entry.date|date:"U" }}</span>{{stock.entry.date}}</td>
+                                    <td><span style="display:none;">{{ stock.created_at|date:"U" }}{{ stock.entry.date|date:"U" }}</span>{{stock.entry.date|date:"d-m-y"}}</td>
                                     <td>{{stock.category.name}}</td>
                                     <td>{{stock.source.name}}</td>
                                     <td>{{stock.entry.bags|mul:-1}}</td>
@@ -240,13 +240,15 @@
 <script src="/static/libs/@chenfengyuan/datepicker/datepicker.min.js"></script>
 <script src="/static/libs/jquery.repeater/jquery.repeater.min.js"></script>
 <script src="/static/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
-<script src="/static/js/pages/datatables.init.js"></script>
 <script src="/static/libs/node-waves/waves.min.js"></script>
 <script src="/static/libs/select2/js/select2.min.js"></script>
 <script src="/static/js/app.js"></script>
 <script>
     $('.drop').select2({
         width: '100%'
+    })
+    $('#datatable').DataTable({
+        order: [[0, 'desc']]
     })
 </script>
 {% endblock %}

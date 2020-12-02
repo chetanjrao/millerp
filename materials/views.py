@@ -288,7 +288,7 @@ def processing(request):
             stock.category = Category.objects.get(pk=request.POST["category"])
             stock.source = ProcessingSide.objects.get(pk=request.POST["side"])
             date = request.POST["date"]
-            stock.entry.date = datetime.strptime(date, "%d-%m-%Y")
+            stock.entry.date = datetime.strptime(date, "%Y-%m-%d")
             stock.entry.save()
             stock.save()
         elif action == 2:
