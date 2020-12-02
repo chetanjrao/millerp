@@ -612,3 +612,9 @@ def export_to_excel(request):
 def sales(request: WSGIRequest):
     sales = Sale.objects.filter(category__mill=request.mill, category__is_deleted=False, entry__is_deleted=False)
     return render(request, "materials/sales.html", { 'sales': sales })
+
+@login_required
+@set_mill_session
+def bill(request: WSGIRequest, sale: int):
+    sale = Sale.objects.get(pk=sale, entry__is_deleted=False)
+    return render(request, "materials/bill.html", { "sale": sale })

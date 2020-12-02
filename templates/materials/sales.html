@@ -197,7 +197,7 @@
                                     <td>&#x20b9;{{sale.gst|floatformat:2}}</td>
                                     <td>&#x20b9;{{sale.price|abs}}</td>
                                     <td>
-                                        <a href="" target="_blank">
+                                        <a href="{% url 'materials-bill' millcode=request.millcode sale=sale.pk %}" target="_blank">
                                             <button type="button" class="btn btn-primary btn-sm ml-2">
                                                 <i style="vertical-align: middle;" class="mdi mdi-printer font-size-12"></i><span
                                                     class="ml-1">Print</span>
@@ -246,6 +246,9 @@
 <script>
     $('.drop').select2({
         width: '100%'
+    })
+    $('#datatable').DataTable({
+        order: [[0, 'desc']]
     })
 </script>
 {% endblock %}

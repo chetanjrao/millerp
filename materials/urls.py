@@ -22,6 +22,7 @@ urlpatterns = [
     path('configuration/', views.configuration, name="materials-configuration"),
     path('stocks/', views.stock, name="materials-stock"),
     path('trading/', views.trading, name='materials-trading'),
+    path('sales/<int:sale>/', views.bill, name='materials-bill'),
     path('trading/<int:category>/max/', views.get_max_quantity, name='materials-max'),
     path('configuration/action/<int:id>/', views.configurationAction, name="materials-configuration-action"),
     path('stock/<int:category>/check/', views.get_stock_available, name='stock_check'),
