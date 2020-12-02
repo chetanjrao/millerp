@@ -136,9 +136,9 @@ tr:nth-child(2n) {
                 <tr>
                     <th>Date</th>
                     <th>Category</th>
-                    <th>Customer</th>
                     <th>Quantity <small>(in qtls)</small></th>
                     <th>Price Per Quintal</th>
+                    <th>Taxable Amount</th>
                     <th>GST</th>
                     <th>Total Price</th>
                 </tr>
@@ -147,10 +147,10 @@ tr:nth-child(2n) {
                 <tr>
                     <td>{{ sale.entry.date|date:"d-m-Y" }}</td>
                     <td>{{sale.category.name}}</td>
-                    <td>{{sale.source.name}}</td>
-                    <td>{{sale.entry.bags|mul:-1}}</td>
-                    <td>&#x20b9;{{sale.ppq|floatformat:2}}</td>
-                    <td>&#x20b9;{{sale.gst|floatformat:2}}</td>
+                    <td>{{sale.entry.quantity|mul:-1|abs}}</td>
+                    <td>&#x20b9;{{sale.ppq|floatformat:2|abs}}</td>
+                    <td>&#x20b9;{{sale.taxable_amount|floatformat:2|abs}}</td>
+                    <td>&#x20b9;{{sale.gst|floatformat:2|abs}}</td>
                     <td>&#x20b9;{{sale.price|abs}}</td>
                 </tr>
             </tbody>
