@@ -380,7 +380,7 @@ def get_cmr(driver: WebDriver, screenshot: str, captcha: str, username: str, pas
                 agreement_element = Select(driver.find_element_by_id('DDAgreementNo'))
                 agreement_element.select_by_value(agreement)
                 driver.find_element_by_id('btnshow').click()
-                table = driver.find_elements_by_tag_name('table')[374]
+                table = driver.find_elements_by_xpath("//table[@borderColor='Silver']")[2]
                 HTML_DOCUMENT = table.get_attribute('outerHTML')
                 parser = BeautifulSoup(HTML_DOCUMENT, 'html.parser')
                 table: Tag = parser.find_all('table')[0]
