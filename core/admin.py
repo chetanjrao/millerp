@@ -1,4 +1,4 @@
-from core.models import Mill, Purchase, Owner, Transporter, Truck, Rice
+from core.models import Mill, Purchase, Owner, Transporter, Truck, Rice, Firm
 from django.contrib import admin
 
 # Register your models here.
@@ -8,3 +8,4 @@ admin.site.register(Owner)
 admin.site.register(Transporter)
 admin.site.register(Truck)
 admin.site.register(Rice)
+admin.site.register(Firm)
