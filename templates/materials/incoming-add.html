@@ -244,6 +244,18 @@
         titleTemplate: '#title#',
         onStepChanging: function (event, currentIndex, newIndex){
             if(newIndex > currentIndex){
+                let calc = calculateRemaining()
+                if(calc < 0){
+                    alert("Excess stock sent to godowns")
+                } else {
+                    $('#processing_bags').val(calc)
+                    $('#processing_bags').attr("max", calc)
+                    $('#processing_weight').val((calc * Number.parseFloat(average_weight)).toFixed(2) / 100)
+                    $('#processing_bags').change((e) => {
+                        let bags = Number.parseInt(e.target.value || 0)
+                        $('#processing_weight').val((bags * Number.parseFloat(average_weight)).toFixed(2) / 100)
+                    })
+                }
                 let validator = form.parsley({
                     excluded: ":disabled, :hidden"
                 })
@@ -307,6 +319,18 @@
         },
         hide: function (e) {
             counter--;
+            let calc = calculateRemaining()
+            if(calc < 0){
+                alert("Excess stock sent to godowns")
+            } else {
+                $('#processing_bags').val(calc)
+                $('#processing_bags').attr("max", calc)
+                $('#processing_weight').val((calc * Number.parseFloat(average_weight)).toFixed(2) / 100)
+                $('#processing_bags').change((e) => {
+                    let bags = Number.parseInt(e.target.value || 0)
+                    $('#processing_weight').val((bags * Number.parseFloat(average_weight)).toFixed(2) / 100)
+                })
+            }
             $(this).slideUp(e);
         },
         ready: function (e) {
