@@ -102,3 +102,24 @@ class cmr_entry(models.Model):
     bags = models.FloatField()
     price = models.FloatField()
     is_deleted = models.BooleanField(default=False)
+
+
+class Expense(models.Model):
+    name = models.CharField(max_length=512)
+    date = models.DateField()
+    taxable_amount = models.FloatField()
+    tax = models.FloatField(default=0)
+    miscs = models.FloatField(default=0)
+    mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    remarks = models.TextField()
+    created_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)
+
+    @property
+    def tax_amount(self):
+        return round(self.taxable_amount * self.tax / 100, 2)
+
+    @property
+    def total_amount(self):
+        return round(self.taxable_amount + self.tax_amount + self.miscs, 2)

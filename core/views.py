@@ -8,7 +8,7 @@ from django.db.models.expressions import F, Func
 from django.db.models.fields import FloatField
 from django.http.response import JsonResponse
 from miscs.models import City, Package
-from core.models import Firm, Mill, Purchase, Rice, Transporter, Truck, cmr, cmr_entry
+from core.models import Expense, Firm, Mill, Purchase, Rice, Transporter, Truck, cmr, cmr_entry
 from django.shortcuts import redirect, render, resolve_url
 from django.contrib.auth.decorators import login_required
 from .decorators import set_mill_session
@@ -68,11 +68,11 @@ def firms(request):
         if action == 1:
             if len(firms) >= (purchase.bundle.mills * 3):
                 return render(request, "firms.html", { "firms": firms, "purchase": purchase, "error_message": "Firm limit exceeded" })
-            name = request.POST["name"]
-            conversion = float(request.POST["conversion"])
-            username = request.POST["username"]
-            password = request.POST["password"]
-            Firm.objects.create(name=name, username=username, conversion=conversion, mill=request.mill, password=password)
+            name: str = request.POST["name"]
+            conversion: float = float(request.POST["conversion"])
+            username: str = request.POST["username"]
+            password: str = request.POST["password"]
+            Firm.objects.create(name=name.upper(), username=username, conversion=conversion, mill=request.mill, password=password)
             return render(request, "firms.html", { "firms": firms, "purchase": purchase, "success_message": "Firm created successfully" })
         elif action == 2:
             firm = Firm.objects.get(pk=request.POST["firm"], is_deleted=False, mill=request.mill)
@@ -339,3 +339,53 @@ def customers(request):
             customers = Customer.objects.filter(is_deleted=False, mill=request.mill)
             return render(request, "customers.html", { 'customers': customers, "error_message": "Customer deleted successfully"})
     return render(request, "customers.html", { "customers": customers })
+
+
+@login_required
+@set_mill_session
+def expenses(request):
+    expenses = Expense.objects.filter(mill=request.mill, is_deleted=False)
+    total = expenses.values('name').annotate(amount=Sum(F('taxable_amount') + (F('tax') * F('taxable_amount') / 100) + F('miscs'), output_field=FloatField()))
+    summary = total.aggregate(total=Sum('amount'))["total"]
+    if request.method == "POST":
+        action = int(request.POST["action"])
+        if action == 1:
+            name: str = request.POST["name"].lower().strip().capitalize()
+            amount = float(request.POST["taxable_amount"])
+            tax = float(request.POST.get("tax", "0"))
+            date = datetime.strptime(request.POST["date"], "%d-%m-%Y")
+            miscs = float(request.POST.get("miscs", "0"))
+            remarks = request.POST.get("remarks")
+            Expense.objects.create(name=name, taxable_amount=amount, date=date, remarks=remarks, tax=tax, miscs=miscs, created_by=request.user, mill=request.mill)
+            expenses = Expense.objects.filter(mill=request.mill, is_deleted=False)
+            total = expenses.values('name').annotate(amount=Sum(F('taxable_amount') + (F('tax') * F('taxable_amount') / 100) + F('miscs'), output_field=FloatField()))
+            summary = total.aggregate(total=Sum('amount'))["total"]
+            return render(request, "expenses.html", { "expenses": expenses, "total": total, "summary": summary, "success_message": "Expense created sucessfully" })
+        if action == 2:
+            name: str = request.POST["name"].lower().strip().capitalize()
+            amount = float(request.POST["taxable_amount"])
+            tax = float(request.POST.get("tax", "0"))
+            date = datetime.strptime(request.POST["date"], "%d-%m-%Y")
+            miscs = float(request.POST.get("miscs", "0"))
+            remarks = request.POST.get("remarks")
+            expense = Expense.objects.get(pk=request.POST["expense"])
+            expense.name = request.POST["name"].lower().strip().capitalize()
+            expense.tax = tax
+            expense.date = date
+            expense.miscs = miscs
+            expense.taxable_amount = amount
+            expense.remarks = remarks
+            expense.save()
+            expenses = Expense.objects.filter(mill=request.mill, is_deleted=False)
+            total = expenses.values('name').annotate(amount=Sum(F('taxable_amount') + (F('tax') * F('taxable_amount') / 100) + F('miscs'), output_field=FloatField()))
+            summary = total.aggregate(total=Sum('amount'))["total"]
+            return render(request, "expenses.html", { "expenses": expenses, "summary": summary, "total": total, "success_message": "Expense updated sucessfully" })
+        if action == 3:
+            expense = Expense.objects.get(pk=request.POST["expense"])
+            expense.is_deleted = True
+            expense.save()
+            expenses = Expense.objects.filter(mill=request.mill, is_deleted=False)
+            total = expenses.values('name').annotate(amount=Sum(F('taxable_amount') + (F('tax') * F('taxable_amount') / 100) + F('miscs'), output_field=FloatField()))
+            summary = total.aggregate(total=Sum('amount'))["total"]
+            return render(request, "expenses.html", { "expenses": expenses, "total": total, "summary": summary, "success_message": "Expense deleted sucessfully" })
+    return render(request, "expenses.html", { "expenses": expenses, "summary": summary, "total": total })

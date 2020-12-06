@@ -75,6 +75,26 @@
             </thead>
         </table>
     </div>
+    <div class="overall">
+        <h5 class="text-success m-4">समिती की जानकारी</h5>
+        <table class="data table table-striped table-bordered" style="border-collapse: collapse; border-spacing: 0px; width: 100%;">
+            <thead>
+                <th>समिती - उपार्जन केन्द्र</th>
+                <th>डिओ धान मोटा (क्विं.मे .)</th>
+                <th>डिओ धान महामाया (क्विं.मे .)</th>
+                <th>डिओ धान सरना (क्विं.मे .)</th>
+                <th>जारी धान मोटा (क्विं.मे .)</th>
+                <th>जारी धान महामाया (क्विं.मे .)</th>
+                <th>जारी धान सरना (क्विं.मे .)</th>
+                <th>शेष धान मोटा (क्विं.मे .)</th>
+                <th>शेष धान महामाया (क्विं.मे .)</th>
+                <th>शेष धान सरना (क्विं.मे .)</th>
+            </thead>
+            <tbody id="overall">
+                
+            </tbody>
+        </table>
+    </div>
     <div class="col-md-12 mb-4 mt-4 ml-2">
        <div class="form-group">
            <label class="control-label">Select Samiti</div>
@@ -192,6 +212,23 @@
                         placeholder: "Type samiti name",
                         width: '100%',
                         data: Object.keys(data["total"])
+                    })
+                    Object.keys(data["summary"]).forEach(samiti => {
+                        let sm = JSON.parse(data["summary"][samiti])
+                        $('#overall').append(
+                            `<tr>
+                                <td>${samiti}</td>
+                                <td>${sm["mu"]}</td>
+                                <td>${sm["mm"]}</td>
+                                <td>${sm["sr"]}</td>
+                                <td>${sm["mud"]}</td>
+                                <td>${sm["mmd"]}</td>
+                                <td>${sm["srd"]}</td>
+                                <td>${sm["mus"]}</td>
+                                <td>${sm["mms"]}</td>
+                                <td>${sm["srs"]}</td>
+                            </tr>`
+                        )
                     })
                     $('#samiti').change((e) => {
                         let selection = $(e.target).select2('data')[0]["text"]

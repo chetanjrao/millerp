@@ -1,0 +1,387 @@
+{% extends 'base.html' %}
+{% block corestyles %}
+<link href="/static/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-timepicker/css/bootstrap-timepicker.min.css" rel="stylesheet" type="text/css">
+<link href="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/static/libs/@chenfengyuan/datepicker/datepicker.min.css">
+{% endblock %}
+{% block extralinks %}
+<style>
+    .datepicker{z-index:1151 !important;}
+</style>
+{% endblock %}
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mini-stats-wid">
+                <div class="card-body">
+                    <div class="media">
+                        <div class="media-body">
+                            <p class="text-muted font-weight-medium">Total Expenses <small>(in &#x20b9;)</small></p>
+                            <h4 class="mb-0">&#x20b9;{{ summary|default:"0"|floatformat:-2 }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            {% if success_message %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="mdi mdi-check-all mr-2"></i>
+                {{ success_message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            {% endif %}
+            {% if error_message %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bx bx-trash-alt mr-2"></i>
+                {{ error_message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div id="createExpense" class="modal fade" tabindex="-1" role="dialog"
+        aria-labelledby="myModalLabel" aria-hidden="true">
+        <form class="custom-validation"
+            action=""
+            method="POST">
+            {% csrf_token %}
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title mt-0" id="myModalLabel">Create expense</h5>
+                        <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <input type="hidden" value="1" name="action">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-4">
+                                    <label>Select Date</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" placeholder="dd-mm-yyyy" autocomplete="off" data-date-orientation="bottom left" data-date-autoclose="true" value="{% now 'd-m-Y' %}" data-date-format="dd-mm-yyyy" data-provide="datepicker" name="date" required>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="#">Name of expense</label>
+                                    <select id="expenses" name="name" required>
+                                        {% for expense in total %}
+                                            <option value="{{ expense.name }}">{{ expense.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Expense name is invalid
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="#">Taxable Amount <small>(in &#x20b9;)</small></label>
+                                    <input class="form-control taxable_amount listener" type="number" name="taxable_amount" placeholder="0" step="any" required/>
+                                    <div class="invalid-feedback">
+                                        Taxable Amount is invalid
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="#">Tax <small>(in %)</small></label>
+                                    <input class="form-control tax listener" type="number" name="tax" placeholder="0" step="any" required/>
+                                    <div class="invalid-feedback">
+                                        Tax is invalid
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="#">Miscellaenous <small>(in &#x20b9;)</small></label>
+                                    <input class="form-control miscs listener" type="number" name="miscs" placeholder="0" step="any"/>
+                                    <div class="invalid-feedback">
+                                        Miscellaenous Amount is invalid
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="#">Total Amount <small>(in &#x20b9;)</small></label>
+                                    <input class="form-control total" readonly type="number" placeholder="0" step="any"/>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="#">Remarks</label>
+                                    <textarea name="remarks" class="form-control"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary waves-effect"
+                            data-dismiss="modal">Close</button>
+                        <button type="submit"
+                            class="btn btn-success waves-effect waves-light">Add
+                            Expense</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div>
+        </form>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <h4 class="card-title mt-2 mb-3">Expenses</h4>
+                </div>
+                <div class="col-sm-8">
+                    <div class="text-sm-right">
+                        <button type="button" data-toggle="modal" data-target="#createExpense"
+                                class="btn btn-success btn-rounded waves-effect waves-light mb-2 mr-2"><i
+                                    class="mdi mdi-plus mr-1"></i> Add Expense</button>
+                    </div>
+                </div>
+            </div>
+            <table id="datatable" class="table table-striped table-bordered dt-responsive nowrap"
+                style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Taxable Amount <small>(in &#x20b9;)</small></th>
+                        <th>Tax <small>(in &#x20b9;)</small></th>
+                        <th>Miscs <small>(in &#x20b9;)</small></th>
+                        <th>Total Amount <small>(in &#x20b9;)</small></th>
+                        <th>Remarks</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <!-- Modal content for edit -->
+                    <div id="editExpense{{ expense.pk }}" class="modal fade" tabindex="-1" role="dialog"
+                        aria-labelledby="myModalLabel" aria-hidden="true">
+                        <form class="custom-validation"
+                            action=""
+                            method="POST">
+                            {% csrf_token %}
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title mt-0" id="myModalLabel">Edit expense</h5>
+                                        <button type="button" class="close" data-dismiss="modal"
+                                            aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <input type="hidden" value="2" name="action">
+                                    <input type="hidden" value="{{ expense.pk }}" name="expense">
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group mb-4">
+                                                    <label>Select Date</label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" placeholder="dd-mm-yyyy" autocomplete="off" data-date-orientation="bottom left" data-date-autoclose="true" value="{% now 'd-m-Y' %}" data-date-format="dd-mm-yyyy" data-provide="datepicker" name="date" required>
+                                                        <div class="input-group-append">
+                                                            <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="#">Name of expense</label>
+                                                    <select class="expenses" name="name" required>
+                                                        {% for expense in total %}
+                                                            <option value="{{ expense.name }}">{{ expense.name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Expense name is invalid
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="#">Taxable Amount <small>(in &#x20b9;)</small></label>
+                                                    <input class="form-control taxable_amount listener" value="{{ expense.taxable_amount }}" type="number" name="taxable_amount" placeholder="0" step="any" required/>
+                                                    <div class="invalid-feedback">
+                                                        Taxable Amount is invalid
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="#">Tax <small>(in %)</small></label>
+                                                    <input class="form-control tax listener" value="{{ expense.tax }}" type="number" name="tax" placeholder="0" step="any" required/>
+                                                    <div class="invalid-feedback">
+                                                        Tax is invalid
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="#">Miscellaenous <small>(in &#x20b9;)</small></label>
+                                                    <input class="form-control miscs listener" value="{{ expense.miscs }}" type="number" name="miscs" placeholder="0" step="any"/>
+                                                    <div class="invalid-feedback">
+                                                        Miscellaenous Amount is invalid
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="#">Total Amount <small>(in &#x20b9;)</small></label>
+                                                    <input class="form-control total" value="{{ expense.total_amount }}" readonly type="number" placeholder="0" step="any"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="#">Remarks</label>
+                                                    <textarea name="remarks" class="form-control">{{ expense.remarks }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary waves-effect"
+                                            data-dismiss="modal">Close</button>
+                                        <button type="submit"
+                                            class="btn btn-primary waves-effect waves-light">Update
+                                            Expense</button>
+                                    </div>
+                                </div><!-- /.modal-content -->
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Modal content for delete -->
+                    <div id="deleteExpense{{ expense.pk }}" class="modal fade" tabindex="-1" role="dialog"
+                        aria-labelledby="myModalLabel" aria-hidden="true">
+                        <form class="needs-validation"
+                            action=""
+                            method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="3" readonly>
+                            <input type="hidden" name="expense" value="{{ expense.pk }}" readonly>
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title mt-0" id="myModalLabel">Delete {{ expense.name }}
+                                        </h5>
+                                        <button type="button" class="close" data-dismiss="modal"
+                                            aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure to delete expense <strong>{{ expense.name }}</strong> ?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary waves-effect"
+                                            data-dismiss="modal">Close</button>
+                                        <button type="submit"
+                                            class="btn btn-danger waves-effect waves-light">Yes,
+                                            delete</button>
+                                    </div>
+                                </div><!-- /.modal-content -->
+                            </div>
+                        </form>
+                    </div>
+                    <tr>
+                        <td><span style="display: none;">{{ expense.date|date:"U" }}</span> {{ expense.date|date:"d-m-Y" }}</td>
+                        <td>{{ expense.name }}</td>
+                        <td>&#x20b9;{{ expense.taxable_amount }}</td>
+                        <td>&#x20b9;{{ expense.tax_amount }} <small>({{ expense.tax }})%</small></td>
+                        <td>&#x20b9;{{ expense.miscs }}</td>
+                        <td>&#x20b9;{{ expense.total_amount }}</td>
+                        <td>{{ expense.remarks|default:"" }}</td>
+                        <td>
+                            <a href="#" class="btn btn-primary btn-sm" data-toggle="modal"
+                                data-target="#editExpense{{ expense.pk }}">
+                                <i style="vertical-align: middle;" class="mdi mdi-pencil font-size-12"></i><span
+                                    class="ml-1">Edit</span>
+                            </a>
+                            <button type="button" class="btn btn-danger btn-sm ml-2" data-toggle="modal"
+                                data-target="#deleteExpense{{ expense.pk }}">
+                                <i style="vertical-align: middle;" class="mdi mdi-delete font-size-12"></i><span
+                                    class="ml-1">Delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/libs/jquery/jquery.min.js"></script>
+<script src="/static/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/libs/metismenu/metisMenu.min.js"></script>
+<script src="/static/libs/simplebar/simplebar.min.js"></script>
+<script src="/static/libs/jszip/jszip.min.js"></script>
+<script src="/static/libs/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/static/libs/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/static/libs/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.html5.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.print.min.js"></script>
+<script src="/static/libs/datatables.net-buttons/js/buttons.colVis.min.js"></script>
+<script src="/static/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/js/pages/datatables.init.js"></script>
+<script src="/static/libs/node-waves/waves.min.js"></script>
+<script src="/static/libs/select2/js/select2.min.js"></script>
+<script src="/static/libs/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
+<script src="/static/libs/bootstrap-timepicker/js/bootstrap-timepicker.min.js"></script>
+<script src="/static/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+<script src="/static/libs/tui-time-picker/tui-time-picker.min.js"></script>
+<script src="/static/libs/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
+<script src="/static/libs/tui-date-picker/tui-date-picker.min.js"></script>
+<script src="/static/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js"></script>
+<script src="/static/js/pages/form-advanced.init.js"></script>
+<script src="/static/js/app.js"></script>
+<script>
+    $('#expenses').select2({
+        width: '100%',
+        placeholder: 'Type expenses name',
+        tags: true
+    })
+    $('#datatable').DataTable({
+        order: [[0, 'desc']]
+    })
+    $('.listener').change((e) => {
+        let taxable_amount = Number.parseFloat($('.taxable_amount:visible').val() || 0)
+        let tax = Number.parseFloat($('.tax:visible').val() || 0)
+        let miscs = Number.parseFloat($('.miscs:visible').val() || 0)
+        let tax_value = taxable_amount * tax / 100
+        let price = taxable_amount + tax_value + miscs
+        $('.total:visible').val(price.toFixed(2))
+    })
+    $('.expenses').select2({
+        placeholder: 'Type expenses name',
+        width: '100%'
+    })
+</script>
+{% endblock %}
