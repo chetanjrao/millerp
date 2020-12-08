@@ -103,9 +103,13 @@ class cmr_entry(models.Model):
     price = models.FloatField()
     is_deleted = models.BooleanField(default=False)
 
+class Trip(models.Model):
+    date = models.DateField()
+    truck = models.ForeignKey(to=Truck, on_delete=models.CASCADE)
 
 class Expense(models.Model):
     name = models.CharField(max_length=512)
+    bill_type = models.CharField(max_length=512)
     date = models.DateField()
     taxable_amount = models.FloatField()
     tax = models.FloatField(default=0)

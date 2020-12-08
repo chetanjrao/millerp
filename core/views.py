@@ -345,24 +345,27 @@ def customers(request):
 @set_mill_session
 def expenses(request):
     expenses = Expense.objects.filter(mill=request.mill, is_deleted=False)
+    types = Expense.objects.filter(mill=request.mill, is_deleted=False).values(type=F('bill_type')).annotate(amount=Sum(F('taxable_amount') + (F('tax') * F('taxable_amount') / 100) + F('miscs'), output_field=FloatField()))
     total = expenses.values('name').annotate(amount=Sum(F('taxable_amount') + (F('tax') * F('taxable_amount') / 100) + F('miscs'), output_field=FloatField()))
     summary = total.aggregate(total=Sum('amount'))["total"]
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
             name: str = request.POST["name"].lower().strip().capitalize()
+            bill_type: str = request.POST["type"].lower().strip().capitalize()
             amount = float(request.POST["taxable_amount"])
             tax = float(request.POST.get("tax", "0"))
             date = datetime.strptime(request.POST["date"], "%d-%m-%Y")
             miscs = float(request.POST.get("miscs", "0"))
             remarks = request.POST.get("remarks")
-            Expense.objects.create(name=name, taxable_amount=amount, date=date, remarks=remarks, tax=tax, miscs=miscs, created_by=request.user, mill=request.mill)
+            Expense.objects.create(name=name, bill_type=bill_type, taxable_amount=amount, date=date, remarks=remarks, tax=tax, miscs=miscs, created_by=request.user, mill=request.mill)
             expenses = Expense.objects.filter(mill=request.mill, is_deleted=False)
             total = expenses.values('name').annotate(amount=Sum(F('taxable_amount') + (F('tax') * F('taxable_amount') / 100) + F('miscs'), output_field=FloatField()))
             summary = total.aggregate(total=Sum('amount'))["total"]
             return render(request, "expenses.html", { "expenses": expenses, "total": total, "summary": summary, "success_message": "Expense created sucessfully" })
         if action == 2:
             name: str = request.POST["name"].lower().strip().capitalize()
+            bill_type: str = request.POST["type"].lower().strip().capitalize()
             amount = float(request.POST["taxable_amount"])
             tax = float(request.POST.get("tax", "0"))
             date = datetime.strptime(request.POST["date"], "%d-%m-%Y")
@@ -371,6 +374,7 @@ def expenses(request):
             expense = Expense.objects.get(pk=request.POST["expense"])
             expense.name = request.POST["name"].lower().strip().capitalize()
             expense.tax = tax
+            expense.bill_type = bill_type
             expense.date = date
             expense.miscs = miscs
             expense.taxable_amount = amount
@@ -388,4 +392,4 @@ def expenses(request):
             total = expenses.values('name').annotate(amount=Sum(F('taxable_amount') + (F('tax') * F('taxable_amount') / 100) + F('miscs'), output_field=FloatField()))
             summary = total.aggregate(total=Sum('amount'))["total"]
             return render(request, "expenses.html", { "expenses": expenses, "total": total, "summary": summary, "success_message": "Expense deleted sucessfully" })
-    return render(request, "expenses.html", { "expenses": expenses, "summary": summary, "total": total })
+    return render(request, "expenses.html", { "expenses": expenses, "types": types, "summary": summary, "total": total })
