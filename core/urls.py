@@ -1,5 +1,5 @@
 from miscs.views import get_cmr_status, get_cmr_view, get_do_view, get_print_view
-from core.views import bills, customers, entry_logs, expenses, reports, set_firm, set_rice, shortage, transport, transporter_bill, truck_bill, truck_entry, trucks_api, type_bill
+from core.views import bills, customers, entry_logs, expenses, print_expense, reports, set_firm, set_rice, shortage, transport, transporter_bill, truck_bill, truck_entry, trucks_api, type_bill
 from django.urls import path, include
 from accounts.views import profile
 from . import views
@@ -29,5 +29,6 @@ urlpatterns = [
     path('log/print/trucks/', truck_bill, name='truck_bill'),
     path('log/print/', type_bill, name='type_bill'),
     path('expenses/', expenses, name='expenses'),
+    path('expenses/<int:expense>/print/', print_expense, name='print_expense'),
     path('log/print/transporters/', transporter_bill, name='transporter_bill'),
 ]

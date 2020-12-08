@@ -393,3 +393,10 @@ def expenses(request):
             summary = total.aggregate(total=Sum('amount'))["total"]
             return render(request, "expenses.html", { "expenses": expenses, "total": total, "summary": summary, "success_message": "Expense deleted sucessfully" })
     return render(request, "expenses.html", { "expenses": expenses, "types": types, "summary": summary, "total": total })
+
+
+@login_required
+@set_mill_session
+def print_expense(request, expense):
+    expense = Expense.objects.get(pk=expense, mill=request.mill, is_deleted=False)
+    return render(request, "expense_bill.html", { "expense": expense } )
