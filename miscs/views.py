@@ -447,6 +447,7 @@ def get_guarantee(request: WSGIRequest):
         data["conversion"] = firm.conversion
     else:
         data = cached_response
+        data["conversion"] = firm.conversion
     return JsonResponse(data)
 
 @login_required
