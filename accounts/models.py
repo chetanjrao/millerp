@@ -38,6 +38,7 @@ class User(AbstractUser):
     )
     role = models.IntegerField(choices=ROLES, default=3)
     is_mobile_verified = models.BooleanField(default=False)
+    has_do_request = models.BooleanField(default=False)
     USERNAME_FIELD = 'mobile'
     REQUIRED_FIELDS = [ 'first_name', 'password' ]
 

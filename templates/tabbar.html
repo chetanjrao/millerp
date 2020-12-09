@@ -40,6 +40,14 @@
                             <span>DO Acknowledgement</span>
                         </a>
                     </li>
+                    {% if request.user.has_do_request %}
+                        <li>
+                            <a href="{% url 'request_do_data' millcode=request.millcode %}" class="waves-effect">
+                                <i class="bx bx-lock"></i>
+                                <span>DO Request</span>
+                            </a>
+                        </li>
+                    {% endif %}
                 {% endif %}
                 <li class="menu-title">Core</li>
                 <li>

@@ -1,4 +1,4 @@
-from miscs.views import get_cmr_status, get_cmr_view, get_do_view, get_print_view
+from miscs.views import get_cmr_status, get_cmr_view, get_do, get_do_data_api, get_do_view, get_print_view, request_do, request_do_api
 from core.views import bills, customers, entry_logs, expenses, print_expense, reports, set_firm, set_rice, shortage, transport, transporter_bill, truck_bill, truck_entry, trucks_api, type_bill
 from django.urls import path, include
 from accounts.views import profile
@@ -29,6 +29,10 @@ urlpatterns = [
     path('log/print/trucks/', truck_bill, name='truck_bill'),
     path('log/print/', type_bill, name='type_bill'),
     path('expenses/', expenses, name='expenses'),
+    path('request/do/data/', get_do_data_api, name='request_do_data_api'),
+    path('request/do/process/', get_do, name='request_do_data'),
+    path('request/do/', request_do, name='request_do'),
+    path('request/do/api/', request_do_api, name='request_do_api'),
     path('expenses/<int:expense>/print/', print_expense, name='print_expense'),
     path('log/print/transporters/', transporter_bill, name='transporter_bill'),
 ]
