@@ -113,6 +113,7 @@ def set_rice(request: WSGIRequest):
 def load_live(request):
     firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
     cache.delete('{}'.format(firm.username))
+    cache.delete('{}2020'.format(firm.username))
     return redirect(resolve_url('dashboard_home', millcode=request.millcode))
 
 @login_required

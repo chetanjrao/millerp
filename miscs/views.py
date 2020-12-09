@@ -524,7 +524,7 @@ new_start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify20/MillLo
 
 def get_do_data(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, mobile: str):
     driver.get(new_start_url)
-    attempts = 10
+    attempts = 25
     response = {}
     total_do_lifted = 0
     total_do_pending = 0
@@ -674,7 +674,7 @@ def get_do_data(driver: WebDriver, screenshot: str, captcha: str, username: str,
 
 def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, agreement: str, paddy: int, truck: str, turns: int):
     driver.get(new_start_url)
-    attempts = 10
+    attempts = 25
     quantity = 0
     _turns = 0
     response = {}
@@ -784,7 +784,7 @@ def get_do_data_api(request):
         options.binary_location = CHROME
         driver = webdriver.Chrome(CHROMEDRIVER, options=options)
         data = get_do_data(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), request.user.mobile)
-        cache.set("{}2020".format(firm.username), data, 60 * 60)
+        cache.set("{}2020".format(firm.username), data, 60 * 60 * 5)
     else:
         data = cached_response
     return JsonResponse(data)
