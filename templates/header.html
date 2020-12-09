@@ -26,6 +26,10 @@
         <div class="d-flex">
             <div class="dropdown d-inline-block d-lg-none ml-2">
                 {% if request.firms|length > 0 %}
+                    <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown" aria-haspopup="true" aria-expanded="true">
+                        <span class="d-none d-xl-inline-block ml-1" key="t-henry">{{ request.firm.name }}</span>
+                        <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
+                    </button>
                     <button data-target="#firmModal" type="button" style="color: white;" data-toggle="modal" class="btn btn-success header-item noti-icon waves-effect">
                         <i style="color: white;" class="bx bx-shuffle"></i>
                     </button>
@@ -33,9 +37,14 @@
             </div>
             <div class="d-none d-lg-inline-block ml-1">
                 {% if request.firms|length > 0 %}
-                    <button data-target="#firmModal" type="button" style="color: white;" data-toggle="modal" class="btn btn-success header-item noti-icon waves-effect">
-                        <i style="color: white;" class="bx bx-shuffle"></i>
-                    </button>
+                    {% for firm in request.firms %}
+                        {% if request.COOKIES.MERP_FIRM == firm.pk|stringformat:"i" %}
+                            <button type="button" data-target="#firmModal" data-toggle="modal" class="btn header-item waves-effect" id="page-header-user-dropdown" aria-haspopup="true" aria-expanded="true">
+                                <span class="d-none d-xl-inline-block ml-1" key="t-henry"> {{ firm.name }} </span>
+                                <i class="bx bx-shuffle d-none d-xl-inline-block"></i>
+                            </button>
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
             </div>
         </div>

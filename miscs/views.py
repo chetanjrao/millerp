@@ -678,6 +678,7 @@ def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str
     quantity = 0
     _turns = 0
     response = {}
+    messages = []
     do_summary = []
     while True:
         if attempts <= 0:
@@ -733,6 +734,7 @@ def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str
                         quantity_element = Select(driver.find_element_by_id('ctl00_Miller_content1_ddl_DOQty'))
                         quantity_element.select_by_value(truck)
                         driver.find_element_by_id('ctl00_Miller_content1_btnsave').click()
+                        messages.append(driver.switch_to.alert.text)
                         driver.switch_to.alert.accept()
                         _turns += 1
                         quantity += int(truck)
@@ -764,6 +766,8 @@ def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str
                 response["current_do_issued"] = float(do_issued.text)
                 response["current_do_cancelled"] = float(do_cancelled.text)
                 response["summary"] = do_summary
+                response["messages"] = messages
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/logout.aspx')
                 break
             except (NoSuchElementException, UnexpectedAlertPresentException, NoSuchElementException):
                 continue

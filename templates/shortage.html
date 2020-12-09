@@ -96,7 +96,7 @@
             $('.loader').hide()
             $('.live-data').show()
             $('#paddy_uplifted').val(results["paddy_uplifted"])
-            $('#rice_to_be_given').val((results["paddy_uplifted"] * 0.68).toFixed(2))
+            $('#rice_to_be_given').val((results["paddy_uplifted"] * results["conversion"] / 100).toFixed(2))
             $('#rice_jama').val(results["rice_deposited"])
         },
         error: function (xhr, status) {
