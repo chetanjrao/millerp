@@ -443,8 +443,8 @@ def get_guarantee(request: WSGIRequest):
         options.binary_location = CHROME
         driver = webdriver.Chrome(CHROMEDRIVER, options=options)
         data = get_captcha(driver, '{}.png'.format(get_random_string(8)), '{}.png'.format(get_random_string(8)), '{}'.format(firm.username), '{}'.format(firm.password), request.user.mobile)
-        data["conversion"] = firm.conversion
         cache.set("{}".format(firm.username), data, 60 * 60 * 24 * 7)
+        data["conversion"] = firm.conversion
     else:
         data = cached_response
     return JsonResponse(data)
@@ -519,10 +519,10 @@ def guarantee(request: WSGIRequest):
 """
 High Alert Section - Do not edit the below code for any reason - CJK
 """
-start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify20/MillLogin.aspx"
+new_start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify20/MillLogin.aspx"
 
 def get_do_data(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, mobile: str):
-    driver.get(start_url)
+    driver.get(new_start_url)
     attempts = 10
     response = {}
     total_do_lifted = 0
@@ -672,7 +672,7 @@ def get_do_data(driver: WebDriver, screenshot: str, captcha: str, username: str,
 
 
 def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, agreement: str, paddy: int, truck: str, turns: int):
-    driver.get(start_url)
+    driver.get(new_start_url)
     attempts = 10
     quantity = 0
     _turns = 0
