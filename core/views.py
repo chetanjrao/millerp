@@ -72,7 +72,7 @@ def firms(request):
             conversion: float = float(request.POST["conversion"])
             username: str = request.POST["username"]
             password: str = request.POST["password"]
-            Firm.objects.create(name=name.upper(), username=username, conversion=conversion, mill=request.mill, password=password)
+            Firm.objects.create(name=name, username=username.upper(), conversion=conversion, mill=request.mill, password=password)
             return render(request, "firms.html", { "firms": firms, "purchase": purchase, "success_message": "Firm created successfully" })
         elif action == 2:
             firm = Firm.objects.get(pk=request.POST["firm"], is_deleted=False, mill=request.mill)
