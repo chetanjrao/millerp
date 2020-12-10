@@ -734,8 +734,9 @@ def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str
                         quantity_element = Select(driver.find_element_by_id('ctl00_Miller_content1_ddl_DOQty'))
                         quantity_element.select_by_value(truck)
                         driver.find_element_by_id('ctl00_Miller_content1_btnsave').click()
-                        messages.append(driver.switch_to.alert.text)
-                        driver.switch_to.alert.accept()
+                        alert = driver.switch_to.alert
+                        messages.append(alert.text)
+                        alert.accept()
                         _turns += 1
                         quantity += int(truck)
                     except (NoSuchElementException, UnexpectedAlertPresentException, NoSuchElementException):
