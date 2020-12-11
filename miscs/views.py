@@ -72,14 +72,18 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
             driver.find_element_by_id('txtVerificationCode').clear()
             driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
             driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
-            driver.find_element_by_id('txtUser').clear()
-            driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
-            driver.find_element_by_name('btncon').click()
-            if driver.find_element_by_id('mpe_foregroundElement').is_displayed():
-                driver.find_element_by_name('btnYes').click()
-            else:
+            try:
+                driver.find_element_by_id('txtUser').clear()
+                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+                attempts -= 1
                 driver.find_element_by_name('btncon').click()
-            attempts -= 1
+            except (InvalidElementStateException):
+                try:
+                    driver.find_element_by_name('btnOk').click()
+                except NoSuchElementException:
+                    attempts -= 1
+                    driver.find_element_by_name('btncon').click()
+                continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
                 do_lifted = driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
@@ -191,14 +195,18 @@ def get_print(driver: WebDriver, screenshot: str, captcha: str, username: str, p
             driver.find_element_by_id('txtVerificationCode').clear()
             driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
             driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
-            driver.find_element_by_id('txtUser').clear()
-            driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
-            driver.find_element_by_name('btncon').click()
-            if driver.find_element_by_id('mpe_foregroundElement').is_displayed():
-                driver.find_element_by_name('btnYes').click()
-            else:
+            try:
+                driver.find_element_by_id('txtUser').clear()
+                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+                attempts -= 1
                 driver.find_element_by_name('btncon').click()
-            attempts -= 1
+            except (InvalidElementStateException):
+                try:
+                    driver.find_element_by_name('btnOk').click()
+                except NoSuchElementException:
+                    attempts -= 1
+                    driver.find_element_by_name('btncon').click()
+                continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
                 driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
@@ -251,14 +259,18 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
             driver.find_element_by_id('txtVerificationCode').clear()
             driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
             driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
-            driver.find_element_by_id('txtUser').clear()
-            driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
-            driver.find_element_by_name('btncon').click()
-            if driver.find_element_by_id('mpe_foregroundElement').is_displayed():
-                driver.find_element_by_name('btnYes').click()
-            else:
+            try:
+                driver.find_element_by_id('txtUser').clear()
+                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+                attempts -= 1
                 driver.find_element_by_name('btncon').click()
-            attempts -= 1
+            except (InvalidElementStateException):
+                try:
+                    driver.find_element_by_name('btnOk').click()
+                except NoSuchElementException:
+                    attempts -= 1
+                    driver.find_element_by_name('btncon').click()
+                continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
                 driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
@@ -343,14 +355,18 @@ def get_cmr(driver: WebDriver, screenshot: str, captcha: str, username: str, pas
             driver.find_element_by_id('txtVerificationCode').clear()
             driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
             driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
-            driver.find_element_by_id('txtUser').clear()
-            driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
-            driver.find_element_by_name('btncon').click()
-            if driver.find_element_by_id('mpe_foregroundElement').is_displayed():
-                driver.find_element_by_name('btnYes').click()
-            else:
+            try:
+                driver.find_element_by_id('txtUser').clear()
+                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+                attempts -= 1
                 driver.find_element_by_name('btncon').click()
-            attempts -= 1
+            except (InvalidElementStateException):
+                try:
+                    driver.find_element_by_name('btnOk').click()
+                except NoSuchElementException:
+                    attempts -= 1
+                    driver.find_element_by_name('btncon').click()
+                continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
                 driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
@@ -542,14 +558,18 @@ def get_do_data(driver: WebDriver, screenshot: str, captcha: str, username: str,
             driver.find_element_by_id('txtVerificationCode').clear()
             driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
             driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
-            driver.find_element_by_id('txtUser').clear()
-            driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
-            driver.find_element_by_name('btncon').click()
-            if driver.find_element_by_id('mpe_foregroundElement').is_displayed():
-                driver.find_element_by_name('btnYes').click()
-            else:
+            try:
+                driver.find_element_by_id('txtUser').clear()
+                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+                attempts -= 1
                 driver.find_element_by_name('btncon').click()
-            attempts -= 1
+            except (InvalidElementStateException):
+                try:
+                    driver.find_element_by_name('btnOk').click()
+                except NoSuchElementException:
+                    attempts -= 1
+                    driver.find_element_by_name('btncon').click()
+                continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
                 do_lifted = driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
@@ -690,14 +710,18 @@ def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str
             driver.find_element_by_id('txtVerificationCode').clear()
             driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
             driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
-            driver.find_element_by_id('txtUser').clear()
-            driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
-            driver.find_element_by_name('btncon').click()
-            if driver.find_element_by_id('mpe_foregroundElement').is_displayed():
-                driver.find_element_by_name('btnYes').click()
-            else:
+            try:
+                driver.find_element_by_id('txtUser').clear()
+                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+                attempts -= 1
                 driver.find_element_by_name('btncon').click()
-            attempts -= 1
+            except (InvalidElementStateException):
+                try:
+                    driver.find_element_by_name('btnOk').click()
+                except NoSuchElementException:
+                    attempts -= 1
+                    driver.find_element_by_name('btncon').click()
+                continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
                 do_lifted = driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
