@@ -134,6 +134,14 @@
                 confirmButtonColor: "#556ee6"
             })
         }
+        function fireWarning(message){
+            Swal.fire({
+                title: "No data available",
+                html: `${message}`,
+                type: "warning",
+                confirmButtonColor: "#556ee6"
+            })
+        }
     </script>
     
 </body>

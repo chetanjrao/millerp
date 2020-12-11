@@ -159,7 +159,7 @@
             data: form.serialize(),
             success: function(data){
                 if(data.length == 0){
-                    fireError()
+                    fireWarning("DO Acknowledgement Print is not available")
                 }
                 $('.link').attr("href", data) 
                 $('.loader2').hide()

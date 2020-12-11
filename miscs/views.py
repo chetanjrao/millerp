@@ -34,11 +34,11 @@ def get_random_string(length):
     return result_str
 
 
-start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify19/MillLogin.aspx"
+start_url = "https://khadya.cg.nic.in/paddyonline/miller/millmodify20/MillLogin.aspx"
 
 def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, mobile: str):
     driver.get(start_url)
-    attempts = 10
+    attempts = 15
     response = {}
     total_do_lifted = 0
     total_do_pending = 0
@@ -72,21 +72,14 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
             driver.find_element_by_id('txtVerificationCode').clear()
             driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
             driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
-            try:
-                driver.find_element_by_id('txtUser').clear()
-                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+            driver.find_element_by_id('txtUser').clear()
+            driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+            driver.find_element_by_name('btncon').click()
+            if driver.find_element_by_id('mpe_foregroundElement').is_displayed():
+                driver.find_element_by_name('btnYes').click()
+            else:
                 driver.find_element_by_name('btncon').click()
-                attempts -= 1
-                driver.switch_to.alert.accept()
-            except UnexpectedAlertPresentException:
-                pass
-            except (InvalidElementStateException):
-                attempts -= 1
-                try:
-                    driver.find_element_by_name('btnOk').click()
-                except NoSuchElementException:
-                    driver.find_element_by_name('btncon').click()
-                continue
+            attempts -= 1
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
                 do_lifted = driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
@@ -108,11 +101,11 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 response['total_do_cancelled'] = total_do_cancelled
                 response['paddy_uplifted'] = paddy_uplifted
                 response['rice_deposited'] = rice_deposited
-                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify19/TypeSecurityCompleteReport.aspx')
-                elem = driver.find_element_by_class_name('SiteText')
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/TypeSecurityCompleteReport.aspx')
+                elem = driver.find_element_by_tag_name('table')
                 HTML_DOCUMENT = elem.get_attribute('innerHTML')
                 parser = BeautifulSoup(HTML_DOCUMENT, 'html.parser')
-                table: Tag = parser.find_all('table')[-1]
+                table: Tag = parser
                 rows = table.find_all('tr')
                 bg_secured = []
                 headers = rows[0].find_all('td')
@@ -159,6 +152,7 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 response["agreements"] = agreements
                 response["dos"] = dos
                 response["total_dos"] = total_dos
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/logout.aspx')
                 break
             except NoSuchElementException:
                 continue
@@ -169,7 +163,7 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
 
 def get_print(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, agreement: str, do: str):
     driver.get(start_url)
-    attempts = 10
+    attempts = 15
     pdf = ""
     while True:
         if attempts <= 0:
@@ -197,30 +191,27 @@ def get_print(driver: WebDriver, screenshot: str, captcha: str, username: str, p
             driver.find_element_by_id('txtVerificationCode').clear()
             driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
             driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
-            try:
-                driver.find_element_by_id('txtUser').clear()
-                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+            driver.find_element_by_id('txtUser').clear()
+            driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+            driver.find_element_by_name('btncon').click()
+            if driver.find_element_by_id('mpe_foregroundElement').is_displayed():
+                driver.find_element_by_name('btnYes').click()
+            else:
                 driver.find_element_by_name('btncon').click()
-                attempts -= 1
-                driver.switch_to.alert.accept()
-            except UnexpectedAlertPresentException:
-                pass
-            except (InvalidElementStateException):
-                attempts -= 1
-                try:
-                    driver.find_element_by_name('btnOk').click()
-                except NoSuchElementException:
-                    driver.find_element_by_name('btncon').click()
-                continue
+            attempts -= 1
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
                 driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
-                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify19/rptDOScantext.aspx')
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/rptDOScantext.aspx')
                 agreement_element = Select(driver.find_element_by_id('ctl00_Miller_content1_ddlagr'))
                 agreement_element.select_by_value(agreement)
                 do_element = Select(driver.find_element_by_id('ctl00_Miller_content1_ddldo'))
-                do_element.select_by_visible_text(do)
-                pdf = driver.find_element_by_id('ctl00_Miller_content1_dhidden').get_attribute('value')
+                try:
+                    do_element.select_by_visible_text(do)
+                    pdf = driver.find_element_by_id('ctl00_Miller_content1_dhidden').get_attribute('value')
+                except NoSuchElementException:
+                    pass
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/logout.aspx')
                 break
             except NoSuchElementException:
                 continue
@@ -232,7 +223,7 @@ def get_print(driver: WebDriver, screenshot: str, captcha: str, username: str, p
 
 def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, agreement: str):
     driver.get(start_url)
-    attempts = 10
+    attempts = 15
     response = {}
     while True:
         if attempts <= 0:
@@ -260,29 +251,22 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
             driver.find_element_by_id('txtVerificationCode').clear()
             driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
             driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
-            try:
-                driver.find_element_by_id('txtUser').clear()
-                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+            driver.find_element_by_id('txtUser').clear()
+            driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+            driver.find_element_by_name('btncon').click()
+            if driver.find_element_by_id('mpe_foregroundElement').is_displayed():
+                driver.find_element_by_name('btnYes').click()
+            else:
                 driver.find_element_by_name('btncon').click()
-                attempts -= 1
-                driver.switch_to.alert.accept()
-            except UnexpectedAlertPresentException:
-                pass
-            except (InvalidElementStateException):
-                attempts -= 1
-                try:
-                    driver.find_element_by_name('btnOk').click()
-                except NoSuchElementException:
-                    driver.find_element_by_name('btncon').click()
-                continue
+            attempts -= 1
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
                 driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
-                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify19/AgreementReconciliation.aspx')
-                agreement_element = Select(driver.find_element_by_id('DDAgreementNo'))
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/AgreementReconciliation.aspx')
+                agreement_element = Select(driver.find_element_by_id('ctl00_Miller_content1_DDAgreementNo'))
                 agreement_element.select_by_value(agreement)
-                driver.find_element_by_id('btnshow').click()
-                table = driver.find_elements_by_tag_name('table')[2]
+                driver.find_element_by_id('ctl00_Miller_content1_btnshow').click()
+                table = driver.find_elements_by_tag_name('table')[1]
                 HTML_DOCUMENT = table.get_attribute('outerHTML')
                 parser = BeautifulSoup(HTML_DOCUMENT, 'html.parser')
                 table: Tag = parser.find_all('table')[0]
@@ -319,9 +303,10 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
                 response["total"] = do
                 response["summary"] = summary
                 response["remaining"] = remaining
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/logout.aspx')
                 break
             except NoSuchElementException:
-                continue
+               continue
     driver.close()
     os.remove(captcha)
     os.remove(screenshot)
@@ -330,7 +315,7 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
 
 def get_cmr(driver: WebDriver, screenshot: str, captcha: str, username: str, password: str, agreement: str):
     driver.get(start_url)
-    attempts = 10
+    attempts = 15
     response = {}
     while True:
         if attempts <= 0:
@@ -358,34 +343,32 @@ def get_cmr(driver: WebDriver, screenshot: str, captcha: str, username: str, pas
             driver.find_element_by_id('txtVerificationCode').clear()
             driver.find_element_by_id('txtVerificationCode').send_keys(text.replace('\x0C', ''))
             driver.find_element_by_id('txtpwd').send_keys('{}'.format(password))
-            try:
-                driver.find_element_by_id('txtUser').clear()
-                driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+            driver.find_element_by_id('txtUser').clear()
+            driver.find_element_by_id('txtUser').send_keys('{}'.format(username))
+            driver.find_element_by_name('btncon').click()
+            if driver.find_element_by_id('mpe_foregroundElement').is_displayed():
+                driver.find_element_by_name('btnYes').click()
+            else:
                 driver.find_element_by_name('btncon').click()
-                attempts -= 1
-                driver.switch_to.alert.accept()
-            except UnexpectedAlertPresentException:
-                pass
-            except (InvalidElementStateException):
-                attempts -= 1
-                try:
-                    driver.find_element_by_name('btnOk').click()
-                except NoSuchElementException:
-                    driver.find_element_by_name('btncon').click()
-                continue
+            attempts -= 1
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
                 driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
-                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify19/AgreementReconciliation.aspx')
-                agreement_element = Select(driver.find_element_by_id('DDAgreementNo'))
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/AgreementReconciliation.aspx')
+                agreement_element = Select(driver.find_element_by_id('ctl00_Miller_content1_DDAgreementNo'))
                 agreement_element.select_by_value(agreement)
-                driver.find_element_by_id('btnshow').click()
-                table = driver.find_elements_by_xpath("//table[@borderColor='Silver']")[2]
+                driver.find_element_by_id('ctl00_Miller_content1_btnshow').click()
+                table = driver.find_elements_by_xpath("//table[@borderColor='Silver']")
+                cmr = []
+                if len(table) <= 2:
+                    response = cmr
+                    driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/logout.aspx')
+                    break
+                table = table[2]
                 HTML_DOCUMENT = table.get_attribute('outerHTML')
                 parser = BeautifulSoup(HTML_DOCUMENT, 'html.parser')
                 table: Tag = parser.find_all('table')[0]
                 rows = table.find_all('tr')[2:-1]
-                cmr = []
                 for row in rows:
                     data = row.find_all('td')
                     cmr.append([
@@ -399,6 +382,7 @@ def get_cmr(driver: WebDriver, screenshot: str, captcha: str, username: str, pas
                         ''
                     ])
                 response = cmr
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/logout.aspx')
                 break
             except NoSuchElementException:
                 continue
@@ -416,7 +400,7 @@ def get_cmr_status(request: WSGIRequest):
         firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
         cached_response = cache.get("{}cmr".format(agreement.strip()))
         if cached_response is None or json.loads(cached_response) == {}:
-            options.add_argument('--headless')
+            #options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             options.binary_location = CHROME
             driver = webdriver.Chrome(CHROMEDRIVER, options=options)
@@ -438,7 +422,7 @@ def get_guarantee(request: WSGIRequest):
     firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
     cached_response = cache.get("{}".format(firm.username))
     if cached_response is None or cached_response == {}:
-        options.add_argument('--headless')
+        #options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.binary_location = CHROME
         driver = webdriver.Chrome(CHROMEDRIVER, options=options)
@@ -481,7 +465,7 @@ def get_do_stats(request: WSGIRequest):
         firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
         cached_response = cache.get("{}-do".format(agreement.strip()))
         if cached_response is None or cached_response == {}:
-            options.add_argument('--headless')
+            #options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             options.binary_location = CHROME
             driver = webdriver.Chrome(CHROMEDRIVER, options=options)
