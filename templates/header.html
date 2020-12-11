@@ -37,11 +37,11 @@
             </div>
             <div class="d-none d-lg-inline-block ml-1">
                 {% if request.firms|length > 0 %}
-                   {% if request.COOKIES.MERP_FIRM %}
-                   <button type="button" data-target="#firmModal" data-toggle="modal" class="btn header-item waves-effect" id="page-header-user-dropdown" aria-haspopup="true" aria-expanded="true">
-                    <span class="d-none d-xl-inline-block ml-1" key="t-henry">Switch Firm Here</span>
-                    <i class="bx bx-shuffle d-none d-xl-inline-block"></i>
-                </button>
+                   {% if not request.COOKIES.MERP_FIRM %}
+                    <button type="button" data-target="#firmModal" data-toggle="modal" class="btn header-item waves-effect" id="page-header-user-dropdown" aria-haspopup="true" aria-expanded="true">
+                        <span class="d-none d-xl-inline-block ml-1" key="t-henry">Switch Firm Here</span>
+                        <i class="bx bx-shuffle d-none d-xl-inline-block"></i>
+                    </button>
                    {% endif %}
                     {% for firm in request.firms %}
                         {% if request.COOKIES.MERP_FIRM == firm.pk|stringformat:"i" %}
