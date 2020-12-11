@@ -756,7 +756,7 @@ def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str
                 break
             except (NoSuchElementException, UnexpectedAlertPresentException, NoSuchElementException):
                 continue
-    #driver.close()
+    driver.close()
     os.remove(captcha)
     os.remove(screenshot)
     return response
