@@ -95,7 +95,7 @@ def set_firm(request: WSGIRequest):
     if request.method == "POST":
         firm = Firm.objects.get(pk=request.POST["firm"], is_deleted=False, mill=request.mill)
         response = redirect(resolve_url('dashboard_home', millcode=request.millcode))
-        response.set_cookie("MERP_FIRM", firm.pk)
+        response.set_cookie("MERP_FIRM", firm.pk, max_age=60*60*24*30)
         return response
 
 @login_required
@@ -105,7 +105,7 @@ def set_rice(request: WSGIRequest):
         next_url = request.POST["next"]
         rice = Rice.objects.get(pk=request.POST["rice"], is_deleted=False)
         response = redirect(next_url)
-        response.set_cookie("rice", rice.pk)
+        response.set_cookie("rice", rice.pk, max_age=60*60*24*30)
         return response
 
 @login_required
