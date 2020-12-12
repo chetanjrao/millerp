@@ -93,6 +93,8 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 paddy_lifted = driver.find_element_by_id('ctl00_Miller_content1_lnkpaddylift')
                 rice_deposit = driver.find_element_by_id('ctl00_Miller_content1_lnkricesubmit')
                 do_location = do_issued.get_attribute('href')
+                pending_location = do_pending.get_attribute('href')
+                print(pending_location)
                 total_do_lifted = float(do_lifted.text)
                 total_do_pending = float(do_pending.text)
                 total_do_issued = float(do_issued.text)
@@ -125,35 +127,62 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 for row in body:
                     if row[4] == "सुरक्षित":
                         bg_secured.append(row)
-                footer = rows[-1].find_all('td')
                 bg_secured_raw = round(sum([float(data[1]) for data in bg_secured]), 2)
                 bg_secured = round(sum([float(data[3]) for data in bg_secured]), 2)
                 response["results"] = body
                 response["bg_secured"] = bg_secured
                 response["bg_secured_raw"] = bg_secured_raw
-                driver.get(do_location)
-                elem = driver.find_element_by_class_name('SiteText')
-                HTML_DOCUMENT = elem.get_attribute('innerHTML')
-                parser = BeautifulSoup(HTML_DOCUMENT, 'html.parser')
-                table: Tag = parser.find_all('table')[-1]
-                rows = table.find_all('tr')[1:-1]
                 agreements = {}
-                today = now().date().strftime("%d/%m/%Y")
                 total_dos = 0
                 dos = {
                     "m": 0,
                     "mm": 0,
                     "sr": 0,
                 }
-                for row in rows:
-                    element = row.find_all('td')
-                    agreements.setdefault('{}'.format(element[4].text), []).append(element[1].text)
-                    if element[3].text == today:
-                        total_dos += 1
-                        dos["m"] += float(element[5].text)
-                        dos["mm"] += float(element[6].text)
-                        dos["sr"] += float(element[10].text)
+                pending_total_dos = 0
+                pending_dos = {
+                    "m": 0,
+                    "mm": 0,
+                    "sr": 0,
+                }
+                pending = 0
+                if pending_location is not None:
+                    driver.get(pending_location)
+                    elem = driver.find_element_by_class_name('SiteText')
+                    HTML_DOCUMENT = elem.get_attribute('innerHTML')
+                    parser = BeautifulSoup(HTML_DOCUMENT, 'html.parser')
+                    table: Tag = parser.find_all('table')[-1]
+                    rows = table.find_all('tr')
+                    pending = float((rows[-1].find_all('td')[-1]).text)
+                    rows = rows[1:-1]
+                    today = now().astimezone().date().strftime("%d/%m/%Y")
+                    for row in rows:
+                        element = row.find_all('td')
+                        if element[3].text == today:
+                            pending_total_dos += 1
+                            pending_dos["m"] += float(element[5].text)
+                            pending_dos["mm"] += float(element[6].text)
+                            pending_dos["sr"] += float(element[10].text)
+                if do_location is not None:
+                    driver.get(do_location)
+                    elem = driver.find_element_by_class_name('SiteText')
+                    HTML_DOCUMENT = elem.get_attribute('innerHTML')
+                    parser = BeautifulSoup(HTML_DOCUMENT, 'html.parser')
+                    table: Tag = parser.find_all('table')[-1]
+                    rows = table.find_all('tr')[1:-1]
+                    today = now().date().strftime("%d/%m/%Y")
+                    for row in rows:
+                        element = row.find_all('td')
+                        agreements.setdefault('{}'.format(element[4].text), []).append(element[1].text)
+                        if element[3].text == today:
+                            total_dos += 1
+                            dos["m"] += float(element[5].text)
+                            dos["mm"] += float(element[6].text)
+                            dos["sr"] += float(element[10].text)
                 response["agreements"] = agreements
+                response["pending"] = pending
+                response["pending_dos"] = pending_dos
+                response["pending_total_dos"] = pending_total_dos
                 response["dos"] = dos
                 response["total_dos"] = total_dos
                 driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/logout.aspx')
@@ -415,7 +444,7 @@ def get_cmr_status(request: WSGIRequest):
         agreement = request.POST["agreement"]
         firm = Firm.objects.get(pk=request.COOKIES["MERP_FIRM"], is_deleted=False, mill=request.mill)
         cached_response = cache.get("{}cmr".format(agreement.strip()))
-        if cached_response is None or json.loads(cached_response) == {}:
+        if cached_response is None or json.loads(cached_response) == {} or json.loads(cached_response) == []:
             options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             options.binary_location = CHROME
