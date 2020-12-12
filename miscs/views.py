@@ -94,7 +94,6 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 rice_deposit = driver.find_element_by_id('ctl00_Miller_content1_lnkricesubmit')
                 do_location = do_issued.get_attribute('href')
                 pending_location = do_pending.get_attribute('href')
-                print(pending_location)
                 total_do_lifted = float(do_lifted.text)
                 total_do_pending = float(do_pending.text)
                 total_do_issued = float(do_issued.text)
@@ -319,7 +318,9 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
                     if i % 2 == 0:
                         element = row.find_all('td')
                         if float(element[22].text) > 0 or ((float(element[5].text) - float(element[13].text)) > 0) or ((float(element[6].text) - float(element[14].text)) > 0) or ((float(element[10].text) - float(element[18].text)) > 0):
-                            remaining.append([elem.text for elem in element])
+                            elem = [elem.text for elem in element]
+                            elem.pop(1)
+                            remaining.append(elem)
                         do.setdefault('{}'.format(element[1].find_all('td')[0].text), []).append({
                             "date": element[4].text,
                             "mu": float(element[5].text),
