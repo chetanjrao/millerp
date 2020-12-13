@@ -61,8 +61,11 @@
                                 <th>Category</th>
                                 <th>Source</th>
                                 <th>Number of bags</th>
-                                <th>In Quintal</th>
+                                <th>Weight <small>(in Quintal)</small></th>
                                 <th>Average Weight</th>
+                                <th>DMO Weight <small>(in Quintal)</small></th>
+                                <th>Difference <small>(in Quintal)</small></th>
+                                <th>Bag Type</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -165,6 +168,31 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="form-group row mb-4">
+                                                                        <label for="horizontal-number-input"
+                                                                            class="col-sm-6 col-form-label">DMO
+                                                                            weight</label>
+                                                                        <div class="col-md-10">
+                                                                            <input type="text" class="form-control"
+                                                                                id="horizontal-number-input" name="dmo_weight"
+                                                                                value="{{stock.dmo_weight}}" required>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="form-group row mb-4">
+                                                                        <label for="cashier" class="control-label">Select Bag</label>
+                                                                        <div class="col-md-10">
+                                                                            <select class="bag" name="bag" required>
+                                                                                {% for bag in bags %}
+                                                                                <option value="{{ bag.pk }}">{{ bag.name }}</option>
+                                                                                {% endfor %}
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                            </div>
+                                                            
                                                         </div>
                                                         <div class=" form-group row justify-content-end">
                                                             <div class="col-sm-12">
@@ -217,12 +245,15 @@
                             </div>
 
                             <tr>
-                                <td><span style="display:none;">{{ stock.created_at|date:"U" }}{{ stock.entry.date|date:"U" }}</span>{{stock.entry.date|date:"d-m-Y"}}</td>
+                                <td><span style="display:none;">{{ stock.entry.date|date:"U" }}{{ stock.created_at|date:"U" }}</span>{{stock.entry.date|date:"d-m-Y"}}</td>
                                 <td>{{stock.category.name}}</td>
                                 <td>{{stock.source.name}}</td>
                                 <td>{{stock.entry.bags}}</td>
                                 <td>{{stock.entry.quantity}}</td>
                                 <td>{{stock.entry.average_weight}}</td>
+                                <td>{{stock.dmo_weight}}</td>
+                                <td>{{ stock.difference }}</td>
+                                <td>{{ stock.bag.name }}</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm ml-2" data-toggle="modal"
                                         data-target="#editModal{{stock.pk}}">
@@ -277,6 +308,9 @@
         width: "100%",
     })
     $('.source').select2({
+        width: "100%",
+    })
+    $('.bag').select2({
         width: "100%",
     })
     $('.date-input').datepicker({

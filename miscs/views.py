@@ -178,7 +178,17 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                             dos["m"] += float(element[5].text)
                             dos["mm"] += float(element[6].text)
                             dos["sr"] += float(element[10].text)
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/RptPurchasCentreDistance.aspx')
+                elem = driver.find_element_by_id('ctl00_Miller_content1_Tab1')
+                HTML_DOCUMENT = elem.get_attribute('innerHTML')
+                parser = BeautifulSoup(HTML_DOCUMENT, 'html.parser')
+                rows = parser.find_all('tr')[2:]
+                distances = []
+                for row in rows:
+                    data = row.find_all('td')
+                    distances.append([data[0].text, data[1].text, data[-1].text ])
                 response["agreements"] = agreements
+                response["distances"] = distances
                 response["pending"] = pending
                 response["pending_dos"] = pending_dos
                 response["pending_total_dos"] = pending_total_dos
@@ -534,6 +544,11 @@ def get_print_view(request: WSGIRequest):
 @set_mill_session
 def get_do_view(request: WSGIRequest):
     return render(request, "do_stats.html")
+
+@login_required
+@set_mill_session
+def distances(request: WSGIRequest):
+    return render(request, "distances.html")
 
 @login_required
 @set_mill_session

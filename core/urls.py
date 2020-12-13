@@ -1,4 +1,4 @@
-from miscs.views import get_cmr_status, get_cmr_view, get_do, get_do_data_api, get_do_view, get_print_view, request_do, request_do_api
+from miscs.views import get_cmr_status, get_cmr_view, get_do, get_do_data_api, get_do_view, get_print_view, request_do, request_do_api, distances
 from core.views import bills, customers, entry_logs, expenses, print_expense, reports, set_firm, set_rice, shortage, transport, transporter_bill, truck_bill, truck_entry, trucks_api, type_bill
 from django.urls import path, include
 from accounts.views import profile
@@ -16,6 +16,7 @@ urlpatterns = [
     path('reload/', views.load_live, name='reload-data'),
     path('print-do/', get_print_view, name='print-do'),
     path('do-status/', get_do_view, name='do-status'),
+    path('distances/', distances, name='distances'),
     path('reports/', reports, name='reports'),
     path('shortage/', shortage, name='shortage'),
     path('transports/', transport, name='transport'),

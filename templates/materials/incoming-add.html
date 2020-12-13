@@ -99,7 +99,14 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
+                        <div class="form-group mb-2">
+                            <label class="control-label">DMO weight <small>(in quintals)</small></label>
+                            <input data-parsley-type="number" name="dmo_weight" type="text" class="form-control" id="dmo_weight" placeholder="Ex. 40.5, 50.0" required>
+                            <div class="mt-2">Weight Difference: <span id="difference">0</span> quintals</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div class="form-group mb-2">
                             <label for="staff" class="control-label">Select category</label>
                             <select id="category" name="incoming_category" required>
@@ -109,11 +116,21 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <div class="form-group mb-2">
                             <label for="cashier" class="control-label">Select Source</label>
                             <select id="source" name="incoming_source" required>
                                 <option></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-2">
+                            <label for="cashier" class="control-label">Select Bag</label>
+                            <select id="bag" name="bag" required>
+                                {% for bag in bags %}
+                                <option value="{{ bag.pk }}">{{ bag.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -282,6 +299,10 @@
         width: "100%",
         placeholder: "Select processing unit"
     })
+    $('#bag').select2({
+        width: "100%",
+        placeholder: "Select bag"
+    })
     $('#source').select2({
         width: "100%",
         placeholder: "Select Source",
@@ -304,8 +325,12 @@
             $('#trade').hide()
         }
     })
-    $('#incoming_bags, #incoming_weight').on("change keydown" ,() => {
+    $('#dmo_weight').on("change keydown keypress", () => {
+        $('#difference').text((Number.parseFloat($('#dmo_weight').val() || 0) - Number.parseFloat($('#incoming_weight').val() || 0)).toFixed(2))
+    })
+    $('#incoming_bags, #incoming_weight').on("change keydown keypress" ,() => {
         average_weight = Number.parseFloat($('#incoming_weight').val() || 0) * 100 /  Number.parseFloat($('#incoming_bags').val() || 1).toFixed(2)
+        $('#difference').text((Number.parseFloat($('#dmo_weight').val() || 0) - Number.parseFloat($('#incoming_weight').val() || 0)).toFixed(2))
     })
     $('#processing_bags').change((e) => {
         let bags = Number.parseInt(e.target.value || 0)

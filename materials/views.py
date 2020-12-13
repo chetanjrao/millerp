@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from xlsxwriter import workbook
 from core.decorators import set_mill_session
 from core.models import Mill, Rice
-from .models import Customer, IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry, Sale, Stock, Trading
+from .models import Bag, Customer, IncomingStockEntry, Category, IncomingSource, OutgoingStockEntry, OutgoingSource, ProcessingSide, ProcessingSideEntry, Sale, Stock, Trading
 from datetime import datetime, timedelta
 from django.utils.timezone import datetime
 from django.db.models import Sum
@@ -25,7 +25,8 @@ def incoming(request):
     stocks = IncomingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode)
     sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
-    return render(request, "materials/incoming.html", {"stocks": stocks, "sources": sources, "categories": categories})
+    bags = Bag.objects.filter(is_deleted=False, mill=mill)
+    return render(request, "materials/incoming.html", {"stocks": stocks, "bags": bags, "sources": sources, "categories": categories})
 
 @login_required
 @set_mill_session
@@ -47,6 +48,7 @@ def incomingAdd(request):
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     godowns = OutgoingSource.objects.filter(is_deleted=False, mill=mill)
     sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
+    bags = Bag.objects.filter(is_deleted=False, mill=mill)
     if request.method == "POST":
         date = request.POST.get('date', datetime.now().strftime("%d-%m-%Y"))
         date = datetime.strptime(date, "%d-%m-%Y")
@@ -55,11 +57,13 @@ def incomingAdd(request):
         try:
             in_bags = int(request.POST['incoming_bags'])
             in_weight = float(request.POST['incoming_weight'])
+            dmo_weight = float(request.POST['dmo_weight'])
             price = float(request.POST.get("price"))
+            bag = Bag.objects.get(pk=request.POST["bag"])
             average_weight = in_weight * 100 / in_bags
             remarks = "Entry of {} - {} bags ({}qtl) from {}".format(category.name, in_bags, in_weight, source.name)
             entry = Stock.objects.create(bags=in_bags, quantity=in_weight, remarks=remarks, date=date)
-            IncomingStockEntry.objects.create(source=source, category=category, entry=entry, created_by=request.user)
+            IncomingStockEntry.objects.create(source=source, bag=bag, dmo_weight=dmo_weight, category=category, entry=entry, created_by=request.user)
             if price is not None and price > 0:
                 Trading.objects.create(entry=entry, mill=mill, price=price, created_by=request.user)
             pr_bags = float(request.POST["processing_bags"])
@@ -75,9 +79,9 @@ def incomingAdd(request):
                 entry = Stock.objects.create(bags=0 - bags, quantity=0 - round((bags * average_weight / 100), 2), date=date)
                 OutgoingStockEntry.objects.create(entry=entry, source=godown, category=category, created_by=request.user)
         except ValueError:
-            return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "error_message": "Number of bags and average weight must be a valid number"})
-        return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns, "sides": sides, "success_message": "Incoming entry added successfully"})
-    return render(request, "materials/incoming-add.html", {"sources": sources, "categories": categories, "godowns": godowns, "sides": sides})
+            return render(request, "materials/incoming-add.html", {"sources": sources, "bags": bags, "categories": categories, "error_message": "Number of bags and average weight must be a valid number"})
+        return render(request, "materials/incoming-add.html", {"sources": sources, "bags": bags, "categories": categories, "godowns": godowns, "sides": sides, "success_message": "Incoming entry added successfully"})
+    return render(request, "materials/incoming-add.html", {"sources": sources, "bags": bags, "categories": categories, "godowns": godowns, "sides": sides})
 
 @login_required
 @set_mill_session
@@ -91,6 +95,7 @@ def incomingAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
     stocks = IncomingStockEntry.objects.filter(entry__is_deleted=False, category__mill__code=request.millcode)
     sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
+    bags = Bag.objects.filter(is_deleted=False, mill=mill)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
     if request.method == 'POST':
         id = int(id)
@@ -104,18 +109,20 @@ def incomingAction(request, id):
                 obj.source = IncomingSource.objects.get(id=int(request.POST.get('source_id')))
                 obj.category = Category.objects.get(id=int(request.POST.get('category_id')))
                 obj.entry.bags = float(request.POST.get('bags'))
+                obj.dmo_weight = float(request.POST['dmo_weight'])
+                obj.bag = Bag.objects.get(pk=request.POST["bag"])
                 obj.entry.quantity = float(request.POST.get('total_weight'))
                 obj.entry.save()
                 obj.save()
             except ValueError:
-                return render(request, "materials/incoming.html", {"stocks": stocks, "sources": sources, "categories": categories, "error_message": "PLease enter valid entries to update"})
+                return render(request, "materials/incoming.html", {"stocks": stocks, "bags": bags, "sources": sources, "categories": categories, "error_message": "PLease enter valid entries to update"})
             obj.save()
-            return render(request, "materials/incoming.html", {"stocks": stocks, "sources": sources, "categories": categories, "success_message": "Entry updated successfully"})
+            return render(request, "materials/incoming.html", {"stocks": stocks, "bags": bags, "sources": sources, "categories": categories, "success_message": "Entry updated successfully"})
         elif action == 2:
             obj.entry.is_deleted = True
             obj.entry.save()
             obj.save()
-            return render(request, "materials/incoming.html", {"stocks": stocks, "sources": sources, "categories": categories,
+            return render(request, "materials/incoming.html", {"stocks": stocks, "bags": bags, "sources": sources, "categories": categories,
                                                                "error_message": "Entry deleted successfully"})
     return redirect('materials-incoming', millcode=request.millcode)
 
@@ -344,6 +351,7 @@ def godownsAction(request, id):
 def configuration(request):
     mill = Mill.objects.get(code=request.millcode)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
+    bags = Bag.objects.filter(is_deleted=False, mill=request.mill)
     incoming_sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     processing_sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     customers = Customer.objects.filter(is_deleted=False, mill=mill)
@@ -363,7 +371,11 @@ def configuration(request):
             rice = Rice.objects.get(pk=request.POST["rice"])
             ProcessingSide.objects.create(name=name, mill=mill, rice=rice, created_by=request.user, created_at=datetime.now())
             return redirect("materials-configuration", millcode=request.millcode)
-    return render(request, "materials/configuration.html", {'categories': categories, 'sources': incoming_sources, 'customers': customers, 'sides': processing_sides})
+        elif action == 15:
+            name = request.POST.get('name')
+            Bag.objects.create(name=name, mill=mill, created_by=request.user, created_at=datetime.now())
+            return redirect("materials-configuration", millcode=request.millcode)
+    return render(request, "materials/configuration.html", {'categories': categories, "bags": bags, 'sources': incoming_sources, 'customers': customers, 'sides': processing_sides})
 
 @login_required
 @set_mill_session
@@ -377,6 +389,7 @@ def stock(request: WSGIRequest):
 def configurationAction(request, id):
     mill = Mill.objects.get(code=request.millcode)
     categories = Category.objects.filter(is_deleted=False, mill=mill)
+    bags = Bag.objects.filter(is_deleted=False, mill=request.mill)
     incoming_sources = IncomingSource.objects.filter(is_deleted=False, mill=mill)
     processing_sides = ProcessingSide.objects.filter(is_deleted=False, mill=mill)
     customers = Customer.objects.filter(is_deleted=False, mill=mill)
@@ -389,12 +402,12 @@ def configurationAction(request, id):
                 obj = Category.objects.get(id=id)
                 obj.name = name
                 obj.save()
-                return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Category updated successfully"})
+                return render(request, "materials/configuration.html", {'categories': categories, 'bags': bags, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Category updated successfully"})
         elif action == 2:
             obj = Category.objects.get(id=id)
             obj.is_deleted = True
             obj.save()
-            return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Category deleted successfully"})
+            return render(request, "materials/configuration.html", {'categories': categories, 'bags': bags, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Category deleted successfully"})
         elif action == 3:
             name = request.POST.get('name')
             if len(name) > 0:
@@ -402,12 +415,12 @@ def configurationAction(request, id):
                 obj.name = name
                 obj.include_trading = bool(request.POST.get("trade", 0))
                 obj.save()
-                return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Incoming source updated successfully"})
+                return render(request, "materials/configuration.html", {'categories': categories, 'bags': bags, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Incoming source updated successfully"})
         elif action == 4:
             obj = IncomingSource.objects.get(id=id)
             obj.is_deleted = True
             obj.save()
-            return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Incoming source deleted successfully"})
+            return render(request, "materials/configuration.html", {'categories': categories, 'bags': bags, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Incoming source deleted successfully"})
         elif action == 5:
             name = request.POST.get('name')
             if len(name) > 0:
@@ -415,12 +428,24 @@ def configurationAction(request, id):
                 obj.rice = Rice.objects.get(pk=request.POST["rice"])
                 obj.name = name
                 obj.save()
-                return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Processing side updated successfully"})
+                return render(request, "materials/configuration.html", {'categories': categories, 'bags': bags, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Processing side updated successfully"})
         elif action == 6:
             obj = ProcessingSide.objects.get(id=id)
             obj.is_deleted = True
             obj.save()
-            return render(request, "materials/configuration.html", {'categories': categories, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Processing side deleted successfully"})
+            return render(request, "materials/configuration.html", {'categories': categories, 'bags': bags, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Processing side deleted successfully"})
+        elif action == 16:
+            name = request.POST.get('name')
+            if len(name) > 0:
+                obj = Bag.objects.get(id=id)
+                obj.name = name
+                obj.save()
+                return render(request, "materials/configuration.html", {'categories': categories, 'bags': bags, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "success_message": "Bag updated successfully"})
+        elif action == 17:
+            obj = Bag.objects.get(id=id)
+            obj.is_deleted = True
+            obj.save()
+            return render(request, "materials/configuration.html", {'categories': categories, 'bags': bags, 'customers': customers, 'sources': incoming_sources, 'sides': processing_sides, "error_message": "Bag deleted successfully"})
     return redirect("materials-configuration", millcode=request.millcode)
 
 

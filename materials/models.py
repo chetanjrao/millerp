@@ -11,6 +11,14 @@ class Category(models.Model):
     created_at = models.DateTimeField(auto_now=True)
 
 
+class Bag(models.Model):
+    name = models.CharField(max_length=64)
+    is_deleted = models.BooleanField(default=False)
+    mill = models.ForeignKey(to=Mill, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now=True)
+
+
 class IncomingSource(models.Model):
     name = models.CharField(max_length=64)
     is_deleted = models.BooleanField(default=False)
@@ -57,9 +65,15 @@ class Stock(models.Model):
 class IncomingStockEntry(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
     category = models.ForeignKey(to=Category, on_delete=models.CASCADE, related_name='stocks')
+    dmo_weight = models.FloatField(default=0)
+    bag = models.ForeignKey(to=Bag, null=True, on_delete=models.CASCADE)
     source = models.ForeignKey(to=IncomingSource, on_delete=models.CASCADE, related_name='incomingstockentrys')
     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def difference(self):
+        return round(self.dmo_weight - self.entry.quantity, 2)
 
 class OutgoingStockEntry(models.Model):
     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)

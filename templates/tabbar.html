@@ -23,6 +23,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{% url 'distances' millcode=request.millcode %}" class="waves-effect">
+                            <i class="bx bx-map"></i>
+                            <span>Center Distances</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="{% url 'do-status' millcode=request.millcode %}" class="waves-effect">
                             <i class="bx bx-trending-up"></i>
                             <span>DO Status</span>
@@ -53,7 +59,7 @@
                 <li>
                     <a href="{% url 'transport' millcode=request.millcode %}" class="waves-effect">
                         <i class="bx bxs-truck"></i>
-                        <span>Transport</span>
+                        <span>Transport Configuration</span>
                     </a>
                 </li>
                 <li>
