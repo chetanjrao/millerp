@@ -790,6 +790,7 @@ def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str
                         alert = driver.switch_to.alert
                         messages.append(alert.text)
                         alert.accept()
+                        driver.implicitly_wait(0.5)
                         _turns += 1
                         quantity += int(truck)
                     except (NoSuchElementException, UnexpectedAlertPresentException, NoSuchElementException):
@@ -867,7 +868,7 @@ def request_do_api(request):
         trucks = request.POST["truck"]
         paddy = int(request.POST["paddy"])
         options = Options()
-        options.add_argument('--headless')
+        #options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.binary_location = CHROME
         driver = webdriver.Chrome(CHROMEDRIVER, options=options)

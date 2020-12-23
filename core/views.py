@@ -401,3 +401,10 @@ def expenses(request):
 def print_expense(request, expense):
     expense = Expense.objects.get(pk=expense, mill=request.mill, is_deleted=False)
     return render(request, "expense_bill.html", { "expense": expense } )
+
+
+@login_required
+@set_mill_session
+def trips(request):
+    
+    return render(request, "trips.html")

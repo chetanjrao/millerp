@@ -20,7 +20,7 @@ def set_mill_session(view_func):
             request.rice = Rice.objects.get(is_deleted=False, pk=request.COOKIES.get('rice'))
         else:
             request.rice = Rice.objects.filter(is_deleted=False).first()
-        if mill.is_deleted == True or request.user not in mill.access.all():
+        if mill.is_deleted == True or (request.user not in mill.access.all() and not request.user.is_superuser):
             return redirect(resolve_url('home'))
         request.mill = mill
         request.rices = Rice.objects.filter(is_deleted=False)
