@@ -56,14 +56,14 @@
                     {% endif %}
                 {% endif %}
                 <li class="menu-title">Core</li>
-                {% if request.firms|length > 0 and request.COOKIES.MERP_FIRM %}
+                <!-- {% if request.firms|length > 0 and request.COOKIES.MERP_FIRM %}
                     <li>
                         <a href="{% url 'trips' millcode=request.millcode %}" class="waves-effect">
                             <i class="bx bx-file"></i>
                             <span>Trips</span>
                         </a>
                     </li>
-                {% endif %}
+                {% endif %} -->
                 <li>
                     <a href="{% url 'transport' millcode=request.millcode %}" class="waves-effect">
                         <i class="bx bxs-truck"></i>
