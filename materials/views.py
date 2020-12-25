@@ -80,6 +80,7 @@ def incomingAdd(request):
                 OutgoingStockEntry.objects.create(entry=entry, source=godown, category=category, created_by=request.user)
         except ValueError:
             return render(request, "materials/incoming-add.html", {"sources": sources, "bags": bags, "categories": categories, "error_message": "Number of bags and average weight must be a valid number"})
+        bags = Bag.objects.filter(is_deleted=False, mill=mill)
         return render(request, "materials/incoming-add.html", {"sources": sources, "bags": bags, "categories": categories, "godowns": godowns, "sides": sides, "success_message": "Incoming entry added successfully"})
     return render(request, "materials/incoming-add.html", {"sources": sources, "bags": bags, "categories": categories, "godowns": godowns, "sides": sides})
 
