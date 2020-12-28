@@ -297,7 +297,8 @@
         let ppq = Number.parseFloat($('.ppq:visible').val() || 0)
         let gst = Number.parseFloat($('.gst:visible').val() || 0)
         let taxable_price = avg * bags * ppq
-        let price = taxable_price + gst
+        let gst_value = taxable_price * gst / 100
+        let price = taxable_price + gst_value
         $('.price:visible').val(price.toFixed(2))
     })
 </script>

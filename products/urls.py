@@ -18,5 +18,6 @@ urlpatterns = [
      path('configuration/', views.configuration, name="products-configuration"),
      path('configuration/action/<int:id>/', views.configurationAction, name="products-configuration-action"),
      path('excel/',  views.export_to_excel, name="products-excel"),
+     path('sales/',  views.sales, name="products-sales"),
      path('analysis/',  views.analysis, name="analysis"),
 ]

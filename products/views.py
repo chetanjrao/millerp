@@ -4,7 +4,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.fields import FloatField, IntegerField
 from django.db.models.functions.comparison import Coalesce
 import xlsxwriter
-from materials.models import Category, ProcessingSide, ProcessingSideEntry
+from materials.models import Category, Customer, ProcessingSide, ProcessingSideEntry
 from django.db.models.aggregates import Sum
 from django.db.models.expressions import F, Func
 from django.http.response import HttpResponse, JsonResponse
@@ -12,7 +12,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from datetime import datetime, timedelta
 from core.decorators import set_mill_session
-from .models import IncomingProductEntry, ProductCategory, ProductStock, ProductionType, OutgoingProductEntry, Stock, Trading, TradingSource
+from .models import IncomingProductEntry, ProductCategory, ProductSale, ProductStock, ProductionType, OutgoingProductEntry, Stock, Trading, TradingSource
 from core.models import Mill, Rice
 
 
@@ -244,11 +244,18 @@ def configurationAction(request, id):
 
 @login_required
 @set_mill_session
+def sales(request: WSGIRequest):
+    sales = ProductSale.objects.filter(category__mill=request.mill, category__is_deleted=False, entry__is_deleted=False)
+    return render(request, "products/sales.html", { 'sales': sales })
+
+@login_required
+@set_mill_session
 def stocks(request):    
     categories = ProductCategory.objects.filter(mill__code=request.millcode, rice=request.rice, is_deleted=False)
     stocks = ProductStock.objects.filter(entry__is_deleted=False, product__category__in=categories, category__rice=request.rice, entry__bags__lte=0, category__mill__code=request.millcode)
     production_types = ProductionType.objects.filter(is_deleted=False, category__in=categories, category__rice=request.rice, mill=request.mill)
-    entries = ProductStock.objects.filter(entry__is_deleted=False, product__category__in=categories, category__in=categories, category__rice=request.rice, category__mill__code=request.millcode).values('product', 'category__name', name=F('product__name')).annotate(total=Sum('entry__bags'))
+    entries = ProductStock.objects.filter(entry__is_deleted=False, product__category__in=categories, category__in=categories, category__rice=request.rice, category__mill__code=request.millcode).values('product', 'category', 'category__name', 'product__quantity', name=F('product__name')).annotate(total=Sum('entry__bags'))
+    customers = Customer.objects.filter(is_deleted=False, mill=request.mill)
     if request.method == "POST":
         action = int(request.POST["action"])
         if action == 1:
@@ -261,7 +268,32 @@ def stocks(request):
             remarks = "Sent {} bags of {} - {}".format(bags, product.name, product.category.name)
             entry = Stock.objects.create(bags=0 - bags, date=date, remarks=remarks)
             OutgoingProductEntry.objects.create(entry=entry, category=product.category, product=product, created_by=request.user)
-            return render(request, "products/stocks.html", { "stocks": stocks, "categories": categories, "success_message": "Stock sent successfully", "entries": entries })
+            return render(request, "products/stocks.html", { "stocks": stocks, "customers": customers, "categories": categories, "success_message": "Stock sent successfully", "entries": entries, "customers": customers })
+        elif action == 4:
+            product = ProductionType.objects.get(pk=request.POST["product"])
+            bags = int(request.POST["bags"])
+            date = datetime.strptime(request.POST["date"], "%d-%m-%Y")
+            customer = request.POST["customer"]
+            ppq = float(request.POST["ppq"])
+            gst = float(request.POST.get("gst", 0))
+            price = float(request.POST["price"])
+            comments = request.POST.get("remarks")
+            try:
+                customer = int(customer)
+                customer = Customer.objects.get(pk=customer)
+            except ValueError:
+                customer = Customer.objects.create(name=customer, mill=request.mill, created_by=request.user)
+            remarks = "Sold {} bags of {} - {} for {}".format(bags , product.name, product.category.name, customer.name)
+            entry = Stock.objects.create(bags=0 - bags, date=date, remarks=remarks)
+            ProductSale.objects.create(entry=entry, customer=customer, ppq=ppq, gst=gst, price=price, remarks=comments, category=product.category, product=product, created_by=request.user)
+            remarks = "Removed {} bags of {} - {}".format(bags, product.name, product.category.name)
+            entry = Stock.objects.create(bags=bags, date=date, remarks=remarks)
+            ProductStock.objects.create(entry=entry, category=product.category, product=product, created_by=request.user)
+            stocks = ProductStock.objects.filter(entry__is_deleted=False, product__category__in=categories, category__rice=request.rice, entry__bags__lte=0, category__mill__code=request.millcode)
+            production_types = ProductionType.objects.filter(is_deleted=False, category__in=categories, category__rice=request.rice, mill=request.mill)
+            entries = ProductStock.objects.filter(entry__is_deleted=False, product__category__in=categories, category__in=categories, category__rice=request.rice, category__mill__code=request.millcode).values('product', 'category__name', name=F('product__name')).annotate(total=Sum('entry__bags'))
+            customers = Customer.objects.filter(is_deleted=False, mill=request.mill)
+            return render(request, "products/stocks.html", { "stocks": stocks, "categories": categories, "success_message": "Stock sold to {} successfully".format(customer.name), "entries": entries, "customers": customers })
         elif action == 2:
             stock = ProductStock.objects.get(pk=request.POST["stock"], entry__is_deleted=False)
             stock.entry.bags = 0 - int(request.POST["bags"])
@@ -270,14 +302,14 @@ def stocks(request):
             stock.entry.date = datetime.strptime(request.POST["date"], "%Y-%m-%d")
             stock.entry.save()
             stock.save()
-            return render(request, "products/stocks.html", { "stocks": stocks, "production_types": production_types, "categories": categories, "success_message": "Stock updated successfully", "entries": entries })
+            return render(request, "products/stocks.html", { "stocks": stocks, "customers": customers, "production_types": production_types, "categories": categories, "success_message": "Stock updated successfully", "entries": entries })
         elif action == 3:
             stock = ProductStock.objects.get(pk=request.POST["stock"], entry__is_deleted=False)
             stock.entry.is_deleted = True
             stock.entry.save()
             stock.save()
-        return render(request, "products/stocks.html", { "stocks": stocks, "production_types": production_types, "categories": categories, "success_message": "Stock deleted successfully", "entries": entries })
-    return render(request, "products/stocks.html", { "stocks": stocks, "production_types": production_types, "categories": categories, "entries": entries })
+        return render(request, "products/stocks.html", { "stocks": stocks, "customers": customers, "production_types": production_types, "categories": categories, "success_message": "Stock deleted successfully", "entries": entries })
+    return render(request, "products/stocks.html", { "stocks": stocks, "customers": customers, "production_types": production_types, "categories": categories, "entries": entries })
 
 @login_required
 @set_mill_session

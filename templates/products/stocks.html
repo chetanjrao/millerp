@@ -81,6 +81,106 @@
                                         </div>
                                     </form>
                                 </div>
+                                <div id="sellModal{{ forloop.counter }}" class="modal fade" tabindex="-1" role="dialog"
+                                    aria-labelledby="myModalLabel" aria-hidden="true">
+                                    <form class="needs-validation" method="POST"
+                                        action="">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="4" readonly>
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title mt-0" id="myModalLabel">Send 
+                                                        {{entry.category__name}} -
+                                                        {{entry.name}} to processing
+                                                    </h5>
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                                <div class="form-group mb-4">
+                                                                    <label for="horizontal-number-input"
+                                                                        class="control-label">Category
+                                                                    </label>
+                                                                    <select class="form-control category"
+                                                                        name="category">
+                                                                        <option value="{{ entry.category }}" selected>{{ entry.category__name }}</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group mb-4">
+                                                                    <label for="horizontal-number-input"
+                                                                    class="control-label">Production
+                                                                    type</label>
+                                                                    <select class="form-control product"
+                                                                        name="product">
+                                                                        <option value="{{ entry.product }}" selected>{{ entry.name }}</option>
+                                                                    </select>
+                                                                </div>
+                                                            <div class="form-group mb-4">
+                                                                <label for="control-label">Bag Weight</label>
+                                                                <input class="avg form-control" value="{{ entry.product__quantity }}" type="number" readonly />
+                                                            </div>
+                                                            <div class="form-group mb-4">
+                                                                <label for="control-label">Number of bags</label>
+                                                                <input type="number" step="1" class="form-control bags listener" id="horizontal-number-input" max="{{ entry.total|abs }}" name="bags" required>
+                                                            </div>
+                                                            <div class="form-group mb-4">
+                                                                <label for="control-label">Price per quintal</label>
+                                                                <input type="number" step="any" class="form-control ppq listener" id="horizontal-number-input" name="ppq" required>
+                                                            </div>
+                                                            <div class="form-group mb-4">
+                                                                <label for="control-label">GST</label>
+                                                                <input type="number" step="any" class="form-control gst listener" id="horizontal-number-input" name="gst" required>
+                                                            </div>
+                                                            <div class="form-group mb-4">
+                                                                <label for="control-label">Total Price</label>
+                                                                <input type="number" step="any" class="form-control price" id="horizontal-number-input" name="price" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="form-group mb-4">
+                                                                <label>Select Date</label>
+                                                                <div class="input-group">
+                                                                    <input type="text" class="form-control" placeholder="dd-mm-yyyy" autocomplete="off" data-date-orientation="bottom left" data-date-autoclose="true" value="{% now 'd-m-Y' %}" data-date-format="dd-mm-yyyy" data-provide="datepicker" name="date" required>
+                                                                    <div class="input-group-append">
+                                                                        <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="form-group mb-2">
+                                                                <label for="staff" class="control-label">Choose Customer</label>
+                                                                <select class="mside" name="customer" required>
+                                                                    {% for customer in customers %}
+                                                                    <option value="{{ customer.pk }}">{{ customer.name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="form-group mb-2">
+                                                                <label class="control-label">Add remarks</label>
+                                                                <textarea class="form-control" placeholder="Enter any remarks" name="remarks"></textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary waves-effect"
+                                                        data-dismiss="modal">Close</button>
+                                                    <button type="submit"
+                                                        class="btn btn-primary waves-effect waves-light">Yes,
+                                                        sell to customer</button>
+                                                </div>
+                                            </div><!-- /.modal-content -->
+                                        </div>
+                                    </form>
+                                </div>
                                 <tr>
                                     <td>{{ entry.category__name }}</td>
                                     <td>{{ entry.name }}</td>
@@ -90,7 +190,12 @@
                                         data-target="#sendModal{{ forloop.counter }}">
                                         <i style="vertical-align: middle;" class="mdi mdi-progress-upload font-size-12"></i><span
                                             class="ml-1">Send to outgoing</span>
-                                    </button>
+                                        </button>
+                                        <button type="button" class="btn btn-success btn-sm ml-2" data-toggle="modal"
+                                        data-target="#sellModal{{ forloop.counter }}">
+                                        <i style="vertical-align: middle;" class="mdi mdi-progress-upload font-size-12"></i><span
+                                            class="ml-1">Sell to customer</span>
+                                        </button>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -428,12 +533,22 @@
 <script src="/static/js/app.js"></script>
 
 <script>
+    
     $('#category').select2({
         width: "100%",
         placeholder: "Choose category"
     })
     $('#product').select2({
         width: "100%",
+    })
+    $('.category').select2({
+        width: "100%",
+        placeholder: "Choose category",
+        readonly: true
+    })
+    $('.product').select2({
+        width: "100%",
+        readonly: true
     })
     $('#category').change((e) => {
         $('#product').val('').trigger('change')
@@ -453,9 +568,23 @@
             }
         })
     })
+    $('.mside').select2({
+        tags: true,
+        width: '100%'
+    })
     $('#product').change((e) => {
         let selection = $(e.target).select2('data')[0]
         $('#bags').attr("max", selection["max"])
+    })
+    $('.listener').change((e) => {
+        let bags = Number.parseFloat($('.bags:visible').val() || 0)
+        let avg = Number.parseFloat($('.avg:visible').val() || 0) / 100
+        let ppq = Number.parseFloat($('.ppq:visible').val() || 0)
+        let gst = Number.parseFloat($('.gst:visible').val() || 0)
+        let taxable_price = avg * bags * ppq
+        let gst_value = taxable_price * gst / 100
+        let price = taxable_price + gst_value
+        $('.price:visible').val(price.toFixed(2))
     })
 </script>
 

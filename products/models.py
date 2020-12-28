@@ -1,3 +1,4 @@
+from materials.models import Customer
 from accounts.models import User
 from core.models import Mill, Rice
 from django.db import models
@@ -91,9 +92,30 @@ class Trading(models.Model):
         return round(self.entry.bags * self.source.quantity / 100, 2)
 
 
-# class Sale(models.Model):
-#     entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
-#     category = models.ForeignKey(to=ProductCategory, on_delete=models.CASCADE)
-#     product = models.ForeignKey(to=ProductionType, on_delete=models.CASCADE, related_name='sales')
-#     created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
-#     created_at = models.DateTimeField(auto_now=True)
+class ProductSale(models.Model):
+    entry = models.ForeignKey(to=Stock, on_delete=models.CASCADE)
+    customer = models.ForeignKey(to=Customer, on_delete=models.CASCADE)
+    category = models.ForeignKey(to=ProductCategory, on_delete=models.CASCADE)
+    product = models.ForeignKey(to=ProductionType, on_delete=models.CASCADE, related_name='sales')
+    price = models.FloatField()
+    ppq = models.FloatField()
+    gst = models.FloatField(default=0)
+    remarks = models.TextField(null=True)
+    created_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def taxable_amount(self):
+        return round(self.ppq * self.entry.quantity, 2)
+
+    @property
+    def tax(self):
+        return self.taxable_amount * self.gst / 100
+
+    @property
+    def quantity(self):
+        return round(self.product.quantity * self.entry.bags / 100, 2)
+
+    @property
+    def total(self):
+        return self.taxable_amount + self.tax
