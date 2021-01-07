@@ -86,6 +86,7 @@ def get_captcha(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/Dashboard.aspx')
                 do_lifted = driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
                 do_pending = driver.find_element_by_id('ctl00_Miller_content1_lnkDopending')
                 do_issued = driver.find_element_by_id('ctl00_Miller_content1_lnkDoissued')
@@ -247,6 +248,7 @@ def get_print(driver: WebDriver, screenshot: str, captcha: str, username: str, p
                 continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/Dashboard.aspx')
                 driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
                 driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/rptDOScantext.aspx')
                 agreement_element = Select(driver.find_element_by_id('ctl00_Miller_content1_ddlagr'))
@@ -311,6 +313,7 @@ def get_do_status(driver: WebDriver, screenshot: str, captcha: str, username: st
                 continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/Dashboard.aspx')
                 driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
                 driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/AgreementReconciliation.aspx')
                 agreement_element = Select(driver.find_element_by_id('ctl00_Miller_content1_DDAgreementNo'))
@@ -409,6 +412,7 @@ def get_cmr(driver: WebDriver, screenshot: str, captcha: str, username: str, pas
                 continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/Dashboard.aspx')
                 driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
                 driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/AgreementReconciliation.aspx')
                 agreement_element = Select(driver.find_element_by_id('ctl00_Miller_content1_DDAgreementNo'))
@@ -617,6 +621,7 @@ def get_do_data(driver: WebDriver, screenshot: str, captcha: str, username: str,
                 continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/Dashboard.aspx')
                 do_lifted = driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
                 do_pending = driver.find_element_by_id('ctl00_Miller_content1_lnkDopending')
                 do_issued = driver.find_element_by_id('ctl00_Miller_content1_lnkDoissued')
@@ -769,6 +774,7 @@ def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str
                 continue
         except (NoAlertPresentException, NoSuchElementException, UnexpectedAlertPresentException):
             try:
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/Dashboard.aspx')
                 do_lifted = driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
                 do_pending = driver.find_element_by_id('ctl00_Miller_content1_lnkDopending')
                 do_issued = driver.find_element_by_id('ctl00_Miller_content1_lnkDoissued')
@@ -811,7 +817,7 @@ def request_data(driver: WebDriver, screenshot: str, captcha: str, username: str
                 response["requested_turns"] = turns
                 response["successful_turns"] = _turns
                 response["quantity"] = quantity
-                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/Default.aspx')
+                driver.get('https://khadya.cg.nic.in/paddyonline/miller/millmodify20/Dashboard.aspx')
                 do_lifted = driver.find_element_by_id('ctl00_Miller_content1_lnkDocnt')
                 do_pending = driver.find_element_by_id('ctl00_Miller_content1_lnkDopending')
                 do_issued = driver.find_element_by_id('ctl00_Miller_content1_lnkDoissued')
