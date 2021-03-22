@@ -441,7 +441,7 @@
         series: [{% for expense in total %} {{ expense.amount|floatformat:-2 }}, {% endfor %}],
         {% endautoescape %}
         {% autoescape off %}
-        labels: [{% for expense in total %} '{{ expense.name }}', {% endfor %}],
+        labels: [{% for expense in total %} "{{ expense.name }}", {% endfor %}],
         {% endautoescape %}
         legend: {
             show: !0,
@@ -475,7 +475,7 @@
         series: [{% for type in types %} {{ type.amount|floatformat:-2 }}, {% endfor %}],
         {% endautoescape %}
         {% autoescape off %}
-        labels: [{% for type in types %} '{{ type.type }}', {% endfor %}],
+        labels: [{% for type in types %} "{{ type.type }}", {% endfor %}],
         {% endautoescape %}
         legend: {
             show: !0,
