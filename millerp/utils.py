@@ -3,7 +3,7 @@ from asgiref.sync import sync_to_async
 
 def send_message(message, phone):
     values = {
-        'authkey': '213839AHVCFomzdt5e274930P1',
+        'authkey': '213839AETQhgGL7605a05a5P1',
         'mobiles': phone,
         'message': message,
         'sender': 'MAZONT',
